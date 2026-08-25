@@ -1258,6 +1258,7 @@ if (window.spherse && spherse.events) {
     spherse.events.on("file:update", { path: "../../forum/角色档案库.data.json" }, load);
 }
 load();
+SMQ.registerPageExport(DATA, '角色档案库.data.json', () => data);
 </script>
 </body>
 </html>
