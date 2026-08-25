@@ -859,6 +859,25 @@
         body.light .page-heading h2 { text-shadow: none; }
         body.light .mc-chip { border-color: var(--line); background: var(--surface-hover); }
         .theme-toggle, .mc-theme { white-space: nowrap; }
+        /* ========== 移动端顶栏导航 ========== */
+        .mnav-btn { display: none; width: 30px; height: 30px; border-radius: 6px; background: var(--surface); border: 1px solid rgba(201,169,106,0.3); color: var(--gold-mid); font-size: 14px; cursor: pointer; align-items: center; justify-content: center; transition: var(--transition); flex-shrink: 0; font-family: var(--font-body); }
+        .mnav-btn:hover { color: var(--gold-bright); border-color: var(--gold); }
+        .breadcrumb a { color: var(--gold-mid); text-decoration: none; border-bottom: 1px dashed rgba(201,169,106,0.4); transition: var(--transition); }
+        .breadcrumb a:hover { color: var(--gold-bright); border-bottom-color: var(--gold); }
+        .mnav-backdrop { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.5); z-index: 199; }
+        .mnav { display: none; position: fixed; top: 0; left: 0; bottom: 0; width: 240px; background: var(--bg-elevated); border-right: 1px solid rgba(201,169,106,0.25); z-index: 200; padding: 20px 0 24px; overflow-y: auto; box-shadow: 4px 0 30px rgba(0,0,0,0.5); }
+        .mnav-toggle:checked ~ .mnav { display: block; }
+        .mnav-toggle:checked ~ .mnav-backdrop { display: block; }
+        .mnav .mnav-close { position: absolute; top: 12px; right: 12px; width: 26px; height: 26px; border-radius: 4px; background: none; border: 1px solid rgba(201,169,106,0.3); color: var(--text-faint); cursor: pointer; font-size: 12px; display: flex; align-items: center; justify-content: center; }
+        .mnav .mnav-brand { font-family: var(--font-display); font-size: 18px; font-weight: 700; color: var(--gold-bright); text-align: center; letter-spacing: 0.08em; padding: 6px 16px 14px; }
+        .mnav .mnav-sec { font-size: 10px; color: var(--gold-mid); letter-spacing: 0.28em; text-transform: uppercase; padding: 14px 18px 6px; }
+        .mnav a { display: flex; align-items: center; gap: 8px; padding: 9px 18px; color: var(--text-secondary); font-size: 13px; text-decoration: none; letter-spacing: 0.04em; border-left: 2px solid transparent; transition: var(--transition); }
+        .mnav a:hover { color: var(--text-primary); background: rgba(201,169,106,0.05); }
+        .mnav a.active { color: var(--gold-bright); border-left-color: var(--gold); background: rgba(201,169,106,0.06); }
+        .mnav a .mnav-dot { width: 4px; height: 4px; background: var(--gold-dim); transform: rotate(45deg); flex-shrink: 0; }
+        @media (max-width: 768px) { .mnav-btn { display: flex; } }
+        body.light .mnav { background: var(--bg-elevated); border-color: var(--line); }
+        body.light .mnav-btn { border-color: var(--line); }
         body.light .delbar { background: var(--surface); }
         /* ========== 侧边栏固定视口高度 + 主题滚动条 ========== */
         .sidebar { height: 100vh; min-height: 100vh; overflow-y: auto; }
@@ -958,8 +977,11 @@
     <!-- ========== 主区域 ========== -->
     <main class="main">
         <div class="topbar">
-            <div class="breadcrumb">
-                工作台 <span class="separator">❖</span> <span class="current">酒馆</span>
+            <div style="display:flex;align-items:center;gap:10px;min-width:0;">
+                <label for="mnavToggle" class="mnav-btn" title="导航">☰</label>
+                <div class="breadcrumb">
+                    <a href="../开始页.html">工作台</a> <span class="separator">❖</span> <span class="current">酒馆</span>
+                </div>
             </div>
             <div class="topbar-status">
                 <span class="status-dot"></span>
@@ -1099,6 +1121,24 @@
             </div>
         </div>
     </main>
+
+    <!-- ========== 移动端导航抽屉 ========== -->
+    <input type="checkbox" id="mnavToggle" class="mnav-toggle" hidden>
+    <label for="mnavToggle" class="mnav-backdrop"></label>
+    <div class="mnav">
+        <label for="mnavToggle" class="mnav-close">✕</label>
+        <div class="mnav-brand">沙漠之歌</div>
+        <a href="../开始页.html"><span class="mnav-dot"></span>欢迎</a>
+        <div class="mnav-sec">功能模块</div>
+        <a href="酒馆.html" class="active"><span class="mnav-dot"></span>酒馆</a>
+        <a href="日历.html"><span class="mnav-dot"></span>日历</a>
+        <div class="mnav-sec">设定资料</div>
+        <a href="../设定资料/势力与阵营.html"><span class="mnav-dot"></span>势力与阵营</a>
+        <a href="../设定资料/历史事件.html"><span class="mnav-dot"></span>历史事件</a>
+        <a href="../设定资料/地理总览.html"><span class="mnav-dot"></span>地理总览</a>
+        <a href="../设定资料/术语库.html"><span class="mnav-dot"></span>术语库</a>
+        <a href="../设定资料/角色档案库.html"><span class="mnav-dot"></span>角色档案库</a>
+    </div>
 
     <!-- 告示新增弹窗 -->
     <div class="modal-overlay" id="noticeModal" onclick="if(event.target===this)closeNoticeModal()">
