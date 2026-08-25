@@ -1,0 +1,453 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>地理总览</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,600;0,700;1,400&family=Inter:wght@300;400;500;600&family=Noto+Serif+SC:wght@400;600&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg: #12100d;
+            --surface: #1c1a16;
+            --surface-hover: #24211b;
+            --gold: #c9a96a;
+            --gold-bright: #e8d5a4;
+            --gold-mid: #a88955;
+            --gold-dim: #6e5a3a;
+            --text-primary: #ede4d4;
+            --text-secondary: #b5a990;
+            --text-faint: #7a7263;
+            --font-display: 'Cormorant Garamond', 'Noto Serif SC', serif;
+            --font-body: 'Inter', 'Noto Sans SC', sans-serif;
+            --radius: 2px;
+            --transition: 0.35s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body {
+            background: var(--bg);
+            color: var(--text-primary);
+            font-family: var(--font-body);
+            min-height: 100vh;
+            padding: 20px 30px;
+            background-image: radial-gradient(circle at 30% 110%, rgba(201,169,106,0.08) 0%, transparent 50%);
+        }
+        body::before {
+            content: '';
+            position: fixed; top: 0; left: 0; right: 0; bottom: 0;
+            background-image: repeating-linear-gradient(0deg, transparent, transparent 7px, rgba(201,169,106,0.015) 7px, rgba(201,169,106,0.015) 8px), repeating-linear-gradient(90deg, transparent, transparent 7px, rgba(201,169,106,0.01) 7px, rgba(201,169,106,0.01) 8px);
+            pointer-events: none; z-index: 0;
+        }
+        .page { max-width: 1200px; margin: 0 auto; position: relative; z-index: 1; }
+        .header { text-align: center; padding-bottom: 18px; margin-bottom: 24px; position: relative; }
+        .header::after { content: ''; position: absolute; bottom: 0; left: 50%; transform: translateX(-50%); width: 60%; height: 1px; background: linear-gradient(90deg, transparent, var(--gold-dim), var(--gold), var(--gold-dim), transparent); }
+        .header h1 { font-family: var(--font-display); font-size: 30px; font-weight: 700; letter-spacing: 0.06em; text-shadow: 0 0 30px rgba(201,169,106,0.4); }
+        .header .sub { font-size: 12px; color: var(--text-faint); letter-spacing: 0.2em; text-transform: uppercase; margin-top: 4px; }
+
+        .topbar { display: flex; align-items: center; gap: 15px; margin-bottom: 20px; }
+        .search-input { flex: 1; padding: 10px 16px; background: rgba(0,0,0,0.35); border: 1px solid rgba(201,169,106,0.25); border-radius: var(--radius); color: var(--text-primary); font-family: var(--font-body); font-size: 13px; outline: none; transition: var(--transition); }
+        .search-input:focus { border-color: rgba(201,169,106,0.6); box-shadow: 0 0 15px rgba(201,169,106,0.1); }
+        .btn { padding: 8px 14px; background: transparent; border: 1px solid rgba(201,169,106,0.4); border-radius: var(--radius); color: var(--gold); font-family: var(--font-body); font-size: 12px; cursor: pointer; transition: var(--transition); white-space: nowrap; }
+        .btn:hover { background: rgba(201,169,106,0.1); border-color: rgba(201,169,106,0.7); }
+
+        .crumb { display: flex; align-items: center; gap: 8px; margin-bottom: 18px; font-size: 12px; color: var(--text-faint); flex-wrap: wrap; }
+        .crumb .sep { color: var(--gold-dim); }
+        .crumb button { background: none; border: none; color: var(--gold); cursor: pointer; font-family: var(--font-body); font-size: 12px; transition: var(--transition); padding: 0; }
+        .crumb button:hover { text-decoration: underline; }
+        .crumb .cur { color: var(--text-primary); font-weight: 500; }
+
+        .main-grid { display: grid; grid-template-columns: 1fr 300px; gap: 20px; }
+        @media (max-width: 900px) { .main-grid { grid-template-columns: 1fr; } }
+
+        .map-card {
+            background: var(--surface);
+            border: 1px solid rgba(201,169,106,0.25);
+            outline: 1px solid rgba(201,169,106,0.08);
+            outline-offset: 4px;
+            border-radius: var(--radius);
+            overflow: hidden;
+            position: relative;
+        }
+        .map-container { position: relative; }
+        #mapSvg { width: 100%; height: auto; display: block; }
+        .map-controls { position: absolute; bottom: 12px; left: 12px; display: flex; gap: 8px; z-index: 5; }
+        .map-btn { padding: 6px 12px; background: rgba(18,16,13,0.9); border: 1px solid rgba(201,169,106,0.45); border-radius: var(--radius); color: var(--gold); font-size: 11px; cursor: pointer; transition: var(--transition); backdrop-filter: blur(8px); }
+        .map-btn:hover { background: rgba(201,169,106,0.15); }
+
+        .detail-panel {
+            background: rgba(18,16,13,0.95);
+            border: 1px solid rgba(201,169,106,0.3);
+            border-radius: var(--radius);
+            padding: 16px 18px;
+            margin-top: 12px;
+            backdrop-filter: blur(10px);
+        }
+        .detail-panel .dp-title { font-family: var(--font-display); font-size: 19px; font-weight: 700; color: var(--gold-bright); margin-bottom: 4px; }
+        .detail-panel .dp-meta { font-size: 10px; color: var(--text-faint); letter-spacing: 0.15em; text-transform: uppercase; margin-bottom: 8px; }
+        .detail-panel .dp-desc { font-size: 13px; color: var(--text-secondary); line-height: 1.7; font-weight: 300; }
+
+        .right-panel { display: flex; flex-direction: column; gap: 15px; }
+        .info-card {
+            background: var(--surface);
+            border: 1px solid rgba(201,169,106,0.2);
+            outline: 1px solid rgba(201,169,106,0.06);
+            outline-offset: 4px;
+            border-radius: var(--radius);
+            padding: 14px 16px;
+        }
+        .info-card .ic-title { font-family: var(--font-display); font-size: 17px; font-weight: 600; color: var(--gold); margin-bottom: 6px; }
+        .info-card .ic-desc { font-size: 12px; color: var(--text-secondary); line-height: 1.6; }
+        .bubble-wrap { display: flex; flex-wrap: wrap; gap: 12px; }
+        .bubble {
+            background: var(--surface);
+            border: 1px solid rgba(201,169,106,0.3);
+            border-radius: var(--radius);
+            padding: 12px 14px;
+            cursor: pointer;
+            transition: var(--transition);
+            min-width: 100px;
+            flex: 1 0 auto;
+            text-align: center;
+        }
+        .bubble:hover { background: var(--surface-hover); transform: translateY(-2px); border-color: rgba(201,169,106,0.6); }
+        .bubble .b-name { font-family: var(--font-display); font-size: 15px; color: var(--text-primary); font-weight: 600; }
+        .bubble .b-sub { font-size: 10px; color: var(--text-faint); margin-top: 4px; }
+
+        .edit-actions { display: flex; gap: 8px; margin-top: 10px; flex-wrap: wrap; }
+        .modal-overlay {
+            display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.7); z-index: 50;
+            align-items: center; justify-content: center; padding: 20px;
+        }
+        .modal-overlay.open { display: flex; }
+        .modal {
+            background: var(--surface); border: 1px solid rgba(201,169,106,0.4); border-radius: 4px;
+            padding: 20px; width: 100%; max-width: 460px; position: relative;
+            box-shadow: 0 0 40px rgba(0,0,0,0.8);
+        }
+        .modal h3 { font-family: var(--font-display); font-size: 18px; color: var(--gold); margin-bottom: 14px; }
+        .modal label { display: block; font-size: 12px; color: var(--text-secondary); margin-bottom: 8px; }
+        .modal input { width: 100%; padding: 8px 10px; background: rgba(0,0,0,0.35); border: 1px solid rgba(201,169,106,0.25); border-radius: var(--radius); color: var(--text-primary); font-family: var(--font-body); font-size: 13px; outline: none; margin-bottom: 8px; }
+        .modal .modal-btns { display: flex; gap: 8px; justify-content: flex-end; margin-top: 12px; }
+    </style>
+</head>
+<body>
+<div class="page">
+    <div class="header">
+        <h1>地理总览</h1>
+        <div class="sub">尤克特拉</div>
+    </div>
+
+    <div class="topbar">
+        <input id="q" class="search-input" placeholder="搜索地名 / 国家 / 城镇…" />
+        <button class="btn" onclick="clearSearch()">清除</button>
+    </div>
+
+    <div class="crumb" id="crumb"></div>
+
+    <div class="main-grid">
+        <!-- 左侧地图 -->
+        <div class="map-card">
+            <div class="map-container">
+                <svg id="mapSvg" viewBox="0 0 700 480" preserveAspectRatio="xMidYMid meet">
+                    <defs>
+                        <pattern id="grid" width="30" height="30" patternUnits="userSpaceOnUse">
+                            <path d="M 30 0 L 0 0 0 30" fill="none" stroke="rgba(201,169,106,0.1)" stroke-width="0.5"/>
+                        </pattern>
+                        <filter id="glow"><feGaussianBlur stdDeviation="3" result="blur"/><feMerge><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge></filter>
+                    </defs>
+                    <rect width="100%" height="100%" fill="url(#grid)"/>
+                    <!-- 占位地图：大陆与水体轮廓，具体数据可替换 -->
+                    <path d="M120,100 L380,70 L580,140 L620,290 L450,420 L180,390 Z" fill="rgba(138,109,59,0.25)" stroke="rgba(201,169,106,0.55)" stroke-width="1.5"/>
+                    <path d="M330,190 L470,180 L530,270 L400,310 Z" fill="rgba(63,95,110,0.25)" stroke="rgba(201,169,106,0.5)" stroke-width="1.2"/>
+                    <!-- 地图地点标记由 JS 根据数据绘制 -->
+                </svg>
+                <div class="map-controls">
+                    <button class="map-btn" id="resetMapBtn">返回全图</button>
+                </div>
+            </div>
+            <div class="detail-panel" id="detailPanel" style="display:none;">
+                <div class="dp-title" id="dpTitle"></div>
+                <div class="dp-meta" id="dpMeta"></div>
+                <div class="dp-desc" id="dpDesc"></div>
+            </div>
+            <div style="font-size:11px; color:var(--text-faint); text-align:center; padding:8px;">点击地图地点放大，点击右侧气泡进入子层级</div>
+        </div>
+
+        <!-- 右侧面板：信息 + 气泡导航 -->
+        <div class="right-panel">
+            <div class="info-card" id="infoPanel">
+                <div class="ic-title" id="infoTitle"></div>
+                <div class="ic-desc" id="infoDesc"></div>
+                <div class="edit-actions">
+                    <button class="btn" onclick="editCurrent()">编辑当前</button>
+                    <button class="btn" onclick="addChildCurrent()">新增子项</button>
+                    <button class="btn" onclick="goUp()">返回上一级</button>
+                </div>
+            </div>
+            <div class="bubble-wrap" id="bubbles"></div>
+        </div>
+    </div>
+</div>
+
+<!-- 编辑弹窗 -->
+<div class="modal-overlay" id="editorWrap">
+    <div class="modal">
+        <h3 id="editorTitle"></h3>
+        <div id="editorFields"></div>
+        <div class="modal-btns">
+            <button class="btn" onclick="closeEditor()">取消</button>
+            <button class="btn" id="editorSave">保存</button>
+        </div>
+    </div>
+</div>
+
+<script>
+// ========== 占位数据 ==========
+const geoData = {
+  overview: [
+    {
+      id: 'region_1', name: '示例区域 A', desc: '区域A的描述占位。', area: 100, pop: 500,
+      coords: { x: 280, y: 240, zoom: 3 },
+      children: [
+        { id: 'city_1', name: '示例城市 A1', desc: '城市A1的描述占位。', area: 20, pop: 100, coords: { x: 320, y: 270, zoom: 4 }, children: [] },
+        { id: 'city_2', name: '示例城市 A2', desc: '城市A2的描述占位。', area: 15, pop: 80, coords: { x: 250, y: 220, zoom: 4 }, children: [] }
+      ]
+    },
+    {
+      id: 'region_2', name: '示例区域 B', desc: '区域B的描述占位。', area: 80, pop: 300,
+      coords: { x: 450, y: 210, zoom: 3 },
+      children: [
+        { id: 'city_3', name: '示例城市 B1', desc: '城市B1的描述占位。', area: 18, pop: 90, coords: { x: 470, y: 190, zoom: 4 }, children: [] }
+      ]
+    }
+  ]
+};
+
+let currentId = null; // null 表示总览
+let mapSvg, detailPanel, infoPanel;
+
+// ========== 工具 ==========
+const $ = s => document.querySelector(s);
+function esc(s) { return String(s ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
+function buildIndex(nodes, parent) {
+    let map = {}, par = {};
+    const walk = (arr, p) => {
+        (arr || []).forEach(n => {
+            map[n.id] = n; par[n.id] = p;
+            if (n.children) walk(n.children, n.id);
+        });
+    };
+    walk(nodes, null);
+    return { map, par };
+}
+function findNode(arr, id) {
+    for (const n of arr) {
+        if (n.id === id) return n;
+        if (n.children) { const r = findNode(n.children, id); if (r) return r; }
+    }
+    return null;
+}
+
+// ========== 初始化地图 ==========
+const fullViewBox = { x: 0, y: 0, width: 700, height: 480 };
+function initMap() {
+    mapSvg = document.getElementById('mapSvg');
+    detailPanel = document.getElementById('detailPanel');
+    infoPanel = document.getElementById('infoPanel');
+}
+
+function animateMapTo(targetBox, duration = 500) {
+    const startBox = {
+        x: mapSvg.viewBox.baseVal.x, y: mapSvg.viewBox.baseVal.y,
+        width: mapSvg.viewBox.baseVal.width, height: mapSvg.viewBox.baseVal.height
+    };
+    const startTime = performance.now();
+    function ease(t) { return t < 0.5 ? 4*t*t*t : (t-1)*(2*t-2)*(2*t-2)+1; }
+    function step(now) {
+        const t = Math.min((now - startTime) / duration, 1);
+        const e = ease(t);
+        mapSvg.setAttribute('viewBox',
+            `${startBox.x + (targetBox.x-startBox.x)*e} ${startBox.y + (targetBox.y-startBox.y)*e} ${startBox.width + (targetBox.width-startBox.width)*e} ${startBox.height + (targetBox.height-startBox.height)*e}`);
+        if (t < 1) requestAnimationFrame(step);
+    }
+    requestAnimationFrame(step);
+}
+
+// ========== 地图标记绘制 ==========
+function drawMapMarkers(nodes) {
+    // 清除旧标记
+    document.querySelectorAll('.map-loc').forEach(g => g.remove());
+
+    // 遍历当前层级的节点，如果节点或后代有坐标就绘制
+    const { map } = buildIndex(geoData.overview, null);
+    const current = currentId ? map[currentId] : null;
+    const children = current ? (current.children || []) : geoData.overview;
+
+    children.forEach(n => {
+        if (n.coords) {
+            const g = document.createElementNS('http://www.w3.org/2000/svg', 'g');
+            g.setAttribute('class', 'map-loc');
+            g.setAttribute('data-id', n.id);
+            g.innerHTML = `<circle cx="${n.coords.x}" cy="${n.coords.y}" r="6" fill="#c9a96a" stroke="#ede4d4" stroke-width="1.5" style="cursor:pointer;"/><text x="${n.coords.x}" y="${n.coords.y - 12}" fill="#ede4d4" font-size="12" text-anchor="middle" style="pointer-events:none;">${esc(n.name)}</text>`;
+            mapSvg.appendChild(g);
+            g.addEventListener('click', () => {
+                go(n.id);
+                if (n.coords) {
+                    const w = fullViewBox.width / n.coords.zoom;
+                    const h = fullViewBox.height / n.coords.zoom;
+                    animateMapTo({ x: Math.max(0, Math.min(n.coords.x - w/2, fullViewBox.width-w)), y: Math.max(0, Math.min(n.coords.y - h/2, fullViewBox.height-h)), width: w, height: h });
+                }
+            });
+        }
+    });
+}
+
+// ========== 渲染 ==========
+function render() {
+    const { map, par } = buildIndex(geoData.overview, null);
+    const node = currentId ? map[currentId] : null;
+
+    // 面包屑
+    let path = [];
+    let p = currentId;
+    while (p) { path.unshift(p); p = par[p]; }
+    const crumbEl = document.getElementById('crumb');
+    if (!currentId) {
+        crumbEl.innerHTML = '<span class="cur">总览 · 尤克特拉</span>';
+    } else {
+        crumbEl.innerHTML = '<button onclick="go(null)">总览</button>' + path.map((id, i) => {
+            const n = map[id];
+            return '<span class="sep">›</span>' + (i < path.length - 1
+                ? `<button onclick="go('${n.id}')">${esc(n.name)}</button>`
+                : `<span class="cur">${esc(n.name)}</span>`);
+        }).join('');
+    }
+
+    // 右侧信息面板
+    const infoTitle = document.getElementById('infoTitle');
+    const infoDesc = document.getElementById('infoDesc');
+    if (!node) {
+        infoTitle.textContent = '大陆总览';
+        infoDesc.textContent = '点击气泡逐层进入：大陆 → 地形 → 国家 → 城镇。';
+    } else {
+        infoTitle.textContent = node.name;
+        infoDesc.textContent = node.desc || '—';
+    }
+
+    // 气泡
+    const children = node ? (node.children || []) : geoData.overview;
+    const bubbleWrap = document.getElementById('bubbles');
+    if (!children.length) {
+        bubbleWrap.innerHTML = '<div style="font-size:12px;color:var(--text-faint);padding:8px;">此处没有下一层</div>';
+    } else {
+        bubbleWrap.innerHTML = children.map(n => {
+            return `<div class="bubble" onclick="go('${n.id}')">
+                <div class="b-name">${esc(n.name)}</div>
+                <div class="b-sub">${n.area ? '约'+n.area+'万km²' : ''}</div>
+            </div>`;
+        }).join('');
+    }
+
+    // 地图标记
+    drawMapMarkers(children);
+
+    // 详情面板（地图点击后显示）
+    if (node && node.coords) {
+        document.getElementById('dpTitle').textContent = node.name;
+        document.getElementById('dpMeta').textContent = '面积 ' + (node.area || '?') + ' 万km²';
+        document.getElementById('dpDesc').textContent = node.desc || '—';
+        detailPanel.style.display = 'block';
+    } else {
+        detailPanel.style.display = 'none';
+    }
+}
+
+// ========== 导航 ==========
+function go(id) {
+    currentId = id;
+    const { map } = buildIndex(geoData.overview, null);
+    const node = id ? map[id] : null;
+    if (node && node.coords) {
+        const w = fullViewBox.width / node.coords.zoom;
+        const h = fullViewBox.height / node.coords.zoom;
+        animateMapTo({ x: Math.max(0, Math.min(node.coords.x - w/2, fullViewBox.width-w)), y: Math.max(0, Math.min(node.coords.y - h/2, fullViewBox.height-h)), width: w, height: h });
+    } else if (!id) {
+        animateMapTo(fullViewBox);
+    }
+    render();
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+function goUp() {
+    if (!currentId) return;
+    const { map, par } = buildIndex(geoData.overview, null);
+    go(par[currentId] || null);
+}
+
+// ========== 搜索 ==========
+function doSearch() {
+    const q = ($('#q').value || '').trim().toLowerCase();
+    if (!q) return;
+    const { map } = buildIndex(geoData.overview, null);
+    const hits = Object.values(map).filter(n => (n.name + ' ' + (n.desc || '')).toLowerCase().includes(q));
+    if (hits.length) {
+        go(hits[0].id);
+    } else {
+        alert('未找到');
+    }
+}
+function clearSearch() { $('#q').value = ''; }
+$('#q').addEventListener('keydown', e => { if (e.key === 'Enter') doSearch(); });
+
+// ========== 编辑与新增（模拟，可替换为 spherse 数据保存） ==========
+function editCurrent() {
+    if (!currentId) return;
+    const { map } = buildIndex(geoData.overview, null);
+    const node = map[currentId];
+    openEditor('编辑 · ' + node.name, node, false);
+}
+function addChildCurrent() {
+    if (!currentId) return;
+    const { map } = buildIndex(geoData.overview, null);
+    const node = map[currentId];
+    openEditor('在「' + node.name + '」下新增', { name: '', desc: '', area: 0, pop: 0 }, true);
+}
+function openEditor(title, node, isNew) {
+    const wrap = $('#editorWrap');
+    $('#editorTitle').textContent = title;
+    $('#editorFields').innerHTML = `
+        <label>名称<input id="ef_name" value="${esc(node.name)}"></label>
+        <label>描述<input id="ef_desc" value="${esc(node.desc || '')}"></label>
+        <label>面积（万km²）<input id="ef_area" type="number" value="${node.area || ''}"></label>
+        <label>人口（万）<input id="ef_pop" type="number" value="${node.pop || ''}"></label>
+        <label>X坐标<input id="ef_x" type="number" value="${node.coords ? node.coords.x : ''}"></label>
+        <label>Y坐标<input id="ef_y" type="number" value="${node.coords ? node.coords.y : ''}"></label>
+        <label>缩放级别<input id="ef_zoom" type="number" step="0.5" value="${node.coords ? node.coords.zoom : 3}"></label>
+    `;
+    wrap.classList.add('open');
+    $('#editorSave').onclick = () => {
+        const out = {
+            name: $('#ef_name').value.trim(),
+            desc: $('#ef_desc').value.trim(),
+            area: parseFloat($('#ef_area').value) || 0,
+            pop: parseFloat($('#ef_pop').value) || 0,
+            coords: { x: parseFloat($('#ef_x').value) || 0, y: parseFloat($('#ef_y').value) || 0, zoom: parseFloat($('#ef_zoom').value) || 3 }
+        };
+        if (!out.name) { alert('名称不能为空'); return; }
+        if (isNew) {
+            node.children = node.children || [];
+            node.children.push({ id: 'n' + Date.now(), ...out, children: [] });
+        } else {
+            Object.assign(node, out);
+        }
+        closeEditor();
+        render();
+    };
+}
+function closeEditor() { $('#editorWrap').classList.remove('open'); }
+
+// ========== 启动 ==========
+initMap();
+render();
+</script>
+</body>
+</html>

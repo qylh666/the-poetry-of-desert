@@ -1,0 +1,992 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>势力与阵营 · 沙漠之歌工作台</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,600;0,700;1,400&family=Inter:wght@300;400;500;600&family=Noto+Serif+SC:wght@400;600&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg: #0e1116;
+            --bg-elevated: #14171e;
+            --surface: #141820;
+            --surface-hover: #1b2029;
+            --gold: #c9a96a;
+            --gold-bright: #e8d5a4;
+            --gold-mid: #a88955;
+            --gold-dim: #6e5a3a;
+            --red: #9e3b34;
+            --purple: #6b4a7a;
+            --blue: #3f5f7c;
+            --text-primary: #ede4d4;
+            --text-secondary: #a8a091;
+            --text-faint: #6f6a5e;
+            --font-display: 'Cormorant Garamond', 'Noto Serif SC', serif;
+            --font-body: 'Inter', 'Noto Sans SC', sans-serif;
+            --radius: 2px;
+            --transition: 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body {
+            background: var(--bg);
+            color: var(--text-primary);
+            font-family: var(--font-body);
+            min-height: 100vh;
+            display: flex;
+            position: relative;
+            overflow-x: hidden;
+            background-image:
+                radial-gradient(circle at 20% 110%, rgba(63,95,124,0.08) 0%, transparent 50%),
+                radial-gradient(circle at 80% -10%, rgba(201,169,106,0.08) 0%, transparent 40%);
+        }
+        body::before {
+            content: '';
+            position: fixed; top: 0; left: 0; right: 0; bottom: 0;
+            background-image:
+                repeating-linear-gradient(0deg, transparent, transparent 7px, rgba(201,169,106,0.015) 7px, rgba(201,169,106,0.015) 8px),
+                repeating-linear-gradient(90deg, transparent, transparent 7px, rgba(201,169,106,0.01) 7px, rgba(201,169,106,0.01) 8px);
+            pointer-events: none; z-index: 0;
+        }
+
+        /* ========== 侧边栏 ========== */
+        .sidebar {
+            width: 210px;
+            min-height: 100vh;
+            background: rgba(20, 23, 30, 0.97);
+            border-right: 2px solid transparent;
+            border-image: linear-gradient(180deg, transparent 0%, rgba(201,169,106,0.5) 20%, rgba(201,169,106,0.5) 80%, transparent 100%) 1;
+            position: sticky;
+            top: 0;
+            left: 0;
+            z-index: 10;
+            display: flex;
+            flex-direction: column;
+            flex-shrink: 0;
+            backdrop-filter: blur(20px);
+        }
+        .sidebar-brand { text-align: center; padding: 24px 18px 18px; position: relative; margin-bottom: 6px; }
+        .sidebar-brand::after { content: ''; position: absolute; bottom: 0; left: 50%; transform: translateX(-50%); width: 65%; height: 1px; background: linear-gradient(90deg, transparent, var(--gold-dim), var(--gold), var(--gold-dim), transparent); }
+        .sidebar-brand h1 { font-family: var(--font-display); font-size: 22px; font-weight: 700; color: var(--text-primary); letter-spacing: 0.08em; text-shadow: 0 0 30px rgba(201,169,106,0.4); }
+        .sidebar-brand span { font-size: 9px; color: var(--gold-dim); letter-spacing: 0.5em; text-transform: uppercase; display: block; margin-top: 5px; }
+        .sidebar-section { font-size: 10px; color: var(--gold-mid); letter-spacing: 0.28em; text-transform: uppercase; padding: 16px 22px 8px; display: flex; align-items: center; gap: 8px; }
+        .sidebar-section::after { content: ''; flex: 1; height: 1px; background: linear-gradient(90deg, rgba(201,169,106,0.4), transparent); }
+        .sidebar-nav { list-style: none; padding: 0; }
+        .sidebar-nav li { margin: 1px 0; }
+        .sidebar-nav a { display: flex; align-items: center; gap: 10px; padding: 9px 22px; color: var(--text-secondary); font-size: 13px; text-decoration: none; letter-spacing: 0.04em; border-left: 2px solid transparent; transition: var(--transition); }
+        .sidebar-nav a:hover { color: var(--text-primary); background: rgba(201,169,106,0.04); }
+        .sidebar-nav a.active { color: var(--gold-bright); border-left-color: var(--gold); background: rgba(201,169,106,0.06); }
+        .sidebar-nav .nav-num { font-family: var(--font-display); font-size: 11px; color: var(--gold-dim); width: 16px; text-align: center; flex-shrink: 0; }
+        .sidebar-nav a.nav-toggle { cursor: pointer; user-select: none; }
+        .sidebar-nav a.nav-toggle.open { color: var(--gold-mid); }
+        .sidebar-nav .nav-arrow { margin-left: auto; font-size: 9px; color: var(--gold-dim); transition: transform var(--transition); flex-shrink: 0; }
+        .sidebar-nav a.nav-toggle.open .nav-arrow { transform: rotate(90deg); }
+        .nav-sub { list-style: none; padding: 0; display: none; }
+        .nav-sub.open { display: block; }
+        .nav-sub a { padding: 7px 22px 7px 46px; font-size: 12px; font-weight: 300; color: var(--text-faint); letter-spacing: 0.05em; }
+        .nav-sub a:hover { color: var(--text-primary); background: rgba(201,169,106,0.04); }
+        .nav-sub a.active { color: var(--gold-bright); border-left-color: var(--gold); background: rgba(201,169,106,0.06); }
+        .nav-sub .nav-dot { width: 4px; height: 4px; background: var(--gold-dim); transform: rotate(45deg); flex-shrink: 0; transition: var(--transition); }
+        .nav-sub a.active .nav-dot { background: var(--gold); box-shadow: 0 0 6px rgba(201,169,106,0.7); }
+        .sidebar-footer { margin-top: auto; padding: 14px 22px 18px; font-size: 10px; color: var(--text-faint); letter-spacing: 0.15em; text-align: center; border-top: 1px solid rgba(201,169,106,0.2); position: relative; }
+        .sidebar-footer::before { content: '❖'; position: absolute; top: -7px; left: 50%; transform: translateX(-50%); color: var(--gold-dim); font-size: 9px; background: var(--bg-elevated); padding: 0 8px; }
+
+        /* ========== 主区域 ========== */
+        .main { flex: 1; position: relative; z-index: 5; padding: 28px 30px 50px; min-width: 0; }
+        .topbar { display: flex; align-items: center; justify-content: space-between; padding-bottom: 16px; margin-bottom: 22px; position: relative; }
+        .topbar::after { content: ''; position: absolute; bottom: 0; left: 0; right: 0; height: 2px; background: linear-gradient(90deg, rgba(201,169,106,0.9) 0%, rgba(201,169,106,0.5) 20%, rgba(201,169,106,0.15) 50%, rgba(201,169,106,0.5) 80%, rgba(201,169,106,0.9) 100%); }
+        .topbar::before { content: '❖'; position: absolute; bottom: -8px; left: 50%; transform: translateX(-50%); color: var(--gold); font-size: 11px; text-shadow: 0 0 15px rgba(201,169,106,0.8); background: var(--bg); padding: 0 10px; z-index: 2; }
+        .breadcrumb { display: flex; align-items: center; gap: 10px; font-size: 12px; color: var(--text-faint); letter-spacing: 0.08em; }
+        .breadcrumb .separator { color: var(--gold-dim); font-size: 9px; }
+        .breadcrumb .current { color: var(--gold); }
+        .topbar-status { display: flex; align-items: center; gap: 12px; font-size: 11px; color: var(--text-faint); letter-spacing: 0.1em; }
+        .status-dot { width: 6px; height: 6px; border-radius: 50%; background: var(--gold); box-shadow: 0 0 12px rgba(201,169,106,0.8); animation: pulse 2s infinite; }
+        @keyframes pulse { 0%, 100% { opacity: 1; box-shadow: 0 0 12px rgba(201,169,106,0.8); } 50% { opacity: 0.4; box-shadow: 0 0 4px rgba(201,169,106,0.3); } }
+
+        .page { max-width: 1300px; margin: 0 auto; position: relative; z-index: 1; }
+        .header { text-align: center; margin-bottom: 20px; position: relative; padding-bottom: 14px; }
+        .header::after { content: ''; position: absolute; bottom: 0; left: 50%; transform: translateX(-50%); width: 60%; height: 1px; background: linear-gradient(90deg, transparent, var(--gold-dim), var(--gold), var(--gold-dim), transparent); }
+        .header h1 { font-family: var(--font-display); font-size: 28px; font-weight: 700; letter-spacing: 0.06em; text-shadow: 0 0 30px rgba(201,169,106,0.3); }
+        .header .sub { font-size: 10px; color: var(--text-faint); letter-spacing: 0.3em; text-transform: uppercase; margin-top: 4px; }
+
+        /* ========== 三区布局 ========== */
+        .triple-layout {
+            display: grid;
+            grid-template-columns: 250px 1fr 330px;
+            gap: 16px;
+            align-items: start;
+        }
+        @media (max-width: 1100px) { .triple-layout { grid-template-columns: 1fr; } }
+
+        .card {
+            background: var(--surface);
+            border: 1px solid rgba(201,169,106,0.2);
+            outline: 1px solid rgba(201,169,106,0.06);
+            outline-offset: 4px;
+            border-radius: var(--radius);
+            padding: 14px 16px;
+        }
+        .card-title { font-family: var(--font-display); font-size: 16px; font-weight: 600; color: var(--gold); margin-bottom: 8px; letter-spacing: 0.06em; }
+
+        /* ========== 左侧树形列表 ========== */
+        .tree-list { list-style: none; padding: 0; }
+        .tree-list li { margin: 0; }
+        .tree-node { display: flex; align-items: center; gap: 6px; padding: 7px 8px; cursor: pointer; border-radius: var(--radius); transition: var(--transition); font-size: 13px; color: var(--text-secondary); }
+        .tree-node:hover { background: var(--surface-hover); color: var(--text-primary); }
+        .tree-node.active { background: rgba(201,169,106,0.1); color: var(--gold-bright); border-left: 2px solid var(--gold); }
+        .tree-node .arrow { width: 14px; font-size: 9px; color: var(--gold-dim); transition: transform 0.25s; flex-shrink: 0; text-align: center; }
+        .tree-node .arrow.open { transform: rotate(90deg); }
+        .tree-node .node-name { flex: 1; min-width: 0; }
+        .tree-node .node-tier { font-size: 8px; padding: 1px 5px; border: 1px solid rgba(158,59,52,0.5); border-radius: 2px; color: #c46b63; flex-shrink: 0; }
+        .tree-children { list-style: none; padding-left: 18px; display: none; }
+        .tree-children.open { display: block; }
+
+        /* ========== 中间详情 ========== */
+        .detail-section { margin-bottom: 12px; }
+        .detail-section .label { font-size: 10px; color: var(--gold-mid); letter-spacing: 0.15em; text-transform: uppercase; margin-bottom: 4px; }
+        .detail-section .value { font-size: 13px; color: var(--text-primary); line-height: 1.7; }
+        .detail-section .value.muted { color: var(--text-secondary); }
+        .detail-section .stat-row { display: flex; gap: 12px; flex-wrap: wrap; font-size: 11px; color: var(--text-faint); }
+        .detail-section .stat-row b { color: var(--gold); font-weight: 600; }
+        .doctrine-block { padding: 10px 12px; border-left: 3px solid var(--gold-mid); background: rgba(201,169,106,0.05); border-radius: 0 var(--radius) var(--radius) 0; }
+        .doctrine-block p { font-style: italic; color: var(--text-secondary); font-size: 12px; line-height: 1.7; margin-bottom: 4px; }
+        .doctrine-block p:last-child { margin-bottom: 0; }
+        .member-chip { display: inline-flex; align-items: center; gap: 6px; padding: 4px 10px; font-size: 11px; border: 1px solid rgba(201,169,106,0.35); border-radius: 2px; color: var(--text-primary); background: var(--surface-hover); margin: 0 6px 6px 0; cursor: pointer; transition: var(--transition); }
+        .member-chip:hover { border-color: rgba(201,169,106,0.7); color: var(--gold-bright); }
+        .member-chip .mini-avatar { width: 18px; height: 18px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 8px; color: #fff; overflow: hidden; background-size: cover; background-position: center; flex-shrink: 0; }
+        .sub-node-chip { display: inline-flex; align-items: center; padding: 4px 10px; font-size: 12px; border: 1px solid rgba(201,169,106,0.3); border-radius: 2px; color: var(--text-secondary); background: transparent; margin: 0 6px 6px 0; cursor: pointer; transition: var(--transition); }
+        .sub-node-chip:hover { border-color: rgba(201,169,106,0.7); color: var(--gold-bright); background: rgba(201,169,106,0.05); }
+        .detail-actions { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 14px; padding-top: 12px; border-top: 1px solid rgba(201,169,106,0.15); }
+
+        /* ========== 右侧关系图 ========== */
+        .graph-container { min-height: 460px; display: flex; align-items: center; justify-content: center; position: relative; }
+        .graph-container svg { width: 100%; height: auto; display: block; }
+        .graph-node { cursor: pointer; }
+        .graph-node circle { transition: all 0.3s; }
+        .graph-node:hover circle { filter: brightness(1.3); stroke-width: 3; }
+        .graph-node text { fill: var(--text-secondary); font-size: 13px; text-anchor: middle; pointer-events: none; }
+        .graph-line { transition: all 0.3s; }
+        .graph-hint { font-size: 10px; color: var(--text-faint); letter-spacing: 0.1em; text-align: center; margin-top: 8px; }
+
+        /* ========== 按钮 / 弹窗 ========== */
+        .btn { padding: 8px 14px; background: transparent; border: 1px solid rgba(201,169,106,0.4); border-radius: var(--radius); color: var(--gold); font-family: var(--font-body); font-size: 12px; cursor: pointer; letter-spacing: 0.06em; transition: var(--transition); white-space: nowrap; }
+        .btn:hover { background: rgba(201,169,106,0.1); border-color: rgba(201,169,106,0.7); box-shadow: 0 0 15px rgba(201,169,106,0.15); }
+        .btn-primary { background: rgba(201,169,106,0.12); border-color: rgba(201,169,106,0.7); color: var(--gold-bright); }
+        .btn-sm { padding: 6px 10px; font-size: 11px; }
+        .modal-overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.75); z-index: 50; align-items: flex-start; justify-content: center; padding: 30px 20px; overflow-y: auto; }
+        .modal-overlay.open { display: flex; }
+        .modal { background: var(--surface); border: 1px solid rgba(201,169,106,0.4); border-radius: 4px; padding: 20px; width: 100%; max-width: 460px; position: relative; box-shadow: 0 0 50px rgba(0,0,0,0.8); }
+        .modal-head { margin-bottom: 14px; }
+        .modal-title { font-family: var(--font-display); font-size: 18px; font-weight: 700; color: var(--gold-bright); }
+        .modal-close { position: absolute; top: 14px; right: 14px; background: none; border: none; color: var(--text-faint); font-size: 16px; cursor: pointer; transition: var(--transition); }
+        .modal-close:hover { color: var(--text-primary); }
+        .modal label { display: block; font-size: 11px; color: var(--gold-mid); letter-spacing: 0.1em; margin-bottom: 4px; text-transform: uppercase; }
+        .modal input, .modal textarea { width: 100%; padding: 8px 10px; background: rgba(0,0,0,0.35); border: 1px solid rgba(201,169,106,0.25); border-radius: var(--radius); color: var(--text-primary); font-family: var(--font-body); font-size: 13px; outline: none; margin-bottom: 10px; transition: var(--transition); }
+        .modal input:focus, .modal textarea:focus { border-color: rgba(201,169,106,0.6); }
+        .modal-btns { display: flex; gap: 8px; justify-content: flex-end; margin-top: 12px; }
+
+        /* ========== 响应式 ========== */
+        @media (max-width: 768px) {
+            .sidebar { display: none; }
+            .main { padding: 20px 16px; }
+            .topbar-status { display: none; }
+            .header h1 { font-size: 24px; }
+        }
+        /* ========== 侧边栏折叠 ========== */
+        .sidebar { transition: width 0.3s cubic-bezier(0.4, 0, 0.2, 1); }
+        .sidebar.collapsed { width: 56px; }
+        .sidebar.collapsed .sidebar-brand h1,
+        .sidebar.collapsed .sidebar-brand span,
+        .sidebar.collapsed .sidebar-section,
+        .sidebar.collapsed .sidebar-nav,
+        .sidebar.collapsed .sidebar-footer { display: none; }
+        .sidebar.collapsed .sidebar-brand { padding: 24px 0 18px; }
+        .sidebar.collapsed .sidebar-brand::before {
+            content: '沙';
+            font-family: var(--font-display);
+            font-size: 22px;
+            font-weight: 700;
+            color: var(--gold-bright);
+            display: block;
+            text-align: center;
+            text-shadow: 0 0 20px rgba(201,169,106,0.4);
+        }
+        .sb-toggle {
+            position: absolute;
+            right: 8px; top: 50%;
+            transform: translateY(-50%);
+            width: 20px; height: 20px;
+            border-radius: 4px;
+            background: transparent;
+            border: 1px solid rgba(201,169,106,0.35);
+            color: var(--gold-mid);
+            font-size: 9px;
+            cursor: pointer;
+            display: flex; align-items: center; justify-content: center;
+            transition: var(--transition);
+            font-family: var(--font-body);
+            z-index: 2;
+        }
+        .sb-toggle:hover { color: var(--gold-bright); border-color: var(--gold); background: rgba(201,169,106,0.1); }
+        .sidebar.collapsed .sb-toggle { right: 17px; }
+        .sidebar.collapsed .sb-toggle:hover { background: rgba(201,169,106,0.15); }
+
+        /* ========== 侧边栏收起：按钮 + 竖向标题 ========== */
+        .sb-brand-v {
+            display: none;
+            writing-mode: vertical-rl;
+            font-family: var(--font-display);
+            font-size: 12px;
+            letter-spacing: 0.4em;
+            line-height: 1.4;
+            color: var(--gold-bright);
+            text-shadow: 0 0 16px rgba(201,169,106,0.35);
+        }
+        .sidebar.collapsed .sb-brand-v { display: block; order: 1; }
+        .sidebar.collapsed .sidebar-brand::before { content: none; }
+        .sidebar.collapsed .sidebar-brand {
+            padding: 14px 0;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 12px;
+        }
+        .sidebar.collapsed .sb-toggle { position: static; transform: none; order: 0; }
+        .sidebar-brand span {
+            font-size: 7px;
+            letter-spacing: 0.22em;
+            text-transform: uppercase;
+            margin-top: 6px;
+        }
+        /* ========== 亮色主题（白 + 宝蓝，参考 亮色工作台.html） ========== */
+        body.light {
+            --bg: #f5f8fc;
+            --bg-elevated: #ffffff;
+            --surface: #ffffff;
+            --surface-hover: #f0f4fa;
+            --gold: #1e40af;
+            --gold-bright: #2563eb;
+            --gold-mid: #3b82f6;
+            --gold-dim: #93b4f5;
+            --red: #c0392b;
+            --purple: #5a6fa8;
+            --blue: #2563eb;
+            --text-primary: #1a2538;
+            --text-secondary: #4a5870;
+            --text-faint: #8a95a8;
+            --line: rgba(30, 64, 175, 0.18);
+        }
+        body.light {
+            background-image:
+                radial-gradient(circle at 50% 0%, rgba(30, 64, 175, 0.06) 0%, transparent 45%),
+                radial-gradient(circle at 50% 110%, rgba(37, 99, 235, 0.04) 0%, transparent 40%);
+        }
+        body.light::before {
+            background-image:
+                repeating-linear-gradient(0deg, transparent, transparent 7px, rgba(30, 64, 175, 0.015) 7px, rgba(30, 64, 175, 0.015) 8px),
+                repeating-linear-gradient(90deg, transparent, transparent 7px, rgba(30, 64, 175, 0.01) 7px, rgba(30, 64, 175, 0.01) 8px);
+        }
+        .theme-toggle {
+            margin: 12px 16px 6px;
+            padding: 7px 12px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            border: 1px solid var(--line);
+            border-radius: var(--radius);
+            color: var(--text-secondary);
+            cursor: pointer;
+            transition: var(--transition);
+            font-size: 12px;
+            flex-shrink: 0;
+            background: var(--surface);
+        }
+        .theme-toggle:hover { background: var(--surface-hover); color: var(--gold); border-color: var(--gold); }
+        .theme-toggle .tt-icon { font-size: 13px; }
+        .theme-toggle .tt-text { letter-spacing: 0.1em; }
+        .sidebar.collapsed .theme-toggle { display: none; }
+        .mc-theme {
+            position: absolute;
+            top: 12px; right: 12px;
+            width: 26px; height: 26px;
+            border-radius: 6px;
+            border: 1px solid var(--line);
+            background: var(--surface-hover);
+            color: var(--gold-mid);
+            cursor: pointer;
+            font-size: 13px;
+            display: flex; align-items: center; justify-content: center;
+            transition: var(--transition);
+            z-index: 3;
+        }
+        .mc-theme {
+            position: static;
+            display: inline-flex;
+            align-items: center;
+            gap: 7px;
+            padding: 6px 12px;
+            border: 1px solid var(--line);
+            border-radius: var(--radius);
+            background: var(--surface);
+            color: var(--text-secondary);
+            cursor: pointer;
+            font-size: 12px;
+            transition: var(--transition);
+        }
+        .mc-theme:hover { color: var(--gold); border-color: var(--gold); background: var(--surface-hover); }
+        .mc-theme .tt-icon { font-size: 13px; }
+        .mc-theme .tt-text { letter-spacing: 0.1em; }
+        /* 亮色去金化：圆角对齐模板，容器/输入/按钮边框统一为宝蓝线条 */
+        body.light { --radius: 6px; }
+        body.light .card,
+        body.light .frame-card,
+        body.light .todo-card,
+        body.light .mini-cal,
+        body.light .modal,
+        body.light .event-card,
+        body.light .cal-card,
+        body.light .char-card,
+        body.light .term-card,
+        body.light .bubble,
+        body.light .notice,
+        body.light .pt-card,
+        body.light .info-card,
+        body.light .map-card,
+        body.light .input,
+        body.light .search-input,
+        body.light .year-input,
+        body.light .todo-input,
+        body.light .comment-input,
+        body.light .feed-input,
+        body.light .chat-input,
+        body.light .pt-input,
+        body.light .modal input,
+        body.light .modal textarea,
+        body.light .modal select,
+        body.light .field .input,
+        body.light .relcanvas { border-color: var(--line); }
+        body.light .btn,
+        body.light .chip,
+        body.light .tag,
+        body.light .tag-user,
+        body.light .meta-chip,
+        body.light .member-chip,
+        body.light .sub-node-chip,
+        body.light .tl-tag { border-color: var(--line); }
+        body.light .btn:hover,
+        body.light .chip:hover,
+        body.light .meta-chip:hover { border-color: var(--gold); background: var(--surface-hover); }
+        body.light input:focus,
+        body.light textarea:focus,
+        body.light select:focus { border-color: var(--gold-bright); }
+        body.light .card,
+        body.light .frame-card,
+        body.light .todo-card,
+        body.light .mini-cal,
+        body.light .modal,
+        body.light .char-card,
+        body.light .term-card,
+        body.light .bubble { box-shadow: 0 2px 12px rgba(30, 64, 175, 0.08); }
+        /* ========== 亮色补全：去黑去金 ========== */
+        body.light .input,
+        body.light .search-input,
+        body.light .year-input,
+        body.light .todo-input,
+        body.light .comment-input,
+        body.light .feed-input,
+        body.light .chat-input,
+        body.light .pt-input,
+        body.light .modal input,
+        body.light .modal textarea,
+        body.light .modal select,
+        body.light .field .input { background: var(--bg); color: var(--text-primary); }
+        body.light .day-cell { background: var(--surface-hover); border-color: var(--line); }
+        body.light .relcanvas { background: var(--surface-hover); }
+        body.light .frame-card,
+        body.light .card,
+        body.light .todo-card,
+        body.light .mini-cal,
+        body.light .modal,
+        body.light .char-card,
+        body.light .term-card,
+        body.light .bubble,
+        body.light .event-card,
+        body.light .cal-card,
+        body.light .info-card { outline: 1px solid var(--line); outline-offset: 3px; }
+        body.light .topbar::after {
+            background: linear-gradient(90deg, var(--gold) 0%, rgba(30,64,175,0.5) 20%, rgba(30,64,175,0.15) 50%, rgba(30,64,175,0.5) 80%, var(--gold) 100%);
+        }
+        body.light .sidebar { background: var(--bg-elevated); border-image: linear-gradient(180deg, transparent 0%, rgba(30,64,175,0.5) 20%, rgba(30,64,175,0.5) 80%, transparent 100%) 1; }
+        body.light .status-dot { box-shadow: 0 0 12px rgba(37,99,235,0.5); animation: pulseLight 2s infinite; }
+        /* ========== 亮色统一补丁 ========== */
+        body.light .header h1,
+        body.light .page-heading h2 { color: var(--gold); }
+        body.light .page-heading h2 { text-shadow: none; }
+        body.light .mc-chip { border-color: var(--line); background: var(--surface-hover); }
+        .theme-toggle, .mc-theme { white-space: nowrap; }
+        body.light .delbar { background: var(--surface); }
+        /* ========== 侧边栏固定视口高度 + 主题滚动条 ========== */
+        .sidebar { height: 100vh; min-height: 100vh; overflow-y: auto; }
+        ::-webkit-scrollbar { width: 8px; height: 8px; }
+        ::-webkit-scrollbar-track { background: transparent; }
+        ::-webkit-scrollbar-thumb { background: var(--gold-dim); border-radius: 4px; }
+        ::-webkit-scrollbar-thumb:hover { background: var(--gold-mid); }
+        * { scrollbar-width: thin; scrollbar-color: var(--gold-dim) transparent; }
+        @keyframes pulseLight {
+            0%, 100% { opacity: 1; box-shadow: 0 0 12px rgba(37,99,235,0.5); }
+            50% { opacity: 0.4; box-shadow: 0 0 4px rgba(37,99,235,0.15); }
+        }
+    </style>
+</head>
+<body>
+
+    <!-- ========== 无 Spherse 环境降级层（localStorage 编辑 + 导出/导入） ========== -->
+    <script src="../../forum/standalone.js"></script>
+
+    <!-- ========== 侧边栏 ========== -->
+    <aside class="sidebar">
+        <div class="sidebar-brand">
+            <h1>沙漠之歌</h1>
+            <span>The Poetry of Desert</span>
+            <div class="sb-brand-v">沙漠之歌·导航栏</div>
+            <button class="sb-toggle" onclick="toggleSidebar()" title="折叠/展开侧边栏">❮</button>
+        </div>
+        <div class="sidebar-section">导航</div>
+        <ul class="sidebar-nav">
+            <li><a href="../开始页.html"><span class="nav-num">I</span>欢迎</a></li>
+            <li>
+                <a href="#" class="nav-toggle" onclick="toggleNav(event, this)"><span class="nav-num">II</span>功能模块<span class="nav-arrow">▸</span></a>
+                <ul class="nav-sub">
+                    <li><a href="../功能模块/酒馆.html"><span class="nav-dot"></span>酒馆</a></li>
+                    <li><a href="../功能模块/日历.html"><span class="nav-dot"></span>日历</a></li>
+                </ul>
+            </li>
+            <li>
+                <a href="#" class="nav-toggle open" onclick="toggleNav(event, this)"><span class="nav-num">III</span>设定资料<span class="nav-arrow">▸</span></a>
+                <ul class="nav-sub open">
+                    <li><a href="势力与阵营.html" class="active"><span class="nav-dot"></span>势力与阵营</a></li>
+                    <li><a href="历史事件.html"><span class="nav-dot"></span>历史事件</a></li>
+                    <li><a href="地理总览.html"><span class="nav-dot"></span>地理总览</a></li>
+                    <li><a href="术语库.html"><span class="nav-dot"></span>术语库</a></li>
+                    <li><a href="角色档案库.html"><span class="nav-dot"></span>角色档案库</a></li>
+                </ul>
+            </li>
+        </ul>
+        <div class="sidebar-footer">v 0.2.0 · 势力与阵营</div>
+
+        <div class="theme-toggle" onclick="toggleTheme()" title="切换亮色 / 暗色主题">
+            <span class="tt-icon">🌙</span>
+            <span class="tt-text">暗色</span>
+        </div>
+    </aside>
+
+    <!-- ========== 主区域 ========== -->
+    <main class="main">
+        <div class="topbar">
+            <div class="breadcrumb">
+                工作台 <span class="separator">❖</span> 设定资料 <span class="separator">❖</span> <span class="current">势力与阵营</span>
+            </div>
+            <div class="topbar-status">
+                <span class="status-dot"></span>
+                <span>系统正常</span>
+                <span style="color:var(--gold-dim);">|</span>
+                <span>星陨 2000 a.s.</span>
+                <span class="data-tools"></span>
+            </div>
+        </div>
+
+        <div class="page">
+            <div class="header">
+                <h1>势力与阵营</h1>
+                <div class="sub">三区布局 · 树形层级 + 详情 + 关系网</div>
+            </div>
+
+            <div class="triple-layout">
+                <!-- 左侧：树形列表 -->
+                <div class="card">
+                    <div class="card-title">势力树</div>
+                    <ul class="tree-list" id="treeList"><div style="padding:10px 0;font-size:12px;color:var(--text-faint);">加载中…</div></ul>
+                </div>
+
+                <!-- 中间：详情面板 -->
+                <div class="card">
+                    <div class="card-title" id="detailTitle">势力总览</div>
+                    <div id="detailBody"><div style="padding:10px 0;font-size:12px;color:var(--text-faint);">加载中…</div></div>
+                </div>
+
+                <!-- 右侧：关系图 -->
+                <div class="card">
+                    <div class="card-title">关系网</div>
+                    <div class="graph-container" id="graphContainer"></div>
+                    <div class="graph-hint">点击节点跳转 · 线色代表关系类型 · 虚线为渗透</div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <!-- 编辑弹窗 -->
+    <div class="modal-overlay" id="editorWrap" onclick="if(event.target===this)closeEditor()">
+        <div class="modal">
+            <div class="modal-head">
+                <div class="modal-title" id="editorTitle"></div>
+                <button class="modal-close" onclick="closeEditor()">✕</button>
+            </div>
+            <div id="editorFields"></div>
+            <div class="modal-btns">
+                <button class="btn btn-sm" onclick="closeEditor()">取消</button>
+                <button class="btn btn-primary btn-sm" id="editorSave">保存</button>
+            </div>
+            <div id="editorTip" style="text-align:center; margin-top:8px; font-size:11px; color:var(--text-faint);"></div>
+        </div>
+    </div>
+
+    <!-- 确认弹窗 -->
+    <div class="modal-overlay" id="confirmWrap" onclick="if(event.target===this)closeConfirm()">
+        <div class="modal" style="max-width:380px;">
+            <div class="modal-head">
+                <div class="modal-title">确认操作</div>
+                <button class="modal-close" onclick="closeConfirm()">✕</button>
+            </div>
+            <p style="font-size:13px;color:var(--text-secondary);line-height:1.7;" id="confirmMsg"></p>
+            <div class="modal-btns">
+                <button class="btn btn-sm" onclick="closeConfirm()">取消</button>
+                <button class="btn btn-sm" id="confirmOk" style="border-color:rgba(158,59,52,0.6);color:#c46b63;">删除</button>
+            </div>
+        </div>
+    </div>
+
+<script>
+// ========== 侧边栏分组展开/收起 ==========
+function toggleNav(event, el) {
+    if (event) event.preventDefault();
+    el.classList.toggle('open');
+    const sub = el.nextElementSibling;
+    if (sub) sub.classList.toggle('open');
+}
+
+// ========== 侧边栏折叠 ==========
+function toggleSidebar() {
+    const sb = document.querySelector('.sidebar');
+    const collapsed = sb.classList.toggle('collapsed');
+    const btn = document.querySelector('.sb-toggle');
+    if (btn) btn.textContent = collapsed ? '❯' : '❮';
+    try { localStorage.setItem('smq_sidebar_collapsed', collapsed ? '1' : '0'); } catch (e) {}
+}
+(function initSidebar() {
+    const sb = document.querySelector('.sidebar');
+    const btn = document.querySelector('.sb-toggle');
+    if (!sb || !btn) return;
+    try {
+        if (localStorage.getItem('smq_sidebar_collapsed') === '1') {
+            sb.classList.add('collapsed');
+            btn.textContent = '❯';
+        }
+    } catch (e) {}
+})();
+
+// ========== 主题切换（暗色 / 亮色） ==========
+function applyTheme(light) {
+    document.body.classList.toggle('light', light);
+    document.querySelectorAll('.theme-toggle, .mc-theme').forEach(btn => {
+        const icon = btn.querySelector('.tt-icon');
+        const text = btn.querySelector('.tt-text');
+        if (icon) icon.textContent = light ? '☀' : '🌙';
+        if (text) text.textContent = light ? '亮色' : '暗色';
+    });
+}
+function toggleTheme() {
+    const light = !document.body.classList.contains('light');
+    applyTheme(light);
+    try { localStorage.setItem('smq_theme', light ? 'light' : 'dark'); } catch (e) {}
+}
+(function initTheme() {
+    try {
+        if (localStorage.getItem('smq_theme') === 'light') applyTheme(true);
+    } catch (e) {}
+})();
+
+// ========== 数据 ==========
+const DATA = "forum/势力与阵营.data.json";
+// 兜底数据（与 forum/势力与阵营.data.json 同步；fetch 成功时以外部数据为准）
+const FALLBACK_ROOTS = [
+    { "id": "alliance", "name": "三国联盟", "desc": "由瑞蒂安、利夫兹、幻沙帝国组成，星陨 1501 年以维持大陆和平为名义成立。无常设行政机构、无独立武力，本质是条约框架。", "children": [
+        { "id": "retian", "name": "瑞蒂安王国", "desc": "国王握最终决策权与军事统帅权，受元老院双重制衡。", "children": [
+            { "id": "noble", "name": "元老院 · 贵族派", "desc": "世袭贵族，代表传统土地与军事力量。" },
+            { "id": "scholar", "name": "元老院 · 学术派", "desc": "魔法师、学者与技术官僚，代表新兴学术与技术力量。" }
+        ] },
+        { "id": "lives", "name": "利夫兹王国", "desc": "年幼女王为精神核心，实际政务由摄政王与枢密院执掌。", "children": [
+            { "id": "privy", "name": "枢密院", "desc": "由大贵族、研究院高层、皇家骑士团团长等实权人物组成，内部存在保守派/激进派分歧。" },
+            { "id": "royal-knights", "name": "皇家骑士团", "desc": "团长安德里·德·瓦兰特。" }
+        ] },
+        { "id": "huansha", "name": "幻沙帝国", "desc": "皇帝经占卜、试炼与议会推举产生，权威来自对创世神意志与神秘知识的解读。", "children": [
+            { "id": "imperial-council", "name": "帝国议会", "desc": "由各大绿洲领主、部落首领和大祭司组成，负责推举君主与审议重大决策。" },
+            { "id": "high-priest", "name": "大祭司", "desc": "图特，辅佐皇帝解读神意。" }
+        ] },
+        { "id": "helai", "name": "第二区域 · 何莱", "desc": "瑞蒂安与利夫兹各划一部分国土合并而成的自由区，三国联盟与魔法师协会共同治理；重大事项由联合议会（三国代表+协会代表）协调。", "children": [
+            { "id": "dike", "name": "珑区 · 狄刻", "desc": "由法协高级成员德拉贡管理。" },
+            { "id": "eunomia", "name": "灵区 · 欧诺弥亚", "desc": "由法协皇家级玛格丽特·卡斯特利亚管理。" },
+            { "id": "eirene", "name": "人类区 · 厄瑞涅", "desc": "由法协高级成员花稚生管理。" }
+        ] }
+    ] },
+    { "id": "church", "name": "创世神教", "desc": "以信仰创世神洛丽玛丝为核心，势力覆盖全大陆，最具影响力的精神权力机构。总部设于第一区域，教皇查理·加百列为最高领袖。纹章为「玫瑰圣十字架」。", "doctrine": [
+        "起初，神行于虚空，见此地荒芜，便以伟力分开汪洋，以慈悲塑造万物。",
+        "神离去时，落下了最后一滴慈悲之泪。这滴泪划破天际，坠入平原，化作空流弥漫于世。",
+        "今乃是试炼的世代。教会便是神留在人间的权杖，教皇便是神之音的传颂者。凡忠诚于教会、恪守戒律、在这浑浊的乱世中保持纯净者，当末世终结的号角吹响，神必将重临大地。"
+    ], "children": [
+        { "id": "pope", "name": "教皇", "desc": "查理·加百列，最高领袖。" },
+        { "id": "inspection", "name": "督查司", "desc": "教皇直属，负责监察与情报。\"教皇之眼\"：胡音、慕灵。" },
+        { "id": "rose", "name": "玫瑰十字会（\"花\"）", "desc": "负责传教与基层教区管理，由教皇直接管控。总部设于第一区域白塔，分部遍布大陆。成员含学院校医拉法叶尔。" },
+        { "id": "templar", "name": "圣殿骑士团（\"叶\"）", "desc": "负责武装护卫与治安，团长撒迦利亚。总部设于第一区域北部，分部在瑞蒂安境内。下设圣殿骑士十二席。" },
+        { "id": "mercenary", "name": "雇佣兵团（\"枝\"）", "desc": "负责灰色事务处理，团长泰伦。总部在利夫兹境内，分部在第一区域。" },
+        { "id": "orbis", "name": "第一区域 · 奥比斯（教会直辖特区）", "desc": "教皇加百列常驻；适用教会教规，无独立法律体系，不设常备军。", "children": [
+            { "id": "whitetower", "name": "白塔（玫瑰十字会高层）", "desc": "负责教义解释和各国教区管理。" },
+            { "id": "templar-hq", "name": "圣殿骑士团总部", "desc": "设于区域北部，负责防务与内部治安。" },
+            { "id": "judge", "name": "裁判官", "desc": "教皇任命的裁判官审理纠纷，重案上报督查司或教皇。" }
+        ] }
+    ] },
+    { "id": "guild", "name": "魔法师协会", "desc": "以\"研究与监管魔法技术\"为名义，实际掌握晶体、传送阵、魔法评级等核心体系。总部在瑞蒂安境内，各国设有分会。徽章：菱形蓝水晶配金边。", "children": [
+        { "id": "president", "name": "会长", "desc": "安东尼奥（第二任）。第一任会长在暮色战争后从废墟中带起协会，后被安东尼奥取代。" },
+        { "id": "royal-tier", "name": "皇家级会员（固定 6 人）", "desc": "玛格丽特·卡斯特利亚、莱夫利、沃特·梅林、埃弗蒙德、克里斯托夫、花立安。前三位与后三位存在实力分水岭。" },
+        { "id": "senior-tier", "name": "高级会员", "desc": "如花稚生、德拉贡，多兼任第二区域各区管理者。" },
+        { "id": "full-tier", "name": "正式会员（魔法师）", "desc": "通过 7 级测试证明书 + 5 晶体 + 推荐信。" },
+        { "id": "mage-rank", "name": "魔法士（评级体系）", "desc": "共 11 级评级测试；拥有王室血统者不能加入协会。" }
+    ] },
+    { "id": "sencity", "name": "森之城", "desc": "以树长老为首的各族长者会议决策；无成文法律、无常设军队，管理偏向调解与共识。", "children": [
+        { "id": "elder-council", "name": "长老会", "desc": "树长老奥里克主持，各族长者参与。" }
+    ] },
+    { "id": "meher", "name": "梅赫尔", "tier": "L2", "desc": "由三位神共同统治的异空间小岛组织。大陆人不知道它的存在（密特拉以\"救赎之地\"的模糊传说间接知晓其投影）。", "children": [
+        { "id": "michael", "name": "米迦勒（三神之主）", "desc": "负责秩序和教义，承担主要治理职责。最终目的：\"修正\"世界。" },
+        { "id": "nidhogg", "name": "尼德霍格", "desc": "负责战斗训练和警戒。" },
+        { "id": "jormungand", "name": "耶梦加得", "desc": "负责知识传承和居民的精神抚慰。" },
+        { "id": "mithra", "name": "密特拉（\"救赎之地\"信仰）", "tier": "L1", "desc": "相信\"救赎之地\"存在的非正统信仰组织，暮色战争期间自发形成；教会定性为\"无害但愚昧的边缘异端\"。", "children": [
+            { "id": "nightwatch", "name": "守夜人", "desc": "被选中的神眷，在梦境中接收\"咏梦者\"（耶梦加得）的低语，守护并传递信仰。" },
+            { "id": "guardian", "name": "守护者", "desc": "接受\"静默者\"（尼德霍格）赐福的神眷，为受迫害信徒提供武力庇护。" }
+        ] }
+    ] }
+];
+
+const $ = s => document.querySelector(s);
+let roots = [];
+let selectedId = null;
+let expandedIds = new Set(['alliance', 'church', 'guild', 'sencity', 'meher']);
+let charsData = { chars: [], avatars: {} };
+
+const GROUPS = { alliance: "alliance", church: "church", guild: "guild", sencity: "forest", meher: "meher" };
+const COLORS = { alliance: "#a88955", church: "#9e3b34", guild: "#3f5f7c", sencity: "#5f8f7c", meher: "#6b4a7a" };
+const ELEM_COLOR = { "土": "#8a6d3b", "火": "#c14b3a", "水": "#3f7c9c", "风": "#5f8f7c", "天": "#a8873a", "全": "#6b4a7a" };
+// 势力间关系（依据世界观设定）
+const RELATIONS = [
+    { from: "guild", to: "alliance", type: "合作" },
+    { from: "church", to: "alliance", type: "合作" },
+    { from: "church", to: "guild", type: "竞争" },
+    { from: "meher", to: "church", type: "渗透" },
+    { from: "meher", to: "guild", type: "渗透" },
+    { from: "sencity", to: "alliance", type: "中立" },
+    { from: "church", to: "sencity", type: "中立" }
+];
+const relationColors = { '合作': '#a88955', '竞争': '#9e3b34', '渗透': '#6b4a7a', '中立': '#5f8f7c' };
+
+function esc(s) { return String(s ?? "").replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
+
+async function load() {
+    try {
+        const json = await fetch("../../forum/势力与阵营.data.json").then(r => r.json());
+        roots = (json && json.overview && json.overview.length) ? json.overview : JSON.parse(JSON.stringify(FALLBACK_ROOTS));
+    } catch {
+        roots = JSON.parse(JSON.stringify(FALLBACK_ROOTS));
+    }
+    // 无 Spherse 环境：应用浏览器本地编辑的数据
+    try { const local = SMQ.getLocal(DATA, 'overview'); if (local && local.length) roots = local; } catch (e) {}
+    try { charsData = await fetch("../../forum/角色档案库.data.json").then(r => r.json()); }
+    catch { charsData = { chars: [], avatars: {} }; }
+    selectedId = null;
+    renderTree(); renderDetail(); renderGraph();
+}
+
+function findNode(arr, id) {
+    for (const n of arr) {
+        if (n.id === id) return n;
+        if (n.children) { const r = findNode(n.children, id); if (r) return r; }
+    }
+    return null;
+}
+
+function isExpanded(id) { return expandedIds.has(id); }
+function toggleExpand(id) {
+    if (expandedIds.has(id)) expandedIds.delete(id);
+    else expandedIds.add(id);
+    renderTree();
+}
+
+// ========== 左侧势力树 ==========
+function renderTree() {
+    const treeEl = document.getElementById('treeList');
+    function renderNodes(nodes, depth) {
+        return nodes.map(n => {
+            const hasChildren = n.children && n.children.length > 0;
+            const expanded = isExpanded(n.id);
+            const active = selectedId === n.id;
+            return `
+                <li>
+                    <div class="tree-node ${active ? 'active' : ''}" style="padding-left:${8 + depth * 14}px;" onclick="selectNode('${n.id}')">
+                        ${hasChildren ? `<span class="arrow ${expanded ? 'open' : ''}" onclick="event.stopPropagation(); toggleExpand('${n.id}')">▶</span>` : '<span class="arrow"></span>'}
+                        <span class="node-name">${esc(n.name)}</span>
+                        ${n.tier ? `<span class="node-tier">${esc(n.tier)}</span>` : ''}
+                    </div>
+                    ${hasChildren ? `<ul class="tree-children ${expanded ? 'open' : ''}">${renderNodes(n.children, depth + 1)}</ul>` : ''}
+                </li>`;
+        }).join('');
+    }
+    treeEl.innerHTML = roots.length ? renderNodes(roots, 0) : '<div style="padding:10px 0;font-size:12px;color:var(--text-faint);">暂无势力数据</div>';
+}
+
+function selectNode(id) {
+    selectedId = id;
+    renderTree(); renderDetail(); renderGraph();
+}
+
+// ========== 中间详情 ==========
+// avatars 里存的是项目根相对路径（如 avatars/islant.png），页面位于 工作台/设定资料/，
+// 需转换为页面可用的 URL；base64 / http / blob 原样使用
+function avatarUrl(v) {
+    if (!v) return null;
+    if (/^(data:|https?:|blob:)/.test(v)) return v;
+    if (v.startsWith('avatars/')) return '../../forum/' + v;
+    if (v.startsWith('forum/')) return '../../' + v;
+    return v;
+}
+
+// ========== 角色跳转（openFile 用项目根相对路径，经 sessionStorage 传递角色 id） ==========
+function openChar(id) {
+    try { sessionStorage.setItem('smq_pending_char', id); } catch (e) {}
+    if (window.spherse && spherse.openFile) spherse.openFile('工作台/设定资料/角色档案库.html');
+    else if (window.location) window.location.href = '角色档案库.html';
+}
+
+function memberHTML(node) {
+    const gid = GROUPS[node.id];
+    if (!gid) return '<div class="value muted">—</div>';
+    const members = (charsData.chars || []).filter(c => c.group === gid);
+    if (!members.length) return '<div class="value muted">暂未收录该势力角色</div>';
+    return '<div>' + members.map(c => {
+        const url = avatarUrl((charsData.avatars || {})[c.id]);
+        const col = ELEM_COLOR[(c.element || "").split(/[、,，]/)[0]] || "#8d7f6e";
+        const style = url ? `background:${col};background-image:url('${url}');background-size:cover;background-position:center;` : `background:${col};`;
+        return `<span class="member-chip" onclick="openChar('${c.id}')" title="查看角色档案">
+            <span class="mini-avatar" style="${style}">${url ? "" : esc((c.name || "?").slice(0, 1))}</span>
+            ${esc(c.name)}
+        </span>`;
+    }).join('') + '</div>';
+}
+
+function renderDetail() {
+    const node = selectedId ? findNode(roots, selectedId) : null;
+    const titleEl = document.getElementById('detailTitle');
+    const bodyEl = document.getElementById('detailBody');
+
+    if (!node) {
+        titleEl.textContent = '势力总览';
+        bodyEl.innerHTML = `
+            <div class="detail-section">
+                <div class="value muted">点击左侧树形节点查看势力详情。关系网中展示势力之间的合作、竞争、渗透与中立关系。</div>
+            </div>
+            <div class="detail-section">
+                <div class="label">势力数量</div>
+                <div class="value">共 ${roots.length} 个主要势力</div>
+            </div>`;
+        return;
+    }
+
+    const doctrineHTML = node.doctrine && node.doctrine.length
+        ? `<div class="detail-section"><div class="label">教义</div><div class="doctrine-block">${node.doctrine.map(d => `<p>“${esc(d)}”</p>`).join('')}</div></div>`
+        : '';
+
+    const childrenHTML = node.children && node.children.length
+        ? `<div class="detail-section">
+            <div class="label">下设机构 · ${node.children.length} 项</div>
+            <div>${node.children.map(c => `<span class="sub-node-chip" onclick="selectNode('${c.id}')">${esc(c.name)}${c.children && c.children.length ? ' ▸' : ''}</span>`).join('')}</div>
+          </div>`
+        : '<div class="detail-section"><div class="label">下设机构</div><div class="value muted">无</div></div>';
+
+    const isTop = roots.some(r => r.id === node.id);
+
+    titleEl.textContent = node.name;
+    bodyEl.innerHTML = `
+        <div class="detail-section">
+            <div class="label">分级</div>
+            <div class="value">${node.tier ? esc(node.tier) : '普通层级'}</div>
+        </div>
+        <div class="detail-section">
+            <div class="label">描述</div>
+            <div class="value muted">${esc(node.desc || '—')}</div>
+        </div>
+        ${childrenHTML}
+        ${doctrineHTML}
+        <div class="detail-section">
+            <div class="label">关联角色</div>
+            ${isTop ? memberHTML(node) : '<div class="value muted">仅顶层势力显示关联角色</div>'}
+        </div>
+        <div class="detail-actions">
+            <button class="btn btn-sm" onclick="editNode('${node.id}')">✏️ 编辑本条</button>
+            <button class="btn btn-sm" onclick="addChild('${node.id}')">➕ 新增子项</button>
+            <button class="btn btn-sm" style="border-color:rgba(158,59,52,0.6);color:#c46b63;" onclick="deleteNode('${node.id}')">🗑️ 删除本条</button>
+        </div>`;
+}
+
+// ========== 右侧关系图 ==========
+function renderGraph() {
+    const container = document.getElementById('graphContainer');
+    const nodes = roots;
+    const nodeIds = new Set(nodes.map(n => n.id));
+    const validRelations = RELATIONS.filter(r => nodeIds.has(r.from) && nodeIds.has(r.to));
+    const relatedIds = new Set();
+    if (selectedId) {
+        relatedIds.add(selectedId);
+        validRelations.forEach(r => {
+            if (r.from === selectedId) relatedIds.add(r.to);
+            if (r.to === selectedId) relatedIds.add(r.from);
+        });
+    }
+
+    const W = 320, H = 440;
+    const cx = W / 2, cy = H / 2, radius = 122;
+    const positions = {};
+    nodes.forEach((n, i) => {
+        const angle = (Math.PI * 2 * i) / nodes.length - Math.PI / 2;
+        positions[n.id] = { x: cx + Math.cos(angle) * radius, y: cy + Math.sin(angle) * radius };
+    });
+
+    let svg = `<svg viewBox="0 0 ${W} ${H}">`;
+
+    validRelations.forEach(r => {
+        const from = positions[r.from], to = positions[r.to];
+        if (!from || !to) return;
+        const color = relationColors[r.type] || '#8d7f6e';
+        const isHighlighted = selectedId && (r.from === selectedId || r.to === selectedId);
+        const isDimmed = selectedId && !isHighlighted;
+        svg += `<line class="graph-line" x1="${from.x}" y1="${from.y}" x2="${to.x}" y2="${to.y}" stroke="${color}" stroke-width="${isHighlighted ? 3 : 1.5}" opacity="${isDimmed ? 0.2 : 0.7}" stroke-dasharray="${r.type === '渗透' ? '5,5' : 'none'}"/>`;
+        if (!isDimmed) {
+            const mx = (from.x + to.x) / 2, my = (from.y + to.y) / 2;
+            svg += `<text x="${mx}" y="${my - 6}" fill="${color}" font-size="10" text-anchor="middle">${r.type}</text>`;
+        }
+    });
+
+    nodes.forEach(n => {
+        const pos = positions[n.id];
+        const color = COLORS[n.id] || '#8d7f6e';
+        const isRelated = selectedId ? relatedIds.has(n.id) : true;
+        const isSelected = selectedId === n.id;
+        const r = isSelected ? 40 : 31;
+        const dimmed = selectedId && !isRelated;
+        svg += `<g class="graph-node" data-id="${n.id}" onclick="selectNode('${n.id}')" style="opacity:${dimmed ? 0.3 : 1};">
+            <circle cx="${pos.x}" cy="${pos.y}" r="${r}" fill="${color}" stroke="${isSelected ? 'var(--gold-bright)' : 'var(--gold)'}" stroke-width="${isSelected ? 3 : 2}"/>
+            ${n.id === 'meher' ? `<circle cx="${pos.x}" cy="${pos.y}" r="${r + 7}" fill="none" stroke="${color}" stroke-width="1.5" stroke-dasharray="4,4" opacity="0.7"/>` : ''}
+            <text x="${pos.x}" y="${pos.y + r + 16}" font-size="13">${esc(n.name.length > 5 ? n.name.slice(0, 5) + '…' : n.name)}</text>
+        </g>`;
+    });
+
+    svg += '</svg>';
+    container.innerHTML = svg;
+}
+
+// ========== 编辑 / 新增 ==========
+function openEditor(title, list, onSave) {
+    document.getElementById("editorTitle").textContent = title;
+    document.getElementById("editorFields").innerHTML = list.map(f =>
+        f.type === "textarea"
+            ? `<label>${esc(f.label)}</label><textarea id="ef-${esc(f.key)}" rows="${f.rows || 3}">${esc(f.value ?? "")}</textarea>`
+            : `<label>${esc(f.label)}</label><input id="ef-${esc(f.key)}" value="${esc(f.value ?? "")}">`).join("");
+    document.getElementById("editorSave").onclick = () => {
+        const out = {};
+        list.forEach(f => { out[f.key] = document.getElementById("ef-" + f.key).value.trim(); });
+        onSave(out);
+    };
+    document.getElementById("editorTip").textContent = "";
+    document.getElementById("editorWrap").classList.add("open");
+}
+function closeEditor() { document.getElementById("editorWrap").classList.remove("open"); }
+
+function editNode(id) {
+    const node = findNode(roots, id);
+    if (!node) return;
+    openEditor("编辑 · " + node.name, [
+        { key: "name", label: "名称", value: node.name },
+        { key: "desc", label: "描述", value: node.desc, type: "textarea", rows: 3 },
+        { key: "tier", label: "分级（L0 / L1 / L2，留空则无）", value: node.tier || "" }
+    ], out => {
+        node.name = out.name || node.name;
+        node.desc = out.desc;
+        node.tier = out.tier || undefined;
+        saveRoot();
+    });
+}
+
+function addChild(id) {
+    const node = findNode(roots, id);
+    if (!node) return;
+    openEditor("在「" + node.name + "」下新增子项", [
+        { key: "name", label: "名称", value: "" },
+        { key: "desc", label: "描述", value: "", type: "textarea", rows: 2 },
+        { key: "tier", label: "分级（L0 / L1 / L2，留空则无）", value: "" }
+    ], out => {
+        if (!out.name) { document.getElementById("editorTip").textContent = "名称不能为空"; return; }
+        node.children = node.children || [];
+        node.children.push({ id: "n" + Date.now(), name: out.name, desc: out.desc, tier: out.tier || undefined });
+        saveRoot();
+    });
+}
+
+// ========== 删除节点 ==========
+function findParent(arr, id) {
+    for (const n of arr) {
+        if (n.children && n.children.some(c => c.id === id)) return n;
+        if (n.children) { const r = findParent(n.children, id); if (r) return r; }
+    }
+    return null;
+}
+let confirmCb = null;
+function showConfirm(msg, onOk) {
+    document.getElementById("confirmMsg").textContent = msg;
+    confirmCb = onOk;
+    document.getElementById("confirmWrap").classList.add("open");
+}
+function closeConfirm() { document.getElementById("confirmWrap").classList.remove("open"); confirmCb = null; }
+document.getElementById("confirmOk").onclick = () => {
+    const cb = confirmCb; closeConfirm(); if (cb) cb();
+};
+function deleteNode(id) {
+    const node = findNode(roots, id);
+    if (!node) return;
+    const parent = findParent(roots, id);
+    showConfirm("确定删除「" + node.name + "」？其全部下设机构将一并删除，此操作不可撤销。", async () => {
+        if (parent) {
+            parent.children = (parent.children || []).filter(c => c.id !== id);
+        } else {
+            roots = roots.filter(r => r.id !== id);
+        }
+        selectedId = null;
+        await saveRoot();
+    });
+}
+
+async function saveRoot() {
+    try {
+        const res = await SMQ.save(DATA, "overview", roots);
+        closeEditor();
+        renderTree(); renderDetail(); renderGraph();
+        if (res.mode === 'local') SMQ.toast('已保存到浏览器本地（可用顶栏「导出数据」同步到电脑）');
+    } catch {
+        document.getElementById("editorTip").textContent = "保存失败，请重试";
+    }
+}
+
+// ========== 数据更新监听 ==========
+if (window.spherse && spherse.events) {
+    spherse.events.on("file:update", { path: "../../forum/势力与阵营.data.json" }, load);
+}
+
+// ========== 启动 ==========
+load();
+</script>
+</body>
+</html>

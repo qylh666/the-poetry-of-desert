@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<title>尤克特拉综合学园论坛</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: "PingFang SC", "Microsoft YaHei", "Noto Sans CJK SC", sans-serif; background: #fff5f5; color: #1f1f1f; padding: 16px; }
+  .wrap { max-width: 540px; margin: 0 auto; }
+  .head { background: #c8102e; color: #fff; border-radius: 12px 12px 0 0; padding: 14px 16px; display: flex; justify-content: space-between; align-items: baseline; }
+  .head b { font-size: 17px; letter-spacing: 1px; }
+  .head span { font-size: 11px; opacity: .85; }
+  .tags { background: #fff; padding: 10px 16px 0; display: flex; gap: 6px; flex-wrap: wrap; border-left: 1px solid #e2c0c3; border-right: 1px solid #e2c0c3; }
+  .tag { font-size: 11px; padding: 2px 10px; border-radius: 999px; background: #fdecee; color: #c8102e; }
+  .list { background: #fff; border-left: 1px solid #e2c0c3; border-right: 1px solid #e2c0c3; border-bottom: 1px solid #e2c0c3; border-radius: 0 0 12px 12px; }
+  .post { padding: 12px 16px; border-top: 1px solid #f6dde0; }
+  .post:first-child { border-top: none; }
+  .meta { font-size: 12px; color: #8c7a7c; margin-bottom: 4px; }
+  .meta b { color: #c8102e; }
+  .badge-anon { font-size: 10px; color: #c8102e; border: 1px solid #e3a9ae; border-radius: 4px; padding: 0 4px; margin-left: 4px; }
+  .title { font-size: 14px; font-weight: 700; color: #1f1f1f; margin-bottom: 3px; }
+  .content { font-size: 13px; color: #333; line-height: 1.55; }
+  .foot { margin-top: 7px; font-size: 11px; color: #a08c8e; display: flex; gap: 14px; }
+  .like { cursor: pointer; user-select: none; }
+  .like:hover { color: #c8102e; }
+  .hint { text-align: center; font-size: 11px; color: #c08a8e; padding: 10px; }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="head"><b>尤克特拉综合学园论坛</b><span id="sub">何莱 · 奥比斯 · 初中部</span></div>
+  <div class="tags">
+    <span class="tag">公告</span><span class="tag">闲聊</span><span class="tag">求助</span><span class="tag">吐槽</span><span class="tag">社团</span><span class="tag">匿名</span>
+  </div>
+  <div class="list" id="posts"><div class="post"><div class="content">帖子加载中…</div></div></div>
+  <div class="hint">帖子由剧场小助手随剧情更新 · 数据变更自动刷新</div>
+</div>
+<script>
+  async function render() {
+    const el = document.getElementById("posts");
+    try {
+      const data = await fetch("./尤克特拉综合学园论坛.data.json").then(r => r.json());
+      document.getElementById("sub").textContent = data.subtitle || "";
+      el.innerHTML = data.posts.map(p => `
+        <div class="post">
+          <div class="meta"><b>${p.user}</b>${p.tag === "匿名" ? '<span class="badge-anon">匿名</span>' : ""} · ${p.tag} · ${p.time}</div>
+          <div class="title">${p.title}</div>
+          <div class="content">${p.content}</div>
+          <div class="foot">
+            <span class="like" data-i="${p.id}">👍 <em>${p.likes}</em></span>
+            <span>💬 ${p.replies}</span>
+          </div>
+        </div>
+      `).join("");
+      el.querySelectorAll(".like").forEach(btn => {
+        btn.addEventListener("click", () => {
+          const n = btn.querySelector("em");
+          n.textContent = Number(n.textContent) + 1;
+          btn.style.color = "#c8102e";
+        });
+      });
+    } catch (e) {
+      el.innerHTML = `<div class="post"><div class="content">帖子加载失败：${e.message}</div></div>`;
+    }
+  }
+  if (window.spherse && spherse.events) {
+    spherse.events.on("file:update", { path: "./尤克特拉综合学园论坛.data.json" }, render);
+  }
+  render();
+</script>
+</body>
+</html>

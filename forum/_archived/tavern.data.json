@@ -1,0 +1,32 @@
+{
+  "chars": [
+    { "name": "伊芙·艾德", "title": "旅行者", "tag": "t-sun", "element": "水" },
+    { "name": "阿斯", "title": "幻沙帝国太子", "tag": "t-alliance", "element": "风" },
+    { "name": "约芙蒂", "title": "幻沙帝国皇帝", "tag": "t-alliance", "element": "全" },
+    { "name": "图特", "title": "幻沙大祭司", "tag": "t-alliance", "element": "水" },
+    { "name": "伊斯兰特·伊德·瑞蒂安", "title": "瑞蒂安国王", "tag": "t-alliance", "element": "火" },
+    { "name": "艾萨克·格里芬", "title": "利夫兹摄政王", "tag": "t-alliance", "element": "风" },
+    { "name": "安妮·菲尔·利夫兹", "title": "利夫兹女王", "tag": "t-alliance", "element": "水" },
+    { "name": "加百列", "title": "创世神教教皇", "tag": "t-church", "element": "天" },
+    { "name": "玛提亚", "title": "圣殿十二席·第九席", "tag": "t-church", "element": "风" },
+    { "name": "雅各", "title": "圣殿十二席·第二席", "tag": "t-church", "element": "土" },
+    { "name": "七月·加德纳·爱德华", "title": "圣殿十二席·第七席", "tag": "t-church", "element": "水" },
+    { "name": "彼得·迈恩哈德·韦伯斯特", "title": "圣殿十二席·首席", "tag": "t-church", "element": "火" },
+    { "name": "慕灵", "title": "督查司·教皇之眼", "tag": "t-church", "element": "风" },
+    { "name": "胡音", "title": "督查司·教皇之眼", "tag": "t-church", "element": "风" },
+    { "name": "泰伦", "title": "教会雇佣兵团团长", "tag": "t-church", "element": "火" },
+    { "name": "玛格丽特·卡斯特利亚", "title": "法协皇家级", "tag": "t-guild", "element": "水" },
+    { "name": "沃特·梅林", "title": "法协皇家级", "tag": "t-guild", "element": "水" },
+    { "name": "埃弗蒙德", "title": "安玛斯特学院院长", "tag": "t-guild", "element": "土" },
+    { "name": "花稚生", "title": "法协高级成员", "tag": "t-guild", "element": "水" },
+    { "name": "格拉西亚·拉波拉斯", "title": "安玛斯特学院学生", "tag": "t-academy", "element": "水" },
+    { "name": "维帕尔·莫森", "title": "安玛斯特学院学生", "tag": "t-academy", "element": "火" },
+    { "name": "奥里克", "title": "森之城树长老", "tag": "t-forest", "element": "土" }
+  ],
+  "posts": [
+    { "id": 4, "char": "伊芙·艾德", "title": "旅行者", "tag": "t-sun", "element": "水", "text": "第一次来到大陆，晏海城比我想象中还要热闹——海风是咸的，街角煎鱼的香味能飘出三条巷子。想去看凯旋日的烟火会，有人同行吗？", "time": "凯旋之月 · 1 日 · 黄昏" },
+    { "id": 3, "char": "格拉西亚·拉波拉斯", "title": "安玛斯特学院学生", "tag": "t-academy", "element": "水", "text": "又在学院花园看见那三株芙罗花了。它们开得很好，好得不太对劲。我总觉得，有些花不该开在人为的土壤里。", "time": "凯旋之月 · 1 日 · 午后" },
+    { "id": 2, "char": "玛提亚", "title": "圣殿十二席·第九席", "tag": "t-church", "element": "风", "text": "哼哼～圣殿骑士团最近可真闲，闲到本小姐开始给广场的鸽子起名字了。对了，谁在希尼尔城？替我带一句话给团长：该请客了。", "time": "凯旋之月 · 2 日 · 清晨" },
+    { "id": 1, "char": "阿斯", "title": "幻沙帝国太子", "tag": "t-alliance", "element": "风", "text": "从绿洲都城溜出来透口气——凯旋日的烟火会要忙活一整月，我宁可去沙漠边缘看星星。有人知道幻沙夜市最好吃的摊子在哪吗？", "time": "凯旋之月 · 2 日 · 夜晚" }
+  ]
+}

@@ -1,0 +1,1116 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>历史事件 · 星陨纪年 · 沙漠之歌工作台</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,600;0,700;1,400&family=Inter:wght@300;400;500;600&family=Noto+Serif+SC:wght@400;600&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg: #100f0d;
+            --bg-elevated: #14171e;
+            --surface: #1c1a16;
+            --surface-hover: #24211b;
+            --gold: #c9a96a;
+            --gold-bright: #e8d5a4;
+            --gold-mid: #a88955;
+            --gold-dim: #6e5a3a;
+            --red: #9e3b34;
+            --purple: #6b4a7a;
+            --text-primary: #ede4d4;
+            --text-secondary: #b5a990;
+            --text-faint: #7a7263;
+            --font-display: 'Cormorant Garamond', 'Noto Serif SC', serif;
+            --font-body: 'Inter', 'Noto Sans SC', sans-serif;
+            --radius: 2px;
+            --transition: 0.35s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body {
+            background: var(--bg);
+            color: var(--text-primary);
+            font-family: var(--font-body);
+            min-height: 100vh;
+            display: flex;
+            position: relative;
+            overflow-x: hidden;
+            background-image:
+                radial-gradient(circle at 30% 110%, rgba(158,59,52,0.07) 0%, transparent 50%),
+                radial-gradient(circle at 80% -10%, rgba(201,169,106,0.08) 0%, transparent 40%);
+        }
+        body::before {
+            content: '';
+            position: fixed; top: 0; left: 0; right: 0; bottom: 0;
+            background-image:
+                repeating-linear-gradient(0deg, transparent, transparent 7px, rgba(201,169,106,0.015) 7px, rgba(201,169,106,0.015) 8px),
+                repeating-linear-gradient(90deg, transparent, transparent 7px, rgba(201,169,106,0.01) 7px, rgba(201,169,106,0.01) 8px);
+            pointer-events: none; z-index: 0;
+        }
+
+        /* ========== 侧边栏 ========== */
+        .sidebar {
+            width: 210px;
+            min-height: 100vh;
+            background: rgba(20, 23, 30, 0.97);
+            border-right: 2px solid transparent;
+            border-image: linear-gradient(180deg, transparent 0%, rgba(201,169,106,0.5) 20%, rgba(201,169,106,0.5) 80%, transparent 100%) 1;
+            position: sticky;
+            top: 0;
+            left: 0;
+            z-index: 10;
+            display: flex;
+            flex-direction: column;
+            flex-shrink: 0;
+            backdrop-filter: blur(20px);
+        }
+
+        .sidebar-brand {
+            text-align: center;
+            padding: 24px 18px 18px;
+            position: relative;
+            margin-bottom: 6px;
+        }
+
+        .sidebar-brand::after {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 65%;
+            height: 1px;
+            background: linear-gradient(90deg, transparent, var(--gold-dim), var(--gold), var(--gold-dim), transparent);
+        }
+
+        .sidebar-brand h1 {
+            font-family: var(--font-display);
+            font-size: 22px;
+            font-weight: 700;
+            color: var(--text-primary);
+            letter-spacing: 0.08em;
+            text-shadow: 0 0 30px rgba(201,169,106,0.4);
+        }
+
+        .sidebar-brand span {
+            font-family: var(--font-body);
+            font-size: 9px;
+            color: var(--gold-dim);
+            letter-spacing: 0.5em;
+            text-transform: uppercase;
+            display: block;
+            margin-top: 5px;
+        }
+
+        .sidebar-section {
+            font-family: var(--font-body);
+            font-size: 10px;
+            color: var(--gold-mid);
+            letter-spacing: 0.28em;
+            text-transform: uppercase;
+            padding: 16px 22px 8px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .sidebar-section::after {
+            content: '';
+            flex: 1;
+            height: 1px;
+            background: linear-gradient(90deg, rgba(201,169,106,0.4), transparent);
+        }
+
+        .sidebar-nav {
+            list-style: none;
+            padding: 0;
+        }
+
+        .sidebar-nav li { margin: 1px 0; }
+
+        .sidebar-nav a {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 9px 22px;
+            color: var(--text-secondary);
+            font-family: var(--font-body);
+            font-size: 13px;
+            font-weight: 400;
+            text-decoration: none;
+            letter-spacing: 0.04em;
+            border-left: 2px solid transparent;
+            transition: var(--transition);
+        }
+
+        .sidebar-nav a:hover {
+            color: var(--text-primary);
+            background: rgba(201,169,106,0.04);
+        }
+
+        .sidebar-nav a.active {
+            color: var(--gold-bright);
+            border-left-color: var(--gold);
+            background: rgba(201,169,106,0.06);
+        }
+
+        .sidebar-nav .nav-num {
+            font-family: var(--font-display);
+            font-size: 11px;
+            color: var(--gold-dim);
+            width: 16px;
+            text-align: center;
+            flex-shrink: 0;
+        }
+
+        /* 侧边栏分组与子项 */
+        .sidebar-nav a.nav-toggle {
+            cursor: pointer;
+            user-select: none;
+        }
+
+        .sidebar-nav a.nav-toggle.open { color: var(--gold-mid); }
+
+        .sidebar-nav .nav-arrow {
+            margin-left: auto;
+            font-size: 9px;
+            color: var(--gold-dim);
+            transition: transform var(--transition);
+            flex-shrink: 0;
+        }
+
+        .sidebar-nav a.nav-toggle.open .nav-arrow { transform: rotate(90deg); }
+
+        .nav-sub {
+            list-style: none;
+            padding: 0;
+            display: none;
+        }
+
+        .nav-sub.open { display: block; }
+
+        .nav-sub a {
+            padding: 7px 22px 7px 46px;
+            font-size: 12px;
+            font-weight: 300;
+            color: var(--text-faint);
+            letter-spacing: 0.05em;
+        }
+
+        .nav-sub a:hover {
+            color: var(--text-primary);
+            background: rgba(201,169,106,0.04);
+        }
+
+        .nav-sub a.active {
+            color: var(--gold-bright);
+            border-left-color: var(--gold);
+            background: rgba(201,169,106,0.06);
+        }
+
+        .nav-sub .nav-dot {
+            width: 4px; height: 4px;
+            background: var(--gold-dim);
+            transform: rotate(45deg);
+            flex-shrink: 0;
+            transition: var(--transition);
+        }
+
+        .nav-sub a.active .nav-dot {
+            background: var(--gold);
+            box-shadow: 0 0 6px rgba(201,169,106,0.7);
+        }
+
+        .sidebar-footer {
+            margin-top: auto;
+            padding: 14px 22px 18px;
+            font-size: 10px;
+            color: var(--text-faint);
+            letter-spacing: 0.15em;
+            text-align: center;
+            border-top: 1px solid rgba(201,169,106,0.2);
+            position: relative;
+        }
+
+        .sidebar-footer::before {
+            content: '❖';
+            position: absolute;
+            top: -7px;
+            left: 50%;
+            transform: translateX(-50%);
+            color: var(--gold-dim);
+            font-size: 9px;
+            background: var(--bg-elevated);
+            padding: 0 8px;
+        }
+
+        /* ========== 主区域 ========== */
+        .main {
+            flex: 1;
+            position: relative;
+            z-index: 5;
+            padding: 28px 36px 50px;
+            min-width: 0;
+        }
+
+        .topbar {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding-bottom: 16px;
+            margin-bottom: 22px;
+            position: relative;
+        }
+
+        .topbar::after {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            height: 2px;
+            background: linear-gradient(90deg,
+                rgba(201,169,106,0.9) 0%,
+                rgba(201,169,106,0.5) 20%,
+                rgba(201,169,106,0.15) 50%,
+                rgba(201,169,106,0.5) 80%,
+                rgba(201,169,106,0.9) 100%);
+        }
+
+        .topbar::before {
+            content: '❖';
+            position: absolute;
+            bottom: -8px;
+            left: 50%;
+            transform: translateX(-50%);
+            color: var(--gold);
+            font-size: 11px;
+            text-shadow: 0 0 15px rgba(201,169,106,0.8);
+            background: var(--bg);
+            padding: 0 10px;
+            z-index: 2;
+        }
+
+        .breadcrumb {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-size: 12px;
+            color: var(--text-faint);
+            letter-spacing: 0.08em;
+        }
+
+        .breadcrumb .separator { color: var(--gold-dim); font-size: 9px; }
+        .breadcrumb .current { color: var(--gold); }
+
+        .topbar-status {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            font-size: 11px;
+            color: var(--text-faint);
+            letter-spacing: 0.1em;
+        }
+
+        .status-dot {
+            width: 6px; height: 6px;
+            border-radius: 50%;
+            background: var(--gold);
+            box-shadow: 0 0 12px rgba(201,169,106,0.8);
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 1; box-shadow: 0 0 12px rgba(201,169,106,0.8); }
+            50% { opacity: 0.4; box-shadow: 0 0 4px rgba(201,169,106,0.3); }
+        }
+
+        .page { max-width: 1100px; margin: 0 auto; position: relative; z-index: 1; }
+
+        .header { text-align: center; margin-bottom: 22px; position: relative; padding-bottom: 16px; }
+        .header::after { content: ''; position: absolute; bottom: 0; left: 50%; transform: translateX(-50%); width: 60%; height: 1px; background: linear-gradient(90deg, transparent, var(--gold-dim), var(--gold), var(--gold-dim), transparent); }
+        .header h1 { font-family: var(--font-display); font-size: 30px; font-weight: 700; letter-spacing: 0.06em; text-shadow: 0 0 30px rgba(201,169,106,0.4); }
+        .header .sub { font-size: 11px; color: var(--text-faint); letter-spacing: 0.25em; text-transform: uppercase; margin-top: 4px; }
+
+        /* ========== 通用卡片 ========== */
+        .card {
+            background: var(--surface);
+            border: 1px solid rgba(201,169,106,0.2);
+            outline: 1px solid rgba(201,169,106,0.06);
+            outline-offset: 4px;
+            border-radius: var(--radius);
+            padding: 16px 18px;
+            margin-bottom: 16px;
+        }
+        .card-title { font-family: var(--font-display); font-size: 18px; font-weight: 600; color: var(--gold); margin-bottom: 6px; }
+        .desc { font-size: 13px; color: var(--text-secondary); line-height: 1.7; font-weight: 300; }
+        .desc b { color: var(--gold-bright); font-weight: 600; }
+
+        .section-title { font-family: var(--font-display); font-size: 20px; font-weight: 600; color: var(--gold); letter-spacing: 0.08em; margin: 20px 0 14px; }
+
+        .stat-row { display: flex; gap: 14px; margin-top: 10px; flex-wrap: wrap; }
+        .stat { font-size: 11px; color: var(--text-faint); letter-spacing: 0.08em; }
+        .stat b { color: var(--gold); font-weight: 600; }
+
+        .empty { color: var(--text-faint); text-align: center; padding: 24px; font-size: 13px; letter-spacing: 0.05em; }
+
+        .tier-chip {
+            display: inline-block;
+            padding: 1px 7px;
+            font-size: 9px;
+            letter-spacing: 0.12em;
+            border: 1px solid rgba(158,59,52,0.55);
+            border-radius: 2px;
+            color: #c46b63;
+            vertical-align: middle;
+            margin-left: 6px;
+        }
+        .tag {
+            display: inline-block;
+            padding: 3px 8px;
+            font-size: 9px;
+            letter-spacing: 0.12em;
+            border: 1px solid rgba(201,169,106,0.35);
+            border-radius: 2px;
+            color: var(--text-secondary);
+            text-transform: uppercase;
+            vertical-align: middle;
+            margin-left: 8px;
+        }
+
+        /* ========== 按钮 ========== */
+        .btn { padding: 8px 14px; background: transparent; border: 1px solid rgba(201,169,106,0.4); border-radius: var(--radius); color: var(--gold); font-family: var(--font-body); font-size: 12px; cursor: pointer; letter-spacing: 0.06em; transition: var(--transition); white-space: nowrap; }
+        .btn:hover { background: rgba(201,169,106,0.1); border-color: rgba(201,169,106,0.7); box-shadow: 0 0 15px rgba(201,169,106,0.15); }
+        .btn-primary { background: rgba(201,169,106,0.12); border-color: rgba(201,169,106,0.7); color: var(--gold-bright); }
+        .btn-danger { border-color: rgba(158,59,52,0.6); color: #c46b63; }
+        .btn-danger:hover { background: rgba(158,59,52,0.1); box-shadow: 0 0 15px rgba(158,59,52,0.2); }
+        .btn-sm { padding: 6px 10px; font-size: 11px; }
+
+        /* ========== 纪元气泡 ========== */
+        .bubble-wrap { display: flex; flex-wrap: wrap; gap: 18px; justify-content: center; }
+        .bubble {
+            background: var(--surface);
+            border: 1px solid var(--ec, rgba(201,169,106,0.35));
+            border-top: 2px solid var(--ec, var(--gold));
+            border-radius: var(--radius);
+            outline: 1px solid rgba(201,169,106,0.06);
+            outline-offset: 4px;
+            padding: 20px 26px;
+            cursor: pointer;
+            transition: var(--transition);
+            text-align: center;
+            min-width: 200px;
+            flex: 1 0 auto;
+            position: relative;
+        }
+        .bubble:hover { background: var(--surface-hover); transform: translateY(-3px); border-color: var(--ec); box-shadow: 0 8px 30px rgba(0,0,0,0.4); }
+        .bubble .b-period { font-size: 10px; color: var(--text-faint); letter-spacing: 0.15em; text-transform: uppercase; margin-bottom: 6px; }
+        .bubble .b-name { font-family: var(--font-display); font-size: 20px; font-weight: 700; color: var(--ec, var(--text-primary)); letter-spacing: 0.04em; text-shadow: 0 0 18px rgba(201,169,106,0.15); }
+        .bubble .b-count { font-size: 11px; color: var(--text-faint); margin-top: 8px; }
+
+        /* ========== 面包屑 ========== */
+        .crumb { display: flex; align-items: center; gap: 8px; margin-bottom: 14px; font-size: 12px; color: var(--text-faint); flex-wrap: wrap; }
+        .crumb .sep { color: var(--gold-dim); }
+        .crumb button { background: none; border: none; color: var(--gold); cursor: pointer; font-family: var(--font-body); font-size: 12px; transition: var(--transition); padding: 0; }
+        .crumb button:hover { text-decoration: underline; }
+        .crumb .cur { color: var(--text-primary); font-weight: 500; }
+
+        /* ========== 时间线 ========== */
+        .tl-toolbar { display: flex; justify-content: flex-end; gap: 8px; margin-bottom: 12px; flex-wrap: wrap; }
+        .timeline-wrapper { position: relative; padding-left: 28px; }
+        .timeline-wrapper::before {
+            content: '';
+            position: absolute;
+            left: 8px; top: 0; bottom: 0;
+            width: 1px;
+            background: linear-gradient(180deg, rgba(201,169,106,0.7) 0%, rgba(201,169,106,0.3) 50%, rgba(201,169,106,0.05) 100%);
+        }
+        .tl-item { position: relative; margin-bottom: 24px; padding-left: 8px; }
+        .tl-item::before {
+            content: '';
+            position: absolute;
+            left: -24px; top: 5px;
+            width: 7px; height: 7px;
+            background: var(--gold);
+            transform: rotate(45deg);
+            box-shadow: 0 0 8px rgba(201,169,106,0.5);
+        }
+        .tl-item .tl-time { font-family: var(--font-display); font-size: 15px; font-weight: 600; color: var(--gold-bright); letter-spacing: 0.06em; margin-bottom: 4px; }
+        .tl-item .tl-title { font-size: 14px; color: var(--text-primary); font-weight: 500; margin-bottom: 6px; }
+        .tl-item .tl-desc { font-size: 12px; color: var(--text-secondary); line-height: 1.65; font-weight: 300; }
+        .tl-item .tl-secret {
+            font-size: 11px; color: #b38bbf; margin-top: 8px; padding: 7px 12px;
+            border-left: 3px solid var(--purple); background: rgba(107,74,122,0.08);
+            line-height: 1.6;
+        }
+        .tl-item .tl-tag {
+            display: inline-block; padding: 2px 8px; font-size: 9px; letter-spacing: 0.1em;
+            border: 1px solid rgba(201,169,106,0.3); border-radius: 2px;
+            color: var(--text-secondary); text-transform: uppercase; margin-left: 8px;
+        }
+        .tl-item .tl-edit {
+            position: absolute;
+            top: 2px; right: 0;
+            width: 22px; height: 22px;
+            border-radius: 4px;
+            background: rgba(201,169,106,0.08);
+            border: 1px solid rgba(201,169,106,0.35);
+            color: var(--gold-mid);
+            font-size: 11px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            opacity: 0;
+            transition: var(--transition);
+            font-family: var(--font-body);
+        }
+        .tl-item:hover .tl-edit { opacity: 1; }
+        .tl-item .tl-edit:hover { color: var(--gold-bright); border-color: rgba(201,169,106,0.7); background: rgba(201,169,106,0.15); }
+
+        /* ========== 删除模式 ========== */
+        .delbar { display: none; position: sticky; bottom: 16px; background: rgba(18,16,13,0.95); border: 1px solid rgba(158,59,52,0.6); border-radius: var(--radius); padding: 10px 16px; justify-content: space-between; align-items: center; gap: 12px; z-index: 20; backdrop-filter: blur(10px); margin-top: 12px; }
+        .delbar .cnt { font-size: 13px; color: var(--text-primary); }
+        .delbar .cnt b { color: #c46b63; }
+        .sel { width: 16px; height: 16px; cursor: pointer; margin-right: 8px; vertical-align: middle; }
+
+        /* ========== 编辑弹窗 ========== */
+        .modal-overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.75); z-index: 50; align-items: flex-start; justify-content: center; padding: 30px 20px; overflow-y: auto; }
+        .modal-overlay.open { display: flex; }
+        .modal { background: var(--surface); border: 1px solid rgba(201,169,106,0.4); border-radius: 4px; padding: 20px; width: 100%; max-width: 460px; position: relative; box-shadow: 0 0 50px rgba(0,0,0,0.8); }
+        .modal-head { margin-bottom: 14px; }
+        .modal-title { font-family: var(--font-display); font-size: 18px; font-weight: 700; color: var(--gold-bright); }
+        .modal-close { position: absolute; top: 14px; right: 14px; background: none; border: none; color: var(--text-faint); font-size: 16px; cursor: pointer; transition: var(--transition); }
+        .modal-close:hover { color: var(--text-primary); }
+        .modal label { display: block; font-size: 11px; color: var(--gold-mid); letter-spacing: 0.1em; margin-bottom: 4px; text-transform: uppercase; }
+        .modal input, .modal textarea { width: 100%; padding: 8px 10px; background: rgba(0,0,0,0.35); border: 1px solid rgba(201,169,106,0.25); border-radius: var(--radius); color: var(--text-primary); font-family: var(--font-body); font-size: 13px; outline: none; margin-bottom: 10px; transition: var(--transition); }
+        .modal input:focus, .modal textarea:focus { border-color: rgba(201,169,106,0.6); }
+        .modal-btns { display: flex; gap: 8px; justify-content: flex-end; margin-top: 12px; }
+
+        /* ========== 响应式 ========== */
+        @media (max-width: 768px) {
+            .sidebar { display: none; }
+            .main { padding: 20px 16px; }
+            .topbar-status { display: none; }
+            .header h1 { font-size: 24px; }
+        }
+        /* ========== 侧边栏折叠 ========== */
+        .sidebar { transition: width 0.3s cubic-bezier(0.4, 0, 0.2, 1); }
+        .sidebar.collapsed { width: 56px; }
+        .sidebar.collapsed .sidebar-brand h1,
+        .sidebar.collapsed .sidebar-brand span,
+        .sidebar.collapsed .sidebar-section,
+        .sidebar.collapsed .sidebar-nav,
+        .sidebar.collapsed .sidebar-footer { display: none; }
+        .sidebar.collapsed .sidebar-brand { padding: 24px 0 18px; }
+        .sidebar.collapsed .sidebar-brand::before {
+            content: '沙';
+            font-family: var(--font-display);
+            font-size: 22px;
+            font-weight: 700;
+            color: var(--gold-bright);
+            display: block;
+            text-align: center;
+            text-shadow: 0 0 20px rgba(201,169,106,0.4);
+        }
+        .sb-toggle {
+            position: absolute;
+            right: 8px; top: 50%;
+            transform: translateY(-50%);
+            width: 20px; height: 20px;
+            border-radius: 4px;
+            background: transparent;
+            border: 1px solid rgba(201,169,106,0.35);
+            color: var(--gold-mid);
+            font-size: 9px;
+            cursor: pointer;
+            display: flex; align-items: center; justify-content: center;
+            transition: var(--transition);
+            font-family: var(--font-body);
+            z-index: 2;
+        }
+        .sb-toggle:hover { color: var(--gold-bright); border-color: var(--gold); background: rgba(201,169,106,0.1); }
+        .sidebar.collapsed .sb-toggle { right: 17px; }
+        .sidebar.collapsed .sb-toggle:hover { background: rgba(201,169,106,0.15); }
+
+        /* ========== 侧边栏收起：按钮 + 竖向标题 ========== */
+        .sb-brand-v {
+            display: none;
+            writing-mode: vertical-rl;
+            font-family: var(--font-display);
+            font-size: 12px;
+            letter-spacing: 0.4em;
+            line-height: 1.4;
+            color: var(--gold-bright);
+            text-shadow: 0 0 16px rgba(201,169,106,0.35);
+        }
+        .sidebar.collapsed .sb-brand-v { display: block; order: 1; }
+        .sidebar.collapsed .sidebar-brand::before { content: none; }
+        .sidebar.collapsed .sidebar-brand {
+            padding: 14px 0;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 12px;
+        }
+        .sidebar.collapsed .sb-toggle { position: static; transform: none; order: 0; }
+        .sidebar-brand span {
+            font-size: 7px;
+            letter-spacing: 0.22em;
+            text-transform: uppercase;
+            margin-top: 6px;
+        }
+        /* ========== 亮色主题（白 + 宝蓝，参考 亮色工作台.html） ========== */
+        body.light {
+            --bg: #f5f8fc;
+            --bg-elevated: #ffffff;
+            --surface: #ffffff;
+            --surface-hover: #f0f4fa;
+            --gold: #1e40af;
+            --gold-bright: #2563eb;
+            --gold-mid: #3b82f6;
+            --gold-dim: #93b4f5;
+            --red: #c0392b;
+            --purple: #5a6fa8;
+            --blue: #2563eb;
+            --text-primary: #1a2538;
+            --text-secondary: #4a5870;
+            --text-faint: #8a95a8;
+            --line: rgba(30, 64, 175, 0.18);
+        }
+        body.light {
+            background-image:
+                radial-gradient(circle at 50% 0%, rgba(30, 64, 175, 0.06) 0%, transparent 45%),
+                radial-gradient(circle at 50% 110%, rgba(37, 99, 235, 0.04) 0%, transparent 40%);
+        }
+        body.light::before {
+            background-image:
+                repeating-linear-gradient(0deg, transparent, transparent 7px, rgba(30, 64, 175, 0.015) 7px, rgba(30, 64, 175, 0.015) 8px),
+                repeating-linear-gradient(90deg, transparent, transparent 7px, rgba(30, 64, 175, 0.01) 7px, rgba(30, 64, 175, 0.01) 8px);
+        }
+        .theme-toggle {
+            margin: 12px 16px 6px;
+            padding: 7px 12px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            border: 1px solid var(--line);
+            border-radius: var(--radius);
+            color: var(--text-secondary);
+            cursor: pointer;
+            transition: var(--transition);
+            font-size: 12px;
+            flex-shrink: 0;
+            background: var(--surface);
+        }
+        .theme-toggle:hover { background: var(--surface-hover); color: var(--gold); border-color: var(--gold); }
+        .theme-toggle .tt-icon { font-size: 13px; }
+        .theme-toggle .tt-text { letter-spacing: 0.1em; }
+        .sidebar.collapsed .theme-toggle { display: none; }
+        .mc-theme {
+            position: absolute;
+            top: 12px; right: 12px;
+            width: 26px; height: 26px;
+            border-radius: 6px;
+            border: 1px solid var(--line);
+            background: var(--surface-hover);
+            color: var(--gold-mid);
+            cursor: pointer;
+            font-size: 13px;
+            display: flex; align-items: center; justify-content: center;
+            transition: var(--transition);
+            z-index: 3;
+        }
+        .mc-theme {
+            position: static;
+            display: inline-flex;
+            align-items: center;
+            gap: 7px;
+            padding: 6px 12px;
+            border: 1px solid var(--line);
+            border-radius: var(--radius);
+            background: var(--surface);
+            color: var(--text-secondary);
+            cursor: pointer;
+            font-size: 12px;
+            transition: var(--transition);
+        }
+        .mc-theme:hover { color: var(--gold); border-color: var(--gold); background: var(--surface-hover); }
+        .mc-theme .tt-icon { font-size: 13px; }
+        .mc-theme .tt-text { letter-spacing: 0.1em; }
+        /* 亮色去金化：圆角对齐模板，容器/输入/按钮边框统一为宝蓝线条 */
+        body.light { --radius: 6px; }
+        body.light .card,
+        body.light .frame-card,
+        body.light .todo-card,
+        body.light .mini-cal,
+        body.light .modal,
+        body.light .event-card,
+        body.light .cal-card,
+        body.light .char-card,
+        body.light .term-card,
+        body.light .bubble,
+        body.light .notice,
+        body.light .pt-card,
+        body.light .info-card,
+        body.light .map-card,
+        body.light .input,
+        body.light .search-input,
+        body.light .year-input,
+        body.light .todo-input,
+        body.light .comment-input,
+        body.light .feed-input,
+        body.light .chat-input,
+        body.light .pt-input,
+        body.light .modal input,
+        body.light .modal textarea,
+        body.light .modal select,
+        body.light .field .input,
+        body.light .relcanvas { border-color: var(--line); }
+        body.light .btn,
+        body.light .chip,
+        body.light .tag,
+        body.light .tag-user,
+        body.light .meta-chip,
+        body.light .member-chip,
+        body.light .sub-node-chip,
+        body.light .tl-tag { border-color: var(--line); }
+        body.light .btn:hover,
+        body.light .chip:hover,
+        body.light .meta-chip:hover { border-color: var(--gold); background: var(--surface-hover); }
+        body.light input:focus,
+        body.light textarea:focus,
+        body.light select:focus { border-color: var(--gold-bright); }
+        body.light .card,
+        body.light .frame-card,
+        body.light .todo-card,
+        body.light .mini-cal,
+        body.light .modal,
+        body.light .char-card,
+        body.light .term-card,
+        body.light .bubble { box-shadow: 0 2px 12px rgba(30, 64, 175, 0.08); }
+        /* ========== 亮色补全：去黑去金 ========== */
+        body.light .input,
+        body.light .search-input,
+        body.light .year-input,
+        body.light .todo-input,
+        body.light .comment-input,
+        body.light .feed-input,
+        body.light .chat-input,
+        body.light .pt-input,
+        body.light .modal input,
+        body.light .modal textarea,
+        body.light .modal select,
+        body.light .field .input { background: var(--bg); color: var(--text-primary); }
+        body.light .day-cell { background: var(--surface-hover); border-color: var(--line); }
+        body.light .relcanvas { background: var(--surface-hover); }
+        body.light .frame-card,
+        body.light .card,
+        body.light .todo-card,
+        body.light .mini-cal,
+        body.light .modal,
+        body.light .char-card,
+        body.light .term-card,
+        body.light .bubble,
+        body.light .event-card,
+        body.light .cal-card,
+        body.light .info-card { outline: 1px solid var(--line); outline-offset: 3px; }
+        body.light .topbar::after {
+            background: linear-gradient(90deg, var(--gold) 0%, rgba(30,64,175,0.5) 20%, rgba(30,64,175,0.15) 50%, rgba(30,64,175,0.5) 80%, var(--gold) 100%);
+        }
+        body.light .sidebar { background: var(--bg-elevated); border-image: linear-gradient(180deg, transparent 0%, rgba(30,64,175,0.5) 20%, rgba(30,64,175,0.5) 80%, transparent 100%) 1; }
+        body.light .status-dot { box-shadow: 0 0 12px rgba(37,99,235,0.5); animation: pulseLight 2s infinite; }
+        /* ========== 亮色统一补丁 ========== */
+        body.light .header h1,
+        body.light .page-heading h2 { color: var(--gold); }
+        body.light .page-heading h2 { text-shadow: none; }
+        body.light .mc-chip { border-color: var(--line); background: var(--surface-hover); }
+        .theme-toggle, .mc-theme { white-space: nowrap; }
+        body.light .delbar { background: var(--surface); }
+        /* ========== 侧边栏固定视口高度 + 主题滚动条 ========== */
+        .sidebar { height: 100vh; min-height: 100vh; overflow-y: auto; }
+        ::-webkit-scrollbar { width: 8px; height: 8px; }
+        ::-webkit-scrollbar-track { background: transparent; }
+        ::-webkit-scrollbar-thumb { background: var(--gold-dim); border-radius: 4px; }
+        ::-webkit-scrollbar-thumb:hover { background: var(--gold-mid); }
+        * { scrollbar-width: thin; scrollbar-color: var(--gold-dim) transparent; }
+        @keyframes pulseLight {
+            0%, 100% { opacity: 1; box-shadow: 0 0 12px rgba(37,99,235,0.5); }
+            50% { opacity: 0.4; box-shadow: 0 0 4px rgba(37,99,235,0.15); }
+        }
+    </style>
+</head>
+<body>
+
+    <!-- ========== 无 Spherse 环境降级层（localStorage 编辑 + 导出/导入） ========== -->
+    <script src="../../forum/standalone.js"></script>
+
+    <!-- ========== 侧边栏 ========== -->
+    <aside class="sidebar">
+        <div class="sidebar-brand">
+            <h1>沙漠之歌</h1>
+            <span>The Poetry of Desert</span>
+            <div class="sb-brand-v">沙漠之歌·导航栏</div>
+            <button class="sb-toggle" onclick="toggleSidebar()" title="折叠/展开侧边栏">❮</button>
+        </div>
+
+        <div class="sidebar-section">导航</div>
+        <ul class="sidebar-nav">
+            <li><a href="../开始页.html"><span class="nav-num">I</span>欢迎</a></li>
+            <li>
+                <a href="#" class="nav-toggle" onclick="toggleNav(event, this)"><span class="nav-num">II</span>功能模块<span class="nav-arrow">▸</span></a>
+                <ul class="nav-sub">
+                    <li><a href="../功能模块/酒馆.html"><span class="nav-dot"></span>酒馆</a></li>
+                    <li><a href="../功能模块/日历.html"><span class="nav-dot"></span>日历</a></li>
+                </ul>
+            </li>
+            <li>
+                <a href="#" class="nav-toggle open" onclick="toggleNav(event, this)"><span class="nav-num">III</span>设定资料<span class="nav-arrow">▸</span></a>
+                <ul class="nav-sub open">
+                    <li><a href="势力与阵营.html"><span class="nav-dot"></span>势力与阵营</a></li>
+                    <li><a href="历史事件.html" class="active"><span class="nav-dot"></span>历史事件</a></li>
+                    <li><a href="地理总览.html"><span class="nav-dot"></span>地理总览</a></li>
+                    <li><a href="术语库.html"><span class="nav-dot"></span>术语库</a></li>
+                    <li><a href="角色档案库.html"><span class="nav-dot"></span>角色档案库</a></li>
+                </ul>
+            </li>
+        </ul>
+
+        <div class="sidebar-footer">v 0.2.0 · 历史事件</div>
+
+        <div class="theme-toggle" onclick="toggleTheme()" title="切换亮色 / 暗色主题">
+            <span class="tt-icon">🌙</span>
+            <span class="tt-text">暗色</span>
+        </div>
+    </aside>
+
+    <!-- ========== 主区域 ========== -->
+    <main class="main">
+        <div class="topbar">
+            <div class="breadcrumb">
+                工作台 <span class="separator">❖</span> 设定资料 <span class="separator">❖</span> <span class="current">历史事件</span>
+            </div>
+            <div class="topbar-status">
+                <span class="status-dot"></span>
+                <span>系统正常</span>
+                <span style="color:var(--gold-dim);">|</span>
+                <span>星陨 2000 a.s.</span>
+                <span class="data-tools"></span>
+            </div>
+        </div>
+
+        <div class="page">
+            <div class="header">
+                <h1>历史事件 · 星陨纪年</h1>
+                <div class="sub">点击纪元气泡进入详细时间线</div>
+            </div>
+
+            <!-- 纪年说明卡片 -->
+            <div class="card">
+                <div class="card-title">纪年说明</div>
+                <p class="desc">尤克特拉以陨石坠落那一天为 <b>星陨元年 1 月 1 日</b>。星陨前 xx 年 → xx b.s.；星陨 xx 年 → xx a.s.。带 <span class="tier-chip">L2</span> 标记的事件附隐秘真相（须遵守知识库分级规范）。</p>
+            </div>
+
+            <!-- 总览：纪元气泡 -->
+            <div id="view-overview">
+                <div class="section-title">纪元</div>
+                <div class="bubble-wrap" id="eraBubbles"><div class="empty">加载中…</div></div>
+            </div>
+
+            <!-- 详情：时间线 -->
+            <div id="view-detail" style="display:none;">
+                <div class="crumb" id="crumb"></div>
+                <div class="card" id="eraHead"></div>
+                <div class="tl-toolbar">
+                    <button class="btn btn-sm" onclick="addEvent()">＋ 新增事件</button>
+                    <button class="btn btn-danger btn-sm" id="btnDel" onclick="toggleDelMode()">🗑️ 删除事件</button>
+                </div>
+                <div class="card">
+                    <div class="timeline-wrapper" id="tl"></div>
+                    <div class="delbar" id="delbar">
+                        <span class="cnt">已选 <b id="delCnt">0</b> 项</span>
+                        <button class="btn btn-primary btn-sm" onclick="deleteSelected()">确认删除</button>
+                        <button class="btn btn-sm" onclick="toggleDelMode()">取消</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <!-- 编辑弹窗 -->
+    <div class="modal-overlay" id="editorWrap" onclick="if(event.target===this)closeEditor()">
+        <div class="modal">
+            <div class="modal-head">
+                <div class="modal-title" id="editorTitle"></div>
+                <button class="modal-close" onclick="closeEditor()">✕</button>
+            </div>
+            <div id="editorFields"></div>
+            <div class="modal-btns">
+                <button class="btn btn-sm" onclick="closeEditor()">取消</button>
+                <button class="btn btn-primary btn-sm" id="editorSave">保存</button>
+            </div>
+            <div id="editorTip" style="text-align:center; margin-top:8px; font-size:11px; color:var(--text-faint);"></div>
+        </div>
+    </div>
+
+<script>
+// ========== 侧边栏分组展开/收起 ==========
+function toggleNav(event, el) {
+    if (event) event.preventDefault();
+    el.classList.toggle('open');
+    const sub = el.nextElementSibling;
+    if (sub) sub.classList.toggle('open');
+}
+
+// ========== 侧边栏折叠 ==========
+function toggleSidebar() {
+    const sb = document.querySelector('.sidebar');
+    const collapsed = sb.classList.toggle('collapsed');
+    const btn = document.querySelector('.sb-toggle');
+    if (btn) btn.textContent = collapsed ? '❯' : '❮';
+    try { localStorage.setItem('smq_sidebar_collapsed', collapsed ? '1' : '0'); } catch (e) {}
+}
+(function initSidebar() {
+    const sb = document.querySelector('.sidebar');
+    const btn = document.querySelector('.sb-toggle');
+    if (!sb || !btn) return;
+    try {
+        if (localStorage.getItem('smq_sidebar_collapsed') === '1') {
+            sb.classList.add('collapsed');
+            btn.textContent = '❯';
+        }
+    } catch (e) {}
+})();
+
+// ========== 主题切换（暗色 / 亮色） ==========
+function applyTheme(light) {
+    document.body.classList.toggle('light', light);
+    document.querySelectorAll('.theme-toggle, .mc-theme').forEach(btn => {
+        const icon = btn.querySelector('.tt-icon');
+        const text = btn.querySelector('.tt-text');
+        if (icon) icon.textContent = light ? '☀' : '🌙';
+        if (text) text.textContent = light ? '亮色' : '暗色';
+    });
+}
+function toggleTheme() {
+    const light = !document.body.classList.contains('light');
+    applyTheme(light);
+    try { localStorage.setItem('smq_theme', light ? 'light' : 'dark'); } catch (e) {}
+}
+(function initTheme() {
+    try {
+        if (localStorage.getItem('smq_theme') === 'light') applyTheme(true);
+    } catch (e) {}
+})();
+
+// ========== 数据 ==========
+const DATA = "forum/历史事件.data.json";
+// 兜底数据（与 forum/历史事件.data.json 同步；fetch 成功时以外部数据为准）
+const FALLBACK_ERAS = [
+    {
+        id: 'ancient', name: '神代与第一王国时代', period: '星陨前 1300 ～ 星陨 270',
+        desc: '创世神沉睡、人类迁徙、安缇娜建国、陨石坠落、白雾战争——旧世界的建立与裂变。',
+        color: '#a83232', events: [
+            { time: '星陨前 1300 年', title: '洛丽玛丝休眠 · 人类迁徙', text: '创世神洛丽玛丝几乎耗尽力量，前往尤克特拉大陆地底休眠。期间洛丽玛丝岛（始源岛）人类内乱，一部分逃往尤克特拉，与亚人协约后在北部寒冷地区定居；此后岛上人类逐渐搬离，始源岛彻底荒废。', tag: '历史' },
+            { time: '星陨前 80 年', title: '安缇娜建立瑞蒂安王国', text: '据历史记载，红龙安缇娜·瑞蒂安杀死创世神，用夺取而来的力量统一大陆、建立瑞蒂安王国，为大陆带来短暂和平。', tag: '建国', tier: 'L2', secret: '真相：创世神将守护大陆的使命与力量交给安缇娜，"弑神者"称号由艾尔亚为证明实力而留下（SEC-05）' },
+            { time: '星陨 0 年', title: '陨石坠落 · 空流苏醒', text: '一块巨大的"陨石"坠落在尤克特拉，将沉睡在地底的空流唤醒。安缇娜将都城迁至坠落之地，用特殊防护罩将陨石隔离在都城深处。', tag: '纪元开端', tier: 'L2', secret: '陨石实为世界树心脏碎片，空流为其同源共振所唤醒（SEC-01）' },
+            { time: '星陨 270 年', title: '白雾战争 · 利夫兹独立', text: '以白龙艾尔亚·利夫兹为首的组织暗中控制王位继承人，将安缇娜困住，发动"白雾战争"建立利夫兹王国，结束第一王国时代。', tag: '战争', tier: 'L2', secret: '安缇娜与艾尔亚为发小、存在扭曲情感；两人如今共眠于虚无之庭（SEC-05）' }
+        ]
+    },
+    {
+        id: 'war', name: '战争年代', period: '星陨 1350 ～ 1500',
+        desc: '幻沙帝国崛起，三国战火不断的百年暮色战争。',
+        color: '#8c2f2f', events: [
+            { time: '星陨 1350 年', title: '暮色战争开始', text: '新的强大势力占领沙漠地区，自称幻沙帝国；另两国因各自心怀不轨，三国战火不断。期间有人听说始源岛可通往最安全之地，逃往始源岛深处。', tag: '战争', tier: 'L2', secret: '战争末期梅赫尔势力插手，使即将结束的战火重燃、持续百年（SEC-02）' },
+            { time: '星陨 1500 年 7 月 25 日', title: '和平协约 · 凯旋日 · 奥比斯', text: '各国领导人签订和平协约终结战争。为庆祝和平，约定每年 7 月 25 日为凯旋日；沙漠与两国接壤处被划为自由区——第一区域·奥比斯。', tag: '和平' }
+        ]
+    },
+    {
+        id: 'peace', name: '和平年代', period: '星陨 1501 ～ 1999',
+        desc: '三国联盟成立、何莱建立，大陆进入以条约与秩序维系的百年和平。',
+        color: '#3f6f5c', events: [
+            { time: '星陨 1501 年', title: '三国联盟成立', text: '瑞蒂安、利夫兹、幻沙帝国以维持大陆和平为名义组成三国联盟；联盟无常设行政机构与独立武力，本质是条约框架。', tag: '联盟' },
+            { time: '星陨 1600 年', title: '第二区域·何莱成立', text: '为庆祝战争结束一百年，瑞蒂安与利夫兹各划出部分国土建立自由区第二区域·何莱，为各地旅人提供住所。', tag: '自由区' }
+        ]
+    },
+    {
+        id: 'now', name: '现在 · 星陨 2000', period: '星陨 2000 年',
+        desc: '伊芙的旅程开始——凯旋日、安玛斯特学院、游历大陆，直至瓦格尔沙漠的黄昏神殿。',
+        color: '#6b4a7a', now: true, events: [
+            { time: '星陨 2000 年', title: '主线：一位少女想要成为人的故事', text: '伊芙·艾德离开梅赫尔，经始源岛踏上尤克特拉大陆：凯旋日 → 安玛斯特学院 → 游历三国获取通行证 → 瓦格尔沙漠的黄昏神殿与生命长河（主线大纲为参考，未采用）。', tag: '现在', tier: 'L1', secret: '伊芙为 C 计划最终产物；收集生命长河时坐标将被米迦勒解析（SEC-04 / OUT-06）' }
+        ]
+    }
+];
+
+const $ = s => document.querySelector(s);
+let eras = [];
+let current = null;
+let delMode = false;
+let delSel = new Set();
+
+function esc(s) { return String(s ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
+
+async function load() {
+    try {
+        const json = await fetch("../../forum/历史事件.data.json").then(r => r.json());
+        eras = (json && json.eras && json.eras.length) ? json.eras : JSON.parse(JSON.stringify(FALLBACK_ERAS));
+    } catch {
+        eras = JSON.parse(JSON.stringify(FALLBACK_ERAS));
+    }
+    // 无 Spherse 环境：应用浏览器本地编辑的数据
+    try { const local = SMQ.getLocal(DATA, 'eras'); if (local && local.length) eras = local; } catch (e) {}
+    current = null; delMode = false; delSel.clear();
+    render();
+}
+
+// ========== 渲染 ==========
+function render() {
+    const era = current ? eras.find(x => x.id === current) : null;
+
+    if (!era) {
+        document.getElementById('view-overview').style.display = 'block';
+        document.getElementById('view-detail').style.display = 'none';
+        document.getElementById('eraBubbles').innerHTML = eras.map(e => `
+            <div class="bubble" style="--ec:${esc(e.color || '#c9a96a')}" onclick="enter('${e.id}')">
+                <div class="b-period">${esc(e.period || '')}</div>
+                <div class="b-name">${esc(e.name)}</div>
+                <div class="b-count">${(e.events || []).length} 个事件${e.now ? ' · 现在' : ''}</div>
+            </div>`).join('') || '<div class="empty">暂无纪元</div>';
+        return;
+    }
+
+    document.getElementById('view-overview').style.display = 'none';
+    document.getElementById('view-detail').style.display = 'block';
+    document.getElementById('crumb').innerHTML = `<button onclick="enter(null)">纪元总览</button><span class="sep">›</span><span class="cur">${esc(era.name)}</span>`;
+
+    document.getElementById('eraHead').innerHTML = `
+        <div class="card-title">
+            ${esc(era.name)}
+            <span class="tag" style="border-color:${esc(era.color)}66;color:${esc(era.color)};">${esc(era.period)}</span>
+            ${era.now ? '<span class="tier-chip">现在</span>' : ''}
+        </div>
+        <p class="desc">${esc(era.desc || '')}</p>
+        <div class="stat-row">
+            <span class="stat">收录 <b>${(era.events || []).length}</b> 个事件</span>
+            ${era.now ? '<span class="stat">主线进行中</span>' : ''}
+        </div>`;
+
+    const evs = era.events || [];
+    document.getElementById('tl').innerHTML = evs.length ? evs.map((e, i) => `
+        <div class="tl-item">
+            ${delMode ? `<input type="checkbox" class="sel" ${delSel.has(i) ? 'checked' : ''} onchange="toggleDel(${i}, this.checked)">` : ''}
+            ${delMode ? '' : `<button class="tl-edit" onclick="editEvent(${i})" title="编辑事件">✏️</button>`}
+            <div class="tl-time">${esc(e.time)}${e.tier ? ` <span class="tier-chip">${esc(e.tier)}</span>` : ''}</div>
+            <div class="tl-title">${esc(e.title)}${e.tag ? `<span class="tl-tag">${esc(e.tag)}</span>` : ''}</div>
+            <div class="tl-desc">${esc(e.text)}</div>
+            ${e.secret ? `<div class="tl-secret">⚠️ 隐秘真相：${esc(e.secret)}</div>` : ''}
+        </div>`).join('') : '<div class="empty">该纪元暂无记录</div>';
+
+    document.getElementById('delbar').style.display = delMode ? 'flex' : 'none';
+    document.getElementById('btnDel').textContent = delMode ? '✕ 退出删除' : '🗑️ 删除事件';
+    document.getElementById('delCnt').textContent = delSel.size;
+}
+
+function enter(id) {
+    current = id;
+    delMode = false;
+    delSel.clear();
+    render();
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+
+// ========== 删除模式 ==========
+function toggleDelMode() { delMode = !delMode; delSel.clear(); render(); }
+function toggleDel(i, on) { on ? delSel.add(i) : delSel.delete(i); document.getElementById('delCnt').textContent = delSel.size; }
+
+async function deleteSelected() {
+    const era = eras.find(x => x.id === current);
+    if (!era || !delSel.size) return;
+    const idxs = [...delSel].sort((a, b) => b - a);
+    idxs.forEach(i => era.events.splice(i, 1));
+    delSel.clear(); delMode = false;
+    await saveEras();
+}
+
+// ========== 新增事件 ==========
+function addEvent() {
+    const era = eras.find(x => x.id === current);
+    if (!era) return;
+    openEditor('在「' + era.name + '」新增事件', [
+        { key: 'time', label: '时间（如：星陨 1650 年）', value: '' },
+        { key: 'title', label: '标题', value: '' },
+        { key: 'text', label: '内容', value: '' },
+        { key: 'tag', label: '标签', value: '' }
+    ], out => {
+        if (!out.title) { document.getElementById('editorTip').textContent = '标题不能为空'; return; }
+        era.events = era.events || [];
+        era.events.push({ time: out.time || '—', title: out.title, text: out.text || '—', tag: out.tag || '' });
+        saveEras();
+    });
+}
+
+// ========== 编辑弹窗 ==========
+function openEditor(title, fields, onSave) {
+    document.getElementById('editorTitle').textContent = title;
+    document.getElementById('editorFields').innerHTML = fields.map(f =>
+        f.type === 'textarea'
+            ? `<label>${esc(f.label)}</label><textarea id="ef-${esc(f.key)}" rows="${f.rows || 3}">${esc(f.value || '')}</textarea>`
+            : `<label>${esc(f.label)}</label><input id="ef-${esc(f.key)}" value="${esc(f.value || '')}">`).join('');
+    document.getElementById('editorSave').onclick = () => {
+        const out = {};
+        fields.forEach(f => { out[f.key] = document.getElementById('ef-' + f.key).value.trim(); });
+        onSave(out);
+    };
+    document.getElementById('editorTip').textContent = '';
+    document.getElementById('editorWrap').classList.add('open');
+}
+
+// ========== 编辑事件 ==========
+function editEvent(i) {
+    const era = eras.find(x => x.id === current);
+    if (!era || !era.events[i]) return;
+    const e = era.events[i];
+    openEditor('编辑事件 · ' + e.title, [
+        { key: 'time', label: '时间（如：星陨 1650 年）', value: e.time },
+        { key: 'title', label: '标题', value: e.title },
+        { key: 'text', label: '内容', value: e.text, type: 'textarea', rows: 4 },
+        { key: 'tag', label: '标签', value: e.tag || '' },
+        { key: 'tier', label: '分级（L0 / L1 / L2，留空则无）', value: e.tier || '' },
+        { key: 'secret', label: '隐秘真相（留空则无）', value: e.secret || '', type: 'textarea', rows: 2 }
+    ], out => {
+        if (!out.title) { document.getElementById('editorTip').textContent = '标题不能为空'; return; }
+        Object.assign(era.events[i], {
+            time: out.time || '—',
+            title: out.title,
+            text: out.text || '—',
+            tag: out.tag || '',
+            tier: out.tier || undefined,
+            secret: out.secret || undefined
+        });
+        saveEras();
+    });
+}
+
+function closeEditor() { document.getElementById('editorWrap').classList.remove('open'); }
+
+async function saveEras() {
+    try {
+        const res = await SMQ.save(DATA, 'eras', eras);
+        closeEditor();
+        render();
+        if (res.mode === 'local') SMQ.toast('已保存到浏览器本地（可用顶栏「导出数据」同步到电脑）');
+    } catch {
+        document.getElementById('editorTip').textContent = '保存失败，请重试';
+    }
+}
+
+// ========== 数据更新监听 ==========
+if (window.spherse && spherse.events) {
+    spherse.events.on('file:update', { path: '../../forum/历史事件.data.json' }, load);
+}
+
+// ========== 启动 ==========
+load();
+</script>
+</body>
+</html>

@@ -1,0 +1,338 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>历史事件 · 星陨纪年</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,600;0,700;1,400&family=Inter:wght@300;400;500;600&family=Noto+Serif+SC:wght@400;600&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg: #100f0d;
+            --surface: #1c1a16;
+            --surface-hover: #24211b;
+            --gold: #c9a96a;
+            --gold-bright: #e8d5a4;
+            --gold-mid: #a88955;
+            --gold-dim: #6e5a3a;
+            --red: #9e3b34;
+            --purple: #6b4a7a;
+            --text-primary: #ede4d4;
+            --text-secondary: #b5a990;
+            --text-faint: #7a7263;
+            --font-display: 'Cormorant Garamond', 'Noto Serif SC', serif;
+            --font-body: 'Inter', 'Noto Sans SC', sans-serif;
+            --radius: 2px;
+            --transition: 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body {
+            background: var(--bg);
+            color: var(--text-primary);
+            font-family: var(--font-body);
+            min-height: 100vh;
+            padding: 24px 32px 50px;
+            background-image:
+                radial-gradient(circle at 20% 110%, rgba(158,59,52,0.05) 0%, transparent 50%),
+                radial-gradient(circle at 80% -10%, rgba(201,169,106,0.08) 0%, transparent 40%);
+        }
+        body::before {
+            content: '';
+            position: fixed; top: 0; left: 0; right: 0; bottom: 0;
+            background-image: repeating-linear-gradient(0deg, transparent, transparent 7px, rgba(201,169,106,0.015) 7px, rgba(201,169,106,0.015) 8px);
+            pointer-events: none; z-index: 0;
+        }
+        .page { max-width: 1100px; margin: 0 auto; position: relative; z-index: 1; }
+
+        .header { text-align: center; margin-bottom: 22px; position: relative; padding-bottom: 16px; }
+        .header::after { content: ''; position: absolute; bottom: 0; left: 50%; transform: translateX(-50%); width: 60%; height: 1px; background: linear-gradient(90deg, transparent, var(--gold-dim), var(--gold), var(--gold-dim), transparent); }
+        .header h1 { font-family: var(--font-display); font-size: 30px; font-weight: 700; letter-spacing: 0.06em; text-shadow: 0 0 30px rgba(201,169,106,0.3); }
+        .header .sub { font-size: 11px; color: var(--text-faint); letter-spacing: 0.3em; text-transform: uppercase; margin-top: 4px; }
+
+        .card {
+            background: var(--surface);
+            border: 1px solid rgba(201,169,106,0.2);
+            outline: 1px solid rgba(201,169,106,0.06);
+            outline-offset: 4px;
+            border-radius: var(--radius);
+            padding: 16px 18px;
+            margin-bottom: 16px;
+        }
+        .card-title { font-family: var(--font-display); font-size: 18px; font-weight: 600; color: var(--gold); margin-bottom: 6px; }
+        .desc { font-size: 13px; color: var(--text-secondary); line-height: 1.7; font-weight: 300; }
+
+        .btn { padding: 8px 14px; background: transparent; border: 1px solid rgba(201,169,106,0.4); border-radius: var(--radius); color: var(--gold); font-family: var(--font-body); font-size: 12px; cursor: pointer; letter-spacing: 0.06em; transition: var(--transition); white-space: nowrap; }
+        .btn:hover { background: rgba(201,169,106,0.1); border-color: rgba(201,169,106,0.7); box-shadow: 0 0 15px rgba(201,169,106,0.15); }
+        .btn-primary { background: rgba(201,169,106,0.12); border-color: rgba(201,169,106,0.7); color: var(--gold-bright); }
+        .btn-danger { border-color: rgba(158,59,52,0.6); color: #c46b63; }
+        .btn-danger:hover { background: rgba(158,59,52,0.1); box-shadow: 0 0 15px rgba(158,59,52,0.2); }
+        .btn-sm { padding: 6px 10px; font-size: 11px; }
+
+        /* 纪元气泡 */
+        .bubble-wrap { display: flex; flex-wrap: wrap; gap: 18px; justify-content: center; }
+        .bubble {
+            background: var(--surface);
+            border: 1px solid rgba(201,169,106,0.35);
+            border-radius: var(--radius);
+            padding: 18px 22px;
+            cursor: pointer;
+            transition: var(--transition);
+            text-align: center;
+            min-width: 130px;
+            position: relative;
+        }
+        .bubble:hover { background: var(--surface-hover); transform: translateY(-3px); border-color: rgba(201,169,106,0.7); box-shadow: 0 8px 30px rgba(0,0,0,0.4); }
+        .bubble .b-period { font-size: 10px; color: var(--text-faint); letter-spacing: 0.15em; text-transform: uppercase; margin-bottom: 6px; }
+        .bubble .b-name { font-family: var(--font-display); font-size: 20px; font-weight: 700; color: var(--text-primary); letter-spacing: 0.04em; }
+        .bubble .b-count { font-size: 11px; color: var(--text-faint); margin-top: 8px; }
+
+        /* 面包屑 */
+        .crumb { display: flex; align-items: center; gap: 8px; margin-bottom: 14px; font-size: 12px; color: var(--text-faint); flex-wrap: wrap; }
+        .crumb .sep { color: var(--gold-dim); }
+        .crumb button { background: none; border: none; color: var(--gold); cursor: pointer; font-family: var(--font-body); font-size: 12px; transition: var(--transition); padding: 0; }
+        .crumb button:hover { text-decoration: underline; }
+        .crumb .cur { color: var(--text-primary); font-weight: 500; }
+
+        /* 时间线 */
+        .timeline-wrapper { position: relative; padding-left: 28px; }
+        .timeline-wrapper::before {
+            content: '';
+            position: absolute;
+            left: 8px; top: 0; bottom: 0;
+            width: 1px;
+            background: linear-gradient(180deg, rgba(201,169,106,0.7) 0%, rgba(201,169,106,0.3) 50%, rgba(201,169,106,0.05) 100%);
+        }
+        .tl-item { position: relative; margin-bottom: 22px; padding-left: 8px; }
+        .tl-item::before {
+            content: '';
+            position: absolute;
+            left: -24px; top: 5px;
+            width: 7px; height: 7px;
+            background: var(--gold);
+            transform: rotate(45deg);
+            box-shadow: 0 0 8px rgba(201,169,106,0.5);
+        }
+        .tl-item .tl-time { font-family: var(--font-display); font-size: 15px; font-weight: 600; color: var(--gold-bright); letter-spacing: 0.06em; margin-bottom: 4px; }
+        .tl-item .tl-title { font-size: 14px; color: var(--text-primary); font-weight: 500; margin-bottom: 6px; }
+        .tl-item .tl-desc { font-size: 12px; color: var(--text-secondary); line-height: 1.65; font-weight: 300; }
+        .tl-item .tl-secret { font-size: 11px; color: var(--purple); margin-top: 6px; padding: 6px 10px; border-left: 3px solid var(--purple); background: rgba(107,74,122,0.08); }
+        .tl-item .tl-tag { display: inline-block; padding: 2px 8px; font-size: 9px; letter-spacing: 0.1em; border: 1px solid rgba(201,169,106,0.3); border-radius: 2px; color: var(--text-secondary); text-transform: uppercase; margin-left: 6px; }
+
+        /* 删除模式 */
+        .delbar { display: none; position: sticky; bottom: 16px; background: rgba(18,16,13,0.95); border: 1px solid rgba(158,59,52,0.6); border-radius: var(--radius); padding: 10px 16px; justify-content: space-between; align-items: center; gap: 12px; z-index: 20; backdrop-filter: blur(10px); margin-top: 12px; }
+        .delbar .cnt { font-size: 13px; color: var(--text-primary); }
+        .delbar .cnt b { color: #c46b63; }
+        .sel { width: 16px; height: 16px; cursor: pointer; }
+
+        /* 编辑弹窗 */
+        .modal-overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.75); z-index: 50; align-items: flex-start; justify-content: center; padding: 30px 20px; overflow-y: auto; }
+        .modal-overlay.open { display: flex; }
+        .modal { background: var(--surface); border: 1px solid rgba(201,169,106,0.4); border-radius: 4px; padding: 20px; width: 100%; max-width: 460px; position: relative; box-shadow: 0 0 50px rgba(0,0,0,0.8); }
+        .modal-head { margin-bottom: 14px; }
+        .modal-title { font-family: var(--font-display); font-size: 18px; font-weight: 700; color: var(--gold-bright); }
+        .modal-close { position: absolute; top: 14px; right: 14px; background: none; border: none; color: var(--text-faint); font-size: 16px; cursor: pointer; transition: var(--transition); }
+        .modal-close:hover { color: var(--text-primary); }
+        .modal label { display: block; font-size: 11px; color: var(--gold-mid); letter-spacing: 0.1em; margin-bottom: 4px; text-transform: uppercase; }
+        .modal input, .modal textarea { width: 100%; padding: 8px 10px; background: rgba(0,0,0,0.35); border: 1px solid rgba(201,169,106,0.25); border-radius: var(--radius); color: var(--text-primary); font-family: var(--font-body); font-size: 13px; outline: none; margin-bottom: 10px; transition: var(--transition); }
+        .modal input:focus, .modal textarea:focus { border-color: rgba(201,169,106,0.6); }
+        .modal-btns { display: flex; gap: 8px; justify-content: flex-end; margin-top: 12px; }
+
+        .section-title { font-family: var(--font-display); font-size: 20px; font-weight: 600; color: var(--gold); letter-spacing: 0.08em; margin: 20px 0 14px; }
+        .tag { display: inline-block; padding: 3px 8px; font-size: 9px; letter-spacing: 0.1em; border: 1px solid rgba(201,169,106,0.3); border-radius: 2px; color: var(--text-secondary); text-transform: uppercase; }
+        .tier-l2 { border-color: rgba(158,59,52,0.5); color: #c46b63; }
+    </style>
+</head>
+<body>
+<div class="page">
+    <div class="header">
+        <h1>历史事件 · 星陨纪年</h1>
+        <div class="sub">点击纪元气泡进入详细时间线</div>
+    </div>
+
+    <!-- 纪年说明卡片 -->
+    <div class="card">
+        <div class="card-title">纪年说明</div>
+        <p class="desc">尤克特拉以陨石坠落那一天为星陨元年 1 月 1 日。星陨前 xx 年 → xx b.s.；星陨 xx 年 → xx a.s.。带 <span class="tag tier-l2">L2</span> 标记的事件附隐秘真相。</p>
+    </div>
+
+    <!-- 总览：纪元气泡 -->
+    <div id="view-overview">
+        <div class="section-title">纪元</div>
+        <div class="bubble-wrap" id="eraBubbles"></div>
+    </div>
+
+    <!-- 详情：时间线 -->
+    <div id="view-detail" style="display:none;">
+        <div class="crumb" id="crumb"></div>
+        <div class="card" id="eraHead"></div>
+        <div style="display:flex; justify-content:flex-end; gap:8px; margin-bottom:12px;">
+            <button class="btn btn-sm" onclick="addEvent()">＋ 新增事件</button>
+            <button class="btn btn-danger btn-sm" onclick="toggleDelMode()" id="btnDel">删除事件</button>
+        </div>
+        <div class="card">
+            <div class="timeline-wrapper" id="tl"></div>
+            <div class="delbar" id="delbar">
+                <span class="cnt">已选 <b id="delCnt">0</b> 项</span>
+                <button class="btn btn-primary btn-sm" onclick="deleteSelected()">确认删除</button>
+                <button class="btn btn-sm" onclick="toggleDelMode()">取消</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- 编辑弹窗 -->
+<div class="modal-overlay" id="editorWrap" onclick="if(event.target===this)closeEditor()">
+    <div class="modal">
+        <div class="modal-head">
+            <div class="modal-title" id="editorTitle"></div>
+            <button class="modal-close" onclick="closeEditor()">✕</button>
+        </div>
+        <div id="editorFields"></div>
+        <div class="modal-btns">
+            <button class="btn btn-sm" onclick="closeEditor()">取消</button>
+            <button class="btn btn-primary btn-sm" id="editorSave">保存</button>
+        </div>
+        <div id="editorTip" style="text-align:center; margin-top:8px; font-size:11px; color:var(--text-faint);"></div>
+    </div>
+</div>
+
+<script>
+// ========== 占位数据 ==========
+let eras = [
+    {
+        id: 'era1', name: '神代', period: '星陨前', color: '#6b4a7a', now: false,
+        desc: '神的时代，世界树尚存。',
+        events: [
+            { time: '星陨前 1300 年', title: '第一王国时代开始', tag: '建国', text: '占位事件描述。', tier: 'L2', secret: '占位隐秘真相。' },
+            { time: '星陨前 80 年', title: '红龙安缇娜统一大陆', tag: '战争', text: '占位事件描述。' }
+        ]
+    },
+    {
+        id: 'era2', name: '空流纪元', period: '星陨 0 年至今', color: '#c9a96a', now: true,
+        desc: '陨石坠落，空流苏醒，世界进入新纪元。',
+        events: [
+            { time: '星陨 0 年', title: '陨石坠落', tag: '灾变', text: '占位事件描述。', tier: 'L2', secret: '占位隐秘真相。' },
+            { time: '星陨 270 年', title: '白雾战争', tag: '战争', text: '占位事件描述。' },
+            { time: '星陨 1500 年', title: '暮色战争结束', tag: '和平', text: '占位事件描述。' }
+        ]
+    }
+];
+
+let current = null;
+let delMode = false;
+let delSel = new Set();
+
+function esc(s) { return String(s ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
+
+function bubbleSize(e) {
+    return Math.max(150, Math.min(240, 130 + (e.events || []).length * 20));
+}
+
+function render() {
+    const era = current ? eras.find(x => x.id === current) : null;
+
+    if (!era) {
+        document.getElementById('view-overview').style.display = 'block';
+        document.getElementById('view-detail').style.display = 'none';
+        document.getElementById('eraBubbles').innerHTML = eras.map(e => {
+            return `<div class="bubble" style="cursor:pointer;" onclick="enter('${e.id}')">
+                <div class="b-period">${esc(e.period || '')}</div>
+                <div class="b-name">${esc(e.name)}</div>
+                <div class="b-count">${(e.events || []).length} 个事件${e.now ? ' · 现在' : ''}</div>
+            </div>`;
+        }).join('') || '<div style="color:var(--text-faint);">暂无纪元</div>';
+        return;
+    }
+
+    document.getElementById('view-overview').style.display = 'none';
+    document.getElementById('view-detail').style.display = 'block';
+    document.getElementById('crumb').innerHTML = `<button onclick="enter(null)">纪元总览</button><span class="sep">›</span><span class="cur">${esc(era.name)}</span>`;
+
+    document.getElementById('eraHead').innerHTML = `
+        <div class="card-title">${esc(era.name)}</div>
+        <p class="desc">${esc(era.desc || '')}</p>
+        <div style="margin-top:8px; font-size:11px; color:var(--text-faint);">收录 ${(era.events || []).length} 个事件</div>`;
+
+    const evs = era.events || [];
+    document.getElementById('tl').innerHTML = evs.length ? evs.map((e, i) => `
+        <div class="tl-item">
+            ${delMode ? `<input type="checkbox" class="sel" ${delSel.has(i) ? 'checked' : ''} onchange="toggleDel(${i}, this.checked)" style="margin-right:8px;">` : ''}
+            <div class="tl-time">${esc(e.time)}${e.tier ? ' <span class="tag tier-l2">L2</span>' : ''}</div>
+            <div class="tl-title">${esc(e.title)}${e.tag ? `<span class="tl-tag">${esc(e.tag)}</span>` : ''}</div>
+            <div class="tl-desc">${esc(e.text)}</div>
+            ${e.secret ? `<div class="tl-secret">隐秘真相：${esc(e.secret)}</div>` : ''}
+        </div>`).join('') : '<div style="color:var(--text-faint); text-align:center; padding:20px;">该纪元暂无记录</div>';
+
+    document.getElementById('delbar').style.display = delMode ? 'flex' : 'none';
+    document.getElementById('btnDel').textContent = delMode ? '✕ 退出删除' : '删除事件';
+    document.getElementById('delCnt').textContent = delSel.size;
+}
+
+function enter(id) {
+    current = id;
+    delMode = false;
+    delSel.clear();
+    render();
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+
+function toggleDelMode() {
+    delMode = !delMode;
+    delSel.clear();
+    render();
+}
+
+function toggleDel(i, on) {
+    on ? delSel.add(i) : delSel.delete(i);
+    document.getElementById('delCnt').textContent = delSel.size;
+}
+
+function deleteSelected() {
+    const era = eras.find(x => x.id === current);
+    if (!era || !delSel.size) return;
+    const idxs = [...delSel].sort((a, b) => b - a);
+    idxs.forEach(i => era.events.splice(i, 1));
+    delSel.clear();
+    delMode = false;
+    render();
+}
+
+function addEvent() {
+    const era = eras.find(x => x.id === current);
+    if (!era) return;
+    openEditor('在「' + era.name + '」新增事件', [
+        { key: 'time', label: '时间', value: '' },
+        { key: 'title', label: '标题', value: '' },
+        { key: 'text', label: '内容', value: '' },
+        { key: 'tag', label: '标签', value: '' }
+    ], out => {
+        if (!out.title) { document.getElementById('editorTip').textContent = '标题不能为空'; return; }
+        era.events = era.events || [];
+        era.events.push({ time: out.time || '—', title: out.title, text: out.text || '—', tag: out.tag || '' });
+        closeEditor();
+        render();
+    });
+}
+
+function openEditor(title, fields, onSave) {
+    document.getElementById('editorTitle').textContent = title;
+    document.getElementById('editorFields').innerHTML = fields.map(f =>
+        `<label>${esc(f.label)}</label><input id="ef-${esc(f.key)}" value="${esc(f.value || '')}">`).join('');
+    document.getElementById('editorSave').onclick = () => {
+        const out = {};
+        fields.forEach(f => { out[f.key] = document.getElementById('ef-' + f.key).value.trim(); });
+        onSave(out);
+    };
+    document.getElementById('editorTip').textContent = '';
+    document.getElementById('editorWrap').classList.add('open');
+}
+
+function closeEditor() {
+    document.getElementById('editorWrap').classList.remove('open');
+}
+
+// 初始化
+render();
+</script>
+</body>
+</html>

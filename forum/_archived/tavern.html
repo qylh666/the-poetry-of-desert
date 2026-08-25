@@ -1,0 +1,147 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>黄昏酒馆 · 角色扮演</title>
+  <link rel="stylesheet" href="./forum.css">
+</head>
+<body>
+  <div class="page">
+    <header class="header">
+      <div class="brand">黄昏酒馆 <em>· 角色扮演</em></div>
+      <div class="worldline">以世界中的身份发言 · 星陨 2000</div>
+    </header>
+
+    <div class="card">
+      <div class="card-title"><span class="ic">🍺</span>落座发言</div>
+      <p class="desc" style="margin-bottom:.6rem;">选一个身份，写下你（作为该角色）要说的话。</p>
+      <label for="char">扮演角色</label>
+      <select id="char" class="input" style="margin:.2rem 0 .6rem;"></select>
+      <textarea id="text" class="input" placeholder="『今夜的风，适合讲一个故事。』——以所选身份的口吻发言，可长可短。"></textarea>
+      <div style="display:flex;gap:.6rem;margin-top:.6rem;flex-wrap:wrap;">
+        <button class="btn btn-primary" onclick="postToBoard()">发布到酒馆</button>
+        <button class="btn btn-ghost" onclick="postToSession()">回传本会话继续演</button>
+      </div>
+      <div class="tip" id="tip"></div>
+    </div>
+
+    <h2 class="section-title">酒馆里的声音</h2>
+    <div class="card" id="posts"><div class="empty">加载中…</div></div>
+
+    <footer class="footer">黄昏酒馆 · 角色扮演板 · 发言仅代表扮演角色，不代表设定管理员</footer>
+  </div>
+
+  <script>
+    const $ = (s) => document.querySelector(s);
+    const DATA = "forum/tavern.data.json";
+    const ELEM_COLOR = {
+      "土": "#8a6d3b", "火": "#c14b3a", "水": "#3f7c9c",
+      "风": "#5f8f7c", "天": "#a8873a", "全": "#6b4a7a"
+    };
+    let data = { chars: [], posts: [] };
+
+    function esc(s) {
+      return String(s ?? "").replace(/[&<>"']/g, (c) => ({
+        "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;"
+      }[c]));
+    }
+
+    async function load() {
+      try { data = await fetch("./tavern.data.json").then((r) => r.json()); }
+      catch { data = { chars: [], posts: [] }; }
+      renderChars();
+      renderPosts();
+    }
+
+    function renderChars() {
+      const sel = $("#char");
+      sel.innerHTML = (data.chars || []).map((c) =>
+        `<option value="${esc(c.name)}">${esc(c.name)}（${esc(c.title)} · ${esc(c.element)}）</option>`).join("");
+    }
+
+    function renderPosts() {
+      const list = (data.posts || []).slice().sort((a, b) => (b.id || 0) - (a.id || 0));
+      $("#posts").innerHTML = list.length ? list.map((p) => {
+        const color = ELEM_COLOR[p.element] || "#8d7f6e";
+        const initial = (p.char || "?").slice(0, 1);
+        return `
+        <div class="post">
+          <div class="avatar" style="background:${color}">${esc(initial)}</div>
+          <div class="post-body">
+            <div class="post-head">
+              <span class="post-name">${esc(p.char)}</span>
+              <span class="tag ${esc(p.tag || "t-sun")}">${esc(p.title || "")}</span>
+              <span class="post-meta">${esc(p.time || "")}</span>
+            </div>
+            <p class="post-text">${esc(p.text)}</p>
+            <div class="post-actions">
+              <button class="btn btn-ghost btn-sm" onclick="replyInChat('${esc(p.char)}')">以他/她接话</button>
+            </div>
+          </div>
+        </div>`;
+      }).join("") : '<div class="empty">酒馆还很安静——来留第一句话吧。</div>';
+    }
+
+    function now() {
+      const d = new Date();
+      return `星陨 2000 · ${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")} ${String(d.getHours()).padStart(2, "0")}:${String(d.getMinutes()).padStart(2, "0")}`;
+    }
+
+    function setTip(t, ok) {
+      const el = $("#tip");
+      el.textContent = t;
+      el.style.color = ok ? "var(--gold)" : "var(--danger)";
+    }
+
+    function selectedChar() {
+      const name = $("#char").value;
+      return (data.chars || []).find((c) => c.name === name) || { name, title: "", tag: "t-sun", element: "" };
+    }
+
+    async function postToBoard() {
+      const c = selectedChar();
+      const text = $("#text").value.trim();
+      if (!c.name) return setTip("请先选择角色", false);
+      if (!text) return setTip("写点什么再发布吧", false);
+      const posts = (await spherse.data.get({ file: DATA, key: "posts" })) || [];
+      const id = (posts.reduce((m, p) => Math.max(m, p.id || 0), 0)) + 1;
+      posts.push({ id, char: c.name, title: c.title, tag: c.tag, element: c.element, text, time: now() });
+      await spherse.data.set({ file: DATA, key: "posts", value: posts });
+      $("#text").value = "";
+      setTip(`已发布：${c.name}`, true);
+      load();
+    }
+
+    async function postToSession() {
+      const c = selectedChar();
+      const text = $("#text").value.trim();
+      if (!text) return setTip("写点什么再回传吧", false);
+      const rt = await spherse.getRuntime().catch(() => null);
+      if (!rt?.sessionId) return setTip("当前不在会话中：请从聊天卡片打开本页，或直接发布到酒馆", false);
+      const message = `（黄昏酒馆 · 角色扮演）我以「${c.name}」（${c.title || "身份未知"}）的身份发言：${text}\n\n请延续这场角色扮演，用其他角色或环境回应我。`;
+      try {
+        await spherse.sendMessage({ sessionId: rt.sessionId, message });
+        setTip("已回传会话，等待回应", true);
+      } catch (e) {
+        setTip(e.message === "session_busy" ? "会话正在生成，请稍后重试" : "发送失败，请重试", false);
+      }
+    }
+
+    async function replyInChat(charName) {
+      const rt = await spherse.getRuntime().catch(() => null);
+      if (!rt?.sessionId) return setTip("当前不在会话中，无法接话", false);
+      const message = `（黄昏酒馆 · 角色扮演）请以「${charName}」的身份，回应酒馆里刚才那番话。`;
+      try {
+        await spherse.sendMessage({ sessionId: rt.sessionId, message });
+        setTip(`已将「${charName}」的接话回传会话`, true);
+      } catch (e) {
+        setTip(e.message === "session_busy" ? "会话正在生成，请稍后重试" : "发送失败，请重试", false);
+      }
+    }
+
+    spherse.events.on("file:update", { path: "./tavern.data.json" }, load);
+    load();
+  </script>
+</body>
+</html>

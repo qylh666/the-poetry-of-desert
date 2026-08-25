@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>佣兵悬赏板</title>
+  <link rel="stylesheet" href="./forum.css">
+</head>
+<body>
+  <div class="page">
+    <header class="header">
+      <div class="brand">佣兵悬赏板 <em>· 委托与悬赏</em></div>
+      <div class="worldline">三大势力张贴 · 接取后回会话推进</div>
+    </header>
+
+    <div class="card" style="border-color:var(--line-strong);">
+      <div class="card-title"><span class="ic">⚔️</span>接取说明</div>
+      <p class="desc">点击「接取委托」后，任务会作为一条消息回传到<b>当前会话</b>，由对话中的角色扮演 Agent 为你展开这段剧情。悬赏报酬以晶体结算（1 晶体 = 10 金币 = 50 银币）。</p>
+    </div>
+
+    <div id="quests"><div class="empty">加载中…</div></div>
+    <div class="tip" id="tip" style="margin-top:.6rem;"></div>
+
+    <footer class="footer">佣兵悬赏板 · 幻沙帝国商会 / 魔法师协会 / 圣殿骑士团 联合张贴</footer>
+  </div>
+
+  <script>
+    const $ = (s) => document.querySelector(s);
+    const DATA = "forum/bounty.data.json";
+    let quests = [];
+
+    function esc(s) {
+      return String(s ?? "").replace(/[&<>"']/g, (c) => ({
+        "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;"
+      }[c]));
+    }
+
+    function setTip(t, ok) {
+      const el = $("#tip");
+      el.textContent = t;
+      el.style.color = ok ? "var(--gold)" : "var(--danger)";
+    }
+
+    async function load() {
+      try { quests = (await fetch("./bounty.data.json").then((r) => r.json())).quests || []; }
+      catch { quests = []; }
+      render();
+    }
+
+    function render() {
+      $("#quests").innerHTML = quests.length ? quests.slice().sort((a, b) => (b.id || 0) - (a.id || 0)).map((q) => `
+        <div class="card">
+          <div class="quest-head">
+            <span class="quest-title">${esc(q.title)}</span>
+            <span class="tag ${esc(q.posterTag || "t-alliance")}">${esc(q.poster)}</span>
+            <span class="diff">${Array.from({ length: 5 }, (_, i) => `<i class="${i < (q.diff || 1) ? "on" : ""}"></i>`).join("")}</span>
+            <span class="reward">${esc(q.reward)} 晶体</span>
+          </div>
+          <p class="desc">${esc(q.desc)}</p>
+          <div class="quest-foot">
+            <span class="quest-loc">📍 ${esc(q.loc)}</span>
+            <button class="btn btn-primary btn-sm" ${q.claimed ? "disabled" : ""} onclick="claim(${q.id})">
+              ${q.claimed ? "已接取" : "接取委托"}
+            </button>
+          </div>
+        </div>`).join("") : '<div class="empty">暂无委托</div>';
+    }
+
+    async function claim(id) {
+      const q = quests.find((x) => x.id === id);
+      if (!q || q.claimed) return;
+      const rt = await spherse.getRuntime().catch(() => null);
+      if (!rt?.sessionId) return setTip("当前不在会话中：请从聊天卡片打开本页再接取任务", false);
+      try {
+        await spherse.sendMessage({ sessionId: rt.sessionId, message: q.prompt });
+        q.claimed = true;
+        q.claimedBy = "旅人";
+        await spherse.data.set({ file: DATA, key: "quests", value: quests });
+        setTip(`已接取《${q.title}》，剧情将在会话中展开`, true);
+        render();
+      } catch (e) {
+        setTip(e.message === "session_busy" ? "会话正在生成，请稍后重试" : "发送失败，请重试", false);
+      }
+    }
+
+    spherse.events.on("file:update", { path: "./bounty.data.json" }, load);
+    load();
+  </script>
+</body>
+</html>

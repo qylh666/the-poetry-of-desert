@@ -1,0 +1,1144 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>地理总览 · 沙漠之歌工作台</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,600;0,700;1,400&family=Inter:wght@300;400;500;600&family=Noto+Serif+SC:wght@400;600&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg: #12100d;
+            --bg-elevated: #14171e;
+            --surface: #1c1a16;
+            --surface-hover: #24211b;
+            --gold: #c9a96a;
+            --gold-bright: #e8d5a4;
+            --gold-mid: #a88955;
+            --gold-dim: #6e5a3a;
+            --text-primary: #ede4d4;
+            --text-secondary: #b5a990;
+            --text-faint: #7a7263;
+            --font-display: 'Cormorant Garamond', 'Noto Serif SC', serif;
+            --font-body: 'Inter', 'Noto Sans SC', sans-serif;
+            --radius: 2px;
+            --transition: 0.35s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body {
+            background: var(--bg);
+            color: var(--text-primary);
+            font-family: var(--font-body);
+            min-height: 100vh;
+            display: flex;
+            position: relative;
+            overflow-x: hidden;
+            background-image: radial-gradient(circle at 30% 110%, rgba(201,169,106,0.08) 0%, transparent 50%);
+        }
+        body::before {
+            content: '';
+            position: fixed; top: 0; left: 0; right: 0; bottom: 0;
+            background-image: repeating-linear-gradient(0deg, transparent, transparent 7px, rgba(201,169,106,0.015) 7px, rgba(201,169,106,0.015) 8px), repeating-linear-gradient(90deg, transparent, transparent 7px, rgba(201,169,106,0.01) 7px, rgba(201,169,106,0.01) 8px);
+            pointer-events: none; z-index: 0;
+        }
+
+        /* ========== 侧边栏 ========== */
+        .sidebar {
+            width: 210px;
+            min-height: 100vh;
+            background: rgba(20, 23, 30, 0.97);
+            border-right: 2px solid transparent;
+            border-image: linear-gradient(180deg, transparent 0%, rgba(201,169,106,0.5) 20%, rgba(201,169,106,0.5) 80%, transparent 100%) 1;
+            position: sticky;
+            top: 0;
+            left: 0;
+            z-index: 10;
+            display: flex;
+            flex-direction: column;
+            flex-shrink: 0;
+            backdrop-filter: blur(20px);
+        }
+
+        .sidebar-brand {
+            text-align: center;
+            padding: 24px 18px 18px;
+            position: relative;
+            margin-bottom: 6px;
+        }
+
+        .sidebar-brand::after {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 65%;
+            height: 1px;
+            background: linear-gradient(90deg, transparent, var(--gold-dim), var(--gold), var(--gold-dim), transparent);
+        }
+
+        .sidebar-brand h1 {
+            font-family: var(--font-display);
+            font-size: 22px;
+            font-weight: 700;
+            color: var(--text-primary);
+            letter-spacing: 0.08em;
+            text-shadow: 0 0 30px rgba(201,169,106,0.4);
+        }
+
+        .sidebar-brand span {
+            font-family: var(--font-body);
+            font-size: 9px;
+            color: var(--gold-dim);
+            letter-spacing: 0.5em;
+            text-transform: uppercase;
+            display: block;
+            margin-top: 5px;
+        }
+
+        .sidebar-section {
+            font-family: var(--font-body);
+            font-size: 10px;
+            color: var(--gold-mid);
+            letter-spacing: 0.28em;
+            text-transform: uppercase;
+            padding: 16px 22px 8px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .sidebar-section::after {
+            content: '';
+            flex: 1;
+            height: 1px;
+            background: linear-gradient(90deg, rgba(201,169,106,0.4), transparent);
+        }
+
+        .sidebar-nav {
+            list-style: none;
+            padding: 0;
+        }
+
+        .sidebar-nav li { margin: 1px 0; }
+
+        .sidebar-nav a {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 9px 22px;
+            color: var(--text-secondary);
+            font-family: var(--font-body);
+            font-size: 13px;
+            font-weight: 400;
+            text-decoration: none;
+            letter-spacing: 0.04em;
+            border-left: 2px solid transparent;
+            transition: var(--transition);
+        }
+
+        .sidebar-nav a:hover {
+            color: var(--text-primary);
+            background: rgba(201,169,106,0.04);
+        }
+
+        .sidebar-nav a.active {
+            color: var(--gold-bright);
+            border-left-color: var(--gold);
+            background: rgba(201,169,106,0.06);
+        }
+
+        .sidebar-nav .nav-num {
+            font-family: var(--font-display);
+            font-size: 11px;
+            color: var(--gold-dim);
+            width: 16px;
+            text-align: center;
+            flex-shrink: 0;
+        }
+
+        /* ========== 侧边栏分组与子项 ========== */
+        .sidebar-nav a.nav-toggle {
+            cursor: pointer;
+            user-select: none;
+        }
+
+        .sidebar-nav a.nav-toggle.open { color: var(--gold-mid); }
+
+        .sidebar-nav .nav-arrow {
+            margin-left: auto;
+            font-size: 9px;
+            color: var(--gold-dim);
+            transition: transform var(--transition);
+            flex-shrink: 0;
+        }
+
+        .sidebar-nav a.nav-toggle.open .nav-arrow { transform: rotate(90deg); }
+
+        .nav-sub {
+            list-style: none;
+            padding: 0;
+            display: none;
+        }
+
+        .nav-sub.open { display: block; }
+
+        .nav-sub a {
+            padding: 7px 22px 7px 46px;
+            font-size: 12px;
+            font-weight: 300;
+            color: var(--text-faint);
+            letter-spacing: 0.05em;
+        }
+
+        .nav-sub a:hover {
+            color: var(--text-primary);
+            background: rgba(201,169,106,0.04);
+        }
+
+        .nav-sub a.active {
+            color: var(--gold-bright);
+            border-left-color: var(--gold);
+            background: rgba(201,169,106,0.06);
+        }
+
+        .nav-sub .nav-dot {
+            width: 4px; height: 4px;
+            background: var(--gold-dim);
+            transform: rotate(45deg);
+            flex-shrink: 0;
+            transition: var(--transition);
+        }
+
+        .nav-sub a.active .nav-dot {
+            background: var(--gold);
+            box-shadow: 0 0 6px rgba(201,169,106,0.7);
+        }
+
+        .sidebar-footer {
+            margin-top: auto;
+            padding: 14px 22px 18px;
+            font-size: 10px;
+            color: var(--text-faint);
+            letter-spacing: 0.15em;
+            text-align: center;
+            border-top: 1px solid rgba(201,169,106,0.2);
+            position: relative;
+        }
+
+        .sidebar-footer::before {
+            content: '❖';
+            position: absolute;
+            top: -7px;
+            left: 50%;
+            transform: translateX(-50%);
+            color: var(--gold-dim);
+            font-size: 9px;
+            background: var(--bg-elevated);
+            padding: 0 8px;
+        }
+
+        /* ========== 主区域 ========== */
+        .main {
+            flex: 1;
+            position: relative;
+            z-index: 5;
+            padding: 28px 36px 50px;
+            min-width: 0;
+        }
+
+        .topbar {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding-bottom: 16px;
+            margin-bottom: 22px;
+            position: relative;
+        }
+
+        .topbar::after {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            height: 2px;
+            background: linear-gradient(90deg,
+                rgba(201,169,106,0.9) 0%,
+                rgba(201,169,106,0.5) 20%,
+                rgba(201,169,106,0.15) 50%,
+                rgba(201,169,106,0.5) 80%,
+                rgba(201,169,106,0.9) 100%);
+        }
+
+        .topbar::before {
+            content: '❖';
+            position: absolute;
+            bottom: -8px;
+            left: 50%;
+            transform: translateX(-50%);
+            color: var(--gold);
+            font-size: 11px;
+            text-shadow: 0 0 15px rgba(201,169,106,0.8);
+            background: var(--bg);
+            padding: 0 10px;
+            z-index: 2;
+        }
+
+        .breadcrumb {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-size: 12px;
+            color: var(--text-faint);
+            letter-spacing: 0.08em;
+        }
+
+        .breadcrumb .separator { color: var(--gold-dim); font-size: 9px; }
+        .breadcrumb .current { color: var(--gold); }
+
+        .topbar-status {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            font-size: 11px;
+            color: var(--text-faint);
+            letter-spacing: 0.1em;
+        }
+
+        .status-dot {
+            width: 6px; height: 6px;
+            border-radius: 50%;
+            background: var(--gold);
+            box-shadow: 0 0 12px rgba(201,169,106,0.8);
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 1; box-shadow: 0 0 12px rgba(201,169,106,0.8); }
+            50% { opacity: 0.4; box-shadow: 0 0 4px rgba(201,169,106,0.3); }
+        }
+
+        .page { max-width: 1200px; margin: 0 auto; position: relative; z-index: 1; }
+        .header { text-align: center; padding-bottom: 18px; margin-bottom: 24px; position: relative; }
+        .header::after { content: ''; position: absolute; bottom: 0; left: 50%; transform: translateX(-50%); width: 60%; height: 1px; background: linear-gradient(90deg, transparent, var(--gold-dim), var(--gold), var(--gold-dim), transparent); }
+        .header h1 { font-family: var(--font-display); font-size: 30px; font-weight: 700; letter-spacing: 0.06em; text-shadow: 0 0 30px rgba(201,169,106,0.4); }
+        .header .sub { font-size: 12px; color: var(--text-faint); letter-spacing: 0.2em; text-transform: uppercase; margin-top: 4px; }
+
+        .search-row { display: flex; align-items: center; gap: 15px; margin-bottom: 20px; }
+        .search-input { flex: 1; padding: 10px 16px; background: rgba(0,0,0,0.35); border: 1px solid rgba(201,169,106,0.25); border-radius: var(--radius); color: var(--text-primary); font-family: var(--font-body); font-size: 13px; outline: none; transition: var(--transition); }
+        .search-input:focus { border-color: rgba(201,169,106,0.6); box-shadow: 0 0 15px rgba(201,169,106,0.1); }
+        .btn { padding: 8px 14px; background: transparent; border: 1px solid rgba(201,169,106,0.4); border-radius: var(--radius); color: var(--gold); font-family: var(--font-body); font-size: 12px; cursor: pointer; transition: var(--transition); white-space: nowrap; }
+        .btn:hover { background: rgba(201,169,106,0.1); border-color: rgba(201,169,106,0.7); }
+
+        .crumb { display: flex; align-items: center; gap: 8px; margin-bottom: 18px; font-size: 12px; color: var(--text-faint); flex-wrap: wrap; }
+        .crumb .sep { color: var(--gold-dim); }
+        .crumb button { background: none; border: none; color: var(--gold); cursor: pointer; font-family: var(--font-body); font-size: 12px; transition: var(--transition); padding: 0; }
+        .crumb button:hover { text-decoration: underline; }
+        .crumb .cur { color: var(--text-primary); font-weight: 500; }
+
+        .main-grid { display: grid; grid-template-columns: 1fr 300px; gap: 20px; }
+        @media (max-width: 900px) { .main-grid { grid-template-columns: 1fr; } }
+
+        .map-card {
+            background: var(--surface);
+            border: 1px solid rgba(201,169,106,0.25);
+            outline: 1px solid rgba(201,169,106,0.08);
+            outline-offset: 4px;
+            border-radius: var(--radius);
+            overflow: hidden;
+            position: relative;
+        }
+        .map-container { position: relative; }
+        #mapSvg { width: 100%; height: auto; display: block; }
+        .map-controls { position: absolute; bottom: 12px; left: 12px; display: flex; gap: 8px; z-index: 5; }
+        .map-btn { padding: 6px 12px; background: rgba(18,16,13,0.9); border: 1px solid rgba(201,169,106,0.45); border-radius: var(--radius); color: var(--gold); font-size: 11px; cursor: pointer; transition: var(--transition); backdrop-filter: blur(8px); }
+        .map-btn:hover { background: rgba(201,169,106,0.15); }
+
+        .detail-panel {
+            background: rgba(18,16,13,0.95);
+            border: 1px solid rgba(201,169,106,0.3);
+            border-radius: var(--radius);
+            padding: 16px 18px;
+            margin-top: 12px;
+            backdrop-filter: blur(10px);
+        }
+        .detail-panel .dp-title { font-family: var(--font-display); font-size: 19px; font-weight: 700; color: var(--gold-bright); margin-bottom: 4px; }
+        .detail-panel .dp-meta { font-size: 10px; color: var(--text-faint); letter-spacing: 0.15em; text-transform: uppercase; margin-bottom: 8px; }
+        .detail-panel .dp-desc { font-size: 13px; color: var(--text-secondary); line-height: 1.7; font-weight: 300; }
+
+        .right-panel { display: flex; flex-direction: column; gap: 15px; }
+        .info-card {
+            background: var(--surface);
+            border: 1px solid rgba(201,169,106,0.2);
+            outline: 1px solid rgba(201,169,106,0.06);
+            outline-offset: 4px;
+            border-radius: var(--radius);
+            padding: 14px 16px;
+        }
+        .info-card .ic-title { font-family: var(--font-display); font-size: 17px; font-weight: 600; color: var(--gold); margin-bottom: 6px; }
+        .info-card .ic-desc { font-size: 12px; color: var(--text-secondary); line-height: 1.6; }
+        .tier-chip { display: inline-block; padding: 1px 6px; margin-left: 6px; font-size: 9px; letter-spacing: 0.1em; border: 1px solid rgba(158,59,52,0.5); border-radius: 2px; color: #c46b63; vertical-align: middle; }
+        .bubble-wrap { display: flex; flex-wrap: wrap; gap: 12px; }
+        .bubble {
+            background: var(--surface);
+            border: 1px solid rgba(201,169,106,0.3);
+            border-radius: var(--radius);
+            padding: 12px 14px;
+            cursor: pointer;
+            transition: var(--transition);
+            min-width: 100px;
+            flex: 1 0 auto;
+            text-align: center;
+        }
+        .bubble:hover { background: var(--surface-hover); transform: translateY(-2px); border-color: rgba(201,169,106,0.6); }
+        .bubble .b-name { font-family: var(--font-display); font-size: 15px; color: var(--text-primary); font-weight: 600; }
+        .bubble .b-sub { font-size: 10px; color: var(--text-faint); margin-top: 4px; }
+
+        .edit-actions { display: flex; gap: 8px; margin-top: 10px; flex-wrap: wrap; }
+        .modal-overlay {
+            display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.7); z-index: 50;
+            align-items: center; justify-content: center; padding: 20px;
+        }
+        .modal-overlay.open { display: flex; }
+        .modal {
+            background: var(--surface); border: 1px solid rgba(201,169,106,0.4); border-radius: 4px;
+            padding: 20px; width: 100%; max-width: 460px; position: relative;
+            box-shadow: 0 0 40px rgba(0,0,0,0.8);
+        }
+        .modal h3 { font-family: var(--font-display); font-size: 18px; color: var(--gold); margin-bottom: 14px; }
+        .modal label { display: block; font-size: 12px; color: var(--text-secondary); margin-bottom: 8px; }
+        .modal input { width: 100%; padding: 8px 10px; background: rgba(0,0,0,0.35); border: 1px solid rgba(201,169,106,0.25); border-radius: var(--radius); color: var(--text-primary); font-family: var(--font-body); font-size: 13px; outline: none; margin-bottom: 8px; }
+        .modal .modal-btns { display: flex; gap: 8px; justify-content: flex-end; margin-top: 12px; }
+
+        /* ========== 响应式 ========== */
+        @media (max-width: 768px) {
+            .sidebar { display: none; }
+            .main { padding: 20px 16px; }
+            .topbar-status { display: none; }
+        }
+        /* ========== 侧边栏折叠 ========== */
+        .sidebar { transition: width 0.3s cubic-bezier(0.4, 0, 0.2, 1); }
+        .sidebar.collapsed { width: 56px; }
+        .sidebar.collapsed .sidebar-brand h1,
+        .sidebar.collapsed .sidebar-brand span,
+        .sidebar.collapsed .sidebar-section,
+        .sidebar.collapsed .sidebar-nav,
+        .sidebar.collapsed .sidebar-footer { display: none; }
+        .sidebar.collapsed .sidebar-brand { padding: 24px 0 18px; }
+        .sidebar.collapsed .sidebar-brand::before {
+            content: '沙';
+            font-family: var(--font-display);
+            font-size: 22px;
+            font-weight: 700;
+            color: var(--gold-bright);
+            display: block;
+            text-align: center;
+            text-shadow: 0 0 20px rgba(201,169,106,0.4);
+        }
+        .sb-toggle {
+            position: absolute;
+            right: 8px; top: 50%;
+            transform: translateY(-50%);
+            width: 20px; height: 20px;
+            border-radius: 4px;
+            background: transparent;
+            border: 1px solid rgba(201,169,106,0.35);
+            color: var(--gold-mid);
+            font-size: 9px;
+            cursor: pointer;
+            display: flex; align-items: center; justify-content: center;
+            transition: var(--transition);
+            font-family: var(--font-body);
+            z-index: 2;
+        }
+        .sb-toggle:hover { color: var(--gold-bright); border-color: var(--gold); background: rgba(201,169,106,0.1); }
+        .sidebar.collapsed .sb-toggle { right: 17px; }
+        .sidebar.collapsed .sb-toggle:hover { background: rgba(201,169,106,0.15); }
+
+        /* ========== 侧边栏收起：按钮 + 竖向标题 ========== */
+        .sb-brand-v {
+            display: none;
+            writing-mode: vertical-rl;
+            font-family: var(--font-display);
+            font-size: 12px;
+            letter-spacing: 0.4em;
+            line-height: 1.4;
+            color: var(--gold-bright);
+            text-shadow: 0 0 16px rgba(201,169,106,0.35);
+        }
+        .sidebar.collapsed .sb-brand-v { display: block; order: 1; }
+        .sidebar.collapsed .sidebar-brand::before { content: none; }
+        .sidebar.collapsed .sidebar-brand {
+            padding: 14px 0;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 12px;
+        }
+        .sidebar.collapsed .sb-toggle { position: static; transform: none; order: 0; }
+        .sidebar-brand span {
+            font-size: 7px;
+            letter-spacing: 0.22em;
+            text-transform: uppercase;
+            margin-top: 6px;
+        }
+        /* ========== 亮色主题（白 + 宝蓝，参考 亮色工作台.html） ========== */
+        body.light {
+            --bg: #f5f8fc;
+            --bg-elevated: #ffffff;
+            --surface: #ffffff;
+            --surface-hover: #f0f4fa;
+            --gold: #1e40af;
+            --gold-bright: #2563eb;
+            --gold-mid: #3b82f6;
+            --gold-dim: #93b4f5;
+            --red: #c0392b;
+            --purple: #5a6fa8;
+            --blue: #2563eb;
+            --text-primary: #1a2538;
+            --text-secondary: #4a5870;
+            --text-faint: #8a95a8;
+            --line: rgba(30, 64, 175, 0.18);
+        }
+        body.light {
+            background-image:
+                radial-gradient(circle at 50% 0%, rgba(30, 64, 175, 0.06) 0%, transparent 45%),
+                radial-gradient(circle at 50% 110%, rgba(37, 99, 235, 0.04) 0%, transparent 40%);
+        }
+        body.light::before {
+            background-image:
+                repeating-linear-gradient(0deg, transparent, transparent 7px, rgba(30, 64, 175, 0.015) 7px, rgba(30, 64, 175, 0.015) 8px),
+                repeating-linear-gradient(90deg, transparent, transparent 7px, rgba(30, 64, 175, 0.01) 7px, rgba(30, 64, 175, 0.01) 8px);
+        }
+        .theme-toggle {
+            margin: 12px 16px 6px;
+            padding: 7px 12px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            border: 1px solid var(--line);
+            border-radius: var(--radius);
+            color: var(--text-secondary);
+            cursor: pointer;
+            transition: var(--transition);
+            font-size: 12px;
+            flex-shrink: 0;
+            background: var(--surface);
+        }
+        .theme-toggle:hover { background: var(--surface-hover); color: var(--gold); border-color: var(--gold); }
+        .theme-toggle .tt-icon { font-size: 13px; }
+        .theme-toggle .tt-text { letter-spacing: 0.1em; }
+        .sidebar.collapsed .theme-toggle { display: none; }
+        .mc-theme {
+            position: absolute;
+            top: 12px; right: 12px;
+            width: 26px; height: 26px;
+            border-radius: 6px;
+            border: 1px solid var(--line);
+            background: var(--surface-hover);
+            color: var(--gold-mid);
+            cursor: pointer;
+            font-size: 13px;
+            display: flex; align-items: center; justify-content: center;
+            transition: var(--transition);
+            z-index: 3;
+        }
+        .mc-theme {
+            position: static;
+            display: inline-flex;
+            align-items: center;
+            gap: 7px;
+            padding: 6px 12px;
+            border: 1px solid var(--line);
+            border-radius: var(--radius);
+            background: var(--surface);
+            color: var(--text-secondary);
+            cursor: pointer;
+            font-size: 12px;
+            transition: var(--transition);
+        }
+        .mc-theme:hover { color: var(--gold); border-color: var(--gold); background: var(--surface-hover); }
+        .mc-theme .tt-icon { font-size: 13px; }
+        .mc-theme .tt-text { letter-spacing: 0.1em; }
+        /* 亮色去金化：圆角对齐模板，容器/输入/按钮边框统一为宝蓝线条 */
+        body.light { --radius: 6px; }
+        body.light .card,
+        body.light .frame-card,
+        body.light .todo-card,
+        body.light .mini-cal,
+        body.light .modal,
+        body.light .event-card,
+        body.light .cal-card,
+        body.light .char-card,
+        body.light .term-card,
+        body.light .bubble,
+        body.light .notice,
+        body.light .pt-card,
+        body.light .info-card,
+        body.light .map-card,
+        body.light .input,
+        body.light .search-input,
+        body.light .year-input,
+        body.light .todo-input,
+        body.light .comment-input,
+        body.light .feed-input,
+        body.light .chat-input,
+        body.light .pt-input,
+        body.light .modal input,
+        body.light .modal textarea,
+        body.light .modal select,
+        body.light .field .input,
+        body.light .relcanvas { border-color: var(--line); }
+        body.light .btn,
+        body.light .chip,
+        body.light .tag,
+        body.light .tag-user,
+        body.light .meta-chip,
+        body.light .member-chip,
+        body.light .sub-node-chip,
+        body.light .tl-tag { border-color: var(--line); }
+        body.light .btn:hover,
+        body.light .chip:hover,
+        body.light .meta-chip:hover { border-color: var(--gold); background: var(--surface-hover); }
+        body.light input:focus,
+        body.light textarea:focus,
+        body.light select:focus { border-color: var(--gold-bright); }
+        body.light .card,
+        body.light .frame-card,
+        body.light .todo-card,
+        body.light .mini-cal,
+        body.light .modal,
+        body.light .char-card,
+        body.light .term-card,
+        body.light .bubble { box-shadow: 0 2px 12px rgba(30, 64, 175, 0.08); }
+        /* ========== 亮色补全：去黑去金 ========== */
+        body.light .input,
+        body.light .search-input,
+        body.light .year-input,
+        body.light .todo-input,
+        body.light .comment-input,
+        body.light .feed-input,
+        body.light .chat-input,
+        body.light .pt-input,
+        body.light .modal input,
+        body.light .modal textarea,
+        body.light .modal select,
+        body.light .field .input { background: var(--bg); color: var(--text-primary); }
+        body.light .day-cell { background: var(--surface-hover); border-color: var(--line); }
+        body.light .relcanvas { background: var(--surface-hover); }
+        body.light .frame-card,
+        body.light .card,
+        body.light .todo-card,
+        body.light .mini-cal,
+        body.light .modal,
+        body.light .char-card,
+        body.light .term-card,
+        body.light .bubble,
+        body.light .event-card,
+        body.light .cal-card,
+        body.light .info-card { outline: 1px solid var(--line); outline-offset: 3px; }
+        body.light .topbar::after {
+            background: linear-gradient(90deg, var(--gold) 0%, rgba(30,64,175,0.5) 20%, rgba(30,64,175,0.15) 50%, rgba(30,64,175,0.5) 80%, var(--gold) 100%);
+        }
+        body.light .sidebar { background: var(--bg-elevated); border-image: linear-gradient(180deg, transparent 0%, rgba(30,64,175,0.5) 20%, rgba(30,64,175,0.5) 80%, transparent 100%) 1; }
+        body.light .status-dot { box-shadow: 0 0 12px rgba(37,99,235,0.5); animation: pulseLight 2s infinite; }
+        /* ========== 亮色统一补丁 ========== */
+        body.light .header h1,
+        body.light .page-heading h2 { color: var(--gold); }
+        body.light .page-heading h2 { text-shadow: none; }
+        body.light .mc-chip { border-color: var(--line); background: var(--surface-hover); }
+        .theme-toggle, .mc-theme { white-space: nowrap; }
+        body.light .delbar { background: var(--surface); }
+        /* ========== 侧边栏固定视口高度 + 主题滚动条 ========== */
+        .sidebar { height: 100vh; min-height: 100vh; overflow-y: auto; }
+        ::-webkit-scrollbar { width: 8px; height: 8px; }
+        ::-webkit-scrollbar-track { background: transparent; }
+        ::-webkit-scrollbar-thumb { background: var(--gold-dim); border-radius: 4px; }
+        ::-webkit-scrollbar-thumb:hover { background: var(--gold-mid); }
+        * { scrollbar-width: thin; scrollbar-color: var(--gold-dim) transparent; }
+        @keyframes pulseLight {
+            0%, 100% { opacity: 1; box-shadow: 0 0 12px rgba(37,99,235,0.5); }
+            50% { opacity: 0.4; box-shadow: 0 0 4px rgba(37,99,235,0.15); }
+        }
+        /* ========== 亮色：地图加深 ========== */
+        body.light #mapSvg text { fill: var(--text-primary) !important; }
+        body.light #mapSvg circle { fill: var(--gold); stroke: var(--text-primary); }
+        body.light #mapSvg path[fill*="138,109,59"] { fill: rgba(30,64,175,0.28); }
+        body.light #mapSvg path[stroke*="201,169,106"] { stroke: rgba(30,64,175,0.65); }
+        body.light #mapSvg path[fill*="150,165,180"] { fill: rgba(37,99,235,0.14); }
+        body.light #mapSvg path[stroke*="150,165,180"] { stroke: rgba(37,99,235,0.6); }
+        body.light #mapSvg path[fill*="120,160,120"] { fill: rgba(37,99,235,0.16); }
+        body.light #mapSvg path[stroke*="120,160,120"] { stroke: rgba(37,99,235,0.6); }
+        body.light #mapSvg .meher-plot ellipse { stroke: rgba(107,74,122,0.65); fill: rgba(107,74,122,0.3); }
+        body.light #mapSvg ellipse { stroke: rgba(30,64,175,0.55); }
+        /* ========== 亮色：地图控件/详情面板浅色化 ========== */
+        body.light .map-btn { background: var(--surface); border-color: var(--line); color: var(--gold); }
+        body.light .detail-panel { background: var(--surface); border-color: var(--line); }
+    </style>
+</head>
+<body>
+
+    <!-- ========== 侧边栏 ========== -->
+    <aside class="sidebar">
+        <div class="sidebar-brand">
+            <h1>沙漠之歌</h1>
+            <span>The Poetry of Desert</span>
+            <div class="sb-brand-v">沙漠之歌·导航栏</div>
+            <button class="sb-toggle" onclick="toggleSidebar()" title="折叠/展开侧边栏">❮</button>
+        </div>
+
+        <div class="sidebar-section">导航</div>
+        <ul class="sidebar-nav">
+            <li><a href="../开始页.html"><span class="nav-num">I</span>欢迎</a></li>
+            <li>
+                <a href="#" class="nav-toggle" onclick="toggleNav(event, this)"><span class="nav-num">II</span>功能模块<span class="nav-arrow">▸</span></a>
+                <ul class="nav-sub">
+                    <li><a href="../功能模块/酒馆.html"><span class="nav-dot"></span>酒馆</a></li>
+                    <li><a href="../功能模块/日历.html"><span class="nav-dot"></span>日历</a></li>
+                </ul>
+            </li>
+            <li>
+                <a href="#" class="nav-toggle open" onclick="toggleNav(event, this)"><span class="nav-num">III</span>设定资料<span class="nav-arrow">▸</span></a>
+                <ul class="nav-sub open">
+                    <li><a href="势力与阵营.html"><span class="nav-dot"></span>势力与阵营</a></li>
+                    <li><a href="历史事件.html"><span class="nav-dot"></span>历史事件</a></li>
+                    <li><a href="地理总览.html" class="active"><span class="nav-dot"></span>地理总览</a></li>
+                    <li><a href="术语库.html"><span class="nav-dot"></span>术语库</a></li>
+                    <li><a href="角色档案库.html"><span class="nav-dot"></span>角色档案库</a></li>
+                </ul>
+            </li>
+        </ul>
+
+        <div class="sidebar-footer">v 0.2.0 · 地理总览</div>
+
+        <div class="theme-toggle" onclick="toggleTheme()" title="切换亮色 / 暗色主题">
+            <span class="tt-icon">🌙</span>
+            <span class="tt-text">暗色</span>
+        </div>
+    </aside>
+
+    <!-- ========== 主区域 ========== -->
+    <main class="main">
+        <div class="topbar">
+            <div class="breadcrumb">
+                工作台 <span class="separator">❖</span> 设定资料 <span class="separator">❖</span> <span class="current">地理总览</span>
+            </div>
+            <div class="topbar-status">
+                <span class="status-dot"></span>
+                <span>系统正常</span>
+                <span style="color:var(--gold-dim);">|</span>
+                <span>星陨 2000 a.s.</span>
+            </div>
+        </div>
+
+        <div class="page">
+            <div class="header">
+                <h1>地理总览</h1>
+                <div class="sub">尤克特拉</div>
+            </div>
+
+            <div class="search-row">
+                <input id="q" class="search-input" placeholder="搜索地名 / 国家 / 城镇…" />
+                <button class="btn" onclick="clearSearch()">清除</button>
+            </div>
+
+            <div class="crumb" id="crumb"></div>
+
+            <div class="main-grid">
+                <!-- 左侧地图 -->
+                <div class="map-card">
+                    <div class="map-container">
+                        <svg id="mapSvg" viewBox="0 0 700 480" preserveAspectRatio="xMidYMid meet">
+                            <defs>
+                                <pattern id="grid" width="30" height="30" patternUnits="userSpaceOnUse">
+                                    <path d="M 30 0 L 0 0 0 30" fill="none" stroke="rgba(201,169,106,0.1)" stroke-width="0.5"/>
+                                </pattern>
+                                <filter id="glow"><feGaussianBlur stdDeviation="3" result="blur"/><feMerge><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge></filter>
+                            </defs>
+                            <rect width="100%" height="100%" fill="url(#grid)"/>
+                            <!-- 大陆轮廓：西沙海 / 中部平原 / 北雪山 / 东森林 / 西南始源岛 -->
+                            <path d="M120,100 L380,70 L580,140 L620,290 L450,420 L180,390 Z" fill="rgba(138,109,59,0.25)" stroke="rgba(201,169,106,0.55)" stroke-width="1.5"/>
+                            <!-- 地形虚线轮廓（贴合大陆轮廓，区域边界可重叠） -->
+                            <path d="M132,110 L250,96 L302,162 L298,252 L292,332 L238,386 L176,384 Z" fill="rgba(201,169,106,0.05)" stroke="rgba(201,169,106,0.55)" stroke-width="1.2" stroke-dasharray="7,5"/>
+                            <path d="M220,92 L378,76 L560,142 L552,196 L430,184 L320,178 L258,150 Z" fill="rgba(150,165,180,0.05)" stroke="rgba(150,165,180,0.55)" stroke-width="1.2" stroke-dasharray="7,5"/>
+                            <path d="M318,192 L420,180 L532,198 L578,262 L556,342 L472,398 L378,400 L322,348 Z" fill="rgba(138,109,59,0.05)" stroke="rgba(201,169,106,0.55)" stroke-width="1.2" stroke-dasharray="7,5"/>
+                            <path d="M545,152 L582,160 L608,258 L548,282 L524,216 Z" fill="rgba(120,160,120,0.06)" stroke="rgba(120,160,120,0.55)" stroke-width="1.2" stroke-dasharray="7,5"/>
+                            <!-- 梅赫尔（异空间 · 画在地图视野之外，通常视角不可见） -->
+                            <g class="meher-plot">
+                                <ellipse cx="1450" cy="-420" rx="48" ry="34" fill="none" stroke="rgba(180,140,200,0.35)" stroke-width="1" stroke-dasharray="4,4"/>
+                                <ellipse cx="1450" cy="-420" rx="34" ry="22" fill="rgba(107,74,122,0.35)" stroke="rgba(180,140,200,0.6)" stroke-width="1.5"/>
+                            </g>
+                            <!-- 始源岛（西南近海） -->
+                            <ellipse cx="120" cy="430" rx="26" ry="16" fill="rgba(138,109,59,0.3)" stroke="rgba(201,169,106,0.5)" stroke-width="1.2"/>
+                            <!-- 地图地点标记由 JS 根据数据绘制 -->
+                        </svg>
+                        <div class="map-controls">
+                            <button class="map-btn" id="resetMapBtn">返回全图</button>
+                        </div>
+                    </div>
+                    <div class="detail-panel" id="detailPanel" style="display:none;">
+                        <div class="dp-title" id="dpTitle"></div>
+                        <div class="dp-meta" id="dpMeta"></div>
+                        <div class="dp-desc" id="dpDesc"></div>
+                    </div>
+                    <div style="font-size:11px; color:var(--text-faint); text-align:center; padding:8px;">点击地图地点放大，点击右侧气泡进入子层级</div>
+                </div>
+
+                <!-- 右侧面板：信息 + 气泡导航 -->
+                <div class="right-panel">
+                    <div class="info-card" id="infoPanel">
+                        <div class="ic-title" id="infoTitle"></div>
+                        <div class="ic-desc" id="infoDesc"></div>
+                        <div class="edit-actions">
+                            <button class="btn" onclick="editCurrent()">编辑当前</button>
+                            <button class="btn" onclick="addChildCurrent()">新增子项</button>
+                            <button class="btn" onclick="goUp()">返回上一级</button>
+                        </div>
+                    </div>
+                    <div class="bubble-wrap" id="bubbles"></div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <!-- 编辑弹窗 -->
+    <div class="modal-overlay" id="editorWrap">
+        <div class="modal">
+            <h3 id="editorTitle"></h3>
+            <div id="editorFields"></div>
+            <div class="modal-btns">
+                <button class="btn" onclick="closeEditor()">取消</button>
+                <button class="btn" id="editorSave">保存</button>
+            </div>
+        </div>
+    </div>
+
+<script>
+// ========== 侧边栏分组展开/收起 ==========
+function toggleNav(event, el) {
+    if (event) event.preventDefault();
+    el.classList.toggle('open');
+    const sub = el.nextElementSibling;
+    if (sub) sub.classList.toggle('open');
+}
+
+// ========== 侧边栏折叠 ==========
+function toggleSidebar() {
+    const sb = document.querySelector('.sidebar');
+    const collapsed = sb.classList.toggle('collapsed');
+    const btn = document.querySelector('.sb-toggle');
+    if (btn) btn.textContent = collapsed ? '❯' : '❮';
+    try { localStorage.setItem('smq_sidebar_collapsed', collapsed ? '1' : '0'); } catch (e) {}
+}
+(function initSidebar() {
+    const sb = document.querySelector('.sidebar');
+    const btn = document.querySelector('.sb-toggle');
+    if (!sb || !btn) return;
+    try {
+        if (localStorage.getItem('smq_sidebar_collapsed') === '1') {
+            sb.classList.add('collapsed');
+            btn.textContent = '❯';
+        }
+    } catch (e) {}
+})();
+
+// ========== 主题切换（暗色 / 亮色） ==========
+function applyTheme(light) {
+    document.body.classList.toggle('light', light);
+    document.querySelectorAll('.theme-toggle, .mc-theme').forEach(btn => {
+        const icon = btn.querySelector('.tt-icon');
+        const text = btn.querySelector('.tt-text');
+        if (icon) icon.textContent = light ? '☀' : '🌙';
+        if (text) text.textContent = light ? '亮色' : '暗色';
+    });
+}
+function toggleTheme() {
+    const light = !document.body.classList.contains('light');
+    applyTheme(light);
+    try { localStorage.setItem('smq_theme', light ? 'light' : 'dark'); } catch (e) {}
+}
+(function initTheme() {
+    try {
+        if (localStorage.getItem('smq_theme') === 'light') applyTheme(true);
+    } catch (e) {}
+})();
+
+// ========== 数据（来源：forum/地理总览.data.json） ==========
+const geoData = {
+  overview: [
+    {
+      id: 'yggdra', name: '尤克特拉大陆', desc: '大陆总面积约 1000 万 km²，人口约 5400 万。由创世神以世界树残骸创造（此真相属 L2）。空流弥漫于每一寸土地，陨石坠落之处是文明的中心。', area: 1000, pop: 5400,
+      coords: { x: 350, y: 250, zoom: 1.15 },
+      children: [
+        { id: 'desert', name: '西部 · 瓦格尔沙漠', desc: '几乎覆盖整个西部地域的沙海，约占大陆三分之一。白天酷热、夜晚寒冷；深处空流浓度高、魔种活跃，越深入越危险。沙漠中藏着创世神的神殿——黄昏神殿（传说神殿陨落之时便是尤克特拉末日）。', area: 300, pop: 1080, coords: { x: 215, y: 230, zoom: 1.6 }, children: [
+          { id: 'huansha', name: '幻沙帝国', desc: '皇帝经占卜、试炼与议会推举产生，权威来自对创世神意志与神秘知识的解读。国境贴近沙漠边缘——再往深处魔种横行、太过危险；夜间启用沙土结界隐匿身形以避魔种。', area: 300, pop: 1080, coords: { x: 275, y: 295, zoom: 1.7 }, children: [
+            { id: 'oasis-cap', name: '绿洲都城', desc: '第 500 届凯旋日主会场所在地。日落之后集市重新活跃，白天酷热使市场空旷。', area: 0, pop: 0, coords: { x: 252, y: 315, zoom: 7 }, children: [] },
+            { id: 'oasis-towns', name: '绿洲城市与游牧部落', desc: '有限的绿洲是居民赖以生存的核心区域，水源的分布与管控直接影响帝国的政治结构。', area: 0, pop: 0, coords: { x: 286, y: 272, zoom: 7 }, children: [] }
+          ] }
+        ] },
+        { id: 'plain', name: '中南部 · 唯伟珥平原', desc: '大陆最平坦、土壤最肥沃的区域，气候温和、四季分明。平原中央是陨石坠落之地，陨石坑被城市建筑与穹顶结构覆盖。第一、第二区域亦划属此级。', area: 250, pop: 2700, coords: { x: 430, y: 280, zoom: 1.9 }, children: [
+          { id: 'retian', name: '瑞蒂安王国', desc: '占据唯伟珥平原，人口大陆最多。农业与人口腹地，交通便利，商业发达。国王握最终决策权，受元老院双重制衡。', area: 250, pop: 2700, coords: { x: 420, y: 325, zoom: 1.9 }, children: [
+            { id: 'helnr', name: '希尼尔城（都城）', desc: '筑于陨石坠落之地，位处平原正中心；以"智慧之城"著称。皇家图书院收藏较完整的《沙漠之歌》。', area: 0, pop: 0, coords: { x: 448, y: 290, zoom: 7 }, children: [] },
+            { id: 'yanhai', name: '晏海城（海港）', desc: '东海岸海港城，安玛斯特学院所在地；"活的、喧闹的、湿漉漉的"。', area: 0, pop: 0, coords: { x: 555, y: 345, zoom: 7 }, children: [] },
+            { id: 'retian-provinces', name: '行省与沿海城市', desc: '境内有沿海城市、河流和森林，由总督管理行省。', area: 0, pop: 0, coords: { x: 450, y: 370, zoom: 7 }, children: [] }
+          ] },
+          { id: 'orbis', name: '第一区域 · 奥比斯', desc: '教会直辖特区，教皇加百列常驻；正位于沙漠、瑞蒂安与利夫兹三国交界的接壤点上，整体呈规则矩形、以白塔为中心向外辐射，圣殿骑士团总部设于北部。', area: 10, pop: 0.5, coords: { x: 310, y: 190, zoom: 4.5 }, children: [] },
+          { id: 'helai', name: '第二区域 · 何莱', desc: '瑞蒂安与利夫兹各划一部分国土合并而成，正位于两国边境线上，三国联盟与法协共同治理；大陆种族与文化最混杂之地。', area: 20, pop: 120, coords: { x: 445, y: 192, zoom: 4.2 }, children: [
+            { id: 'dike', name: '珑区 · 狄刻', desc: '亚人-珑聚集区，由法协高级成员德拉贡管理。', area: 0, pop: 0, coords: { x: 427, y: 185, zoom: 7 }, children: [] },
+            { id: 'eunomia', name: '灵区 · 欧诺弥亚', desc: '亚人-灵聚集区，由法协皇家级玛格丽特·卡斯特利亚管理。', area: 0, pop: 0, coords: { x: 463, y: 192, zoom: 7 }, children: [] },
+            { id: 'eirene', name: '人类区 · 厄瑞涅', desc: '人类聚集区，由法协高级成员花稚生管理。', area: 0, pop: 0, coords: { x: 448, y: 212, zoom: 7 }, children: [] }
+          ] }
+        ] },
+        { id: 'snow', name: '北部 · 藏雪山与冻土', desc: '大陆最高峰藏雪山，空流浓度随海拔递增（仅次于空流池）。北境约占大陆三分之一，周围以冻土和针叶林为主，长年低温、几乎没有季节概念。', area: 350, pop: 1500, coords: { x: 400, y: 135, zoom: 1.5 }, children: [
+          { id: 'lives', name: '利夫兹王国', desc: '面积大陆最大。终年寒冷，几乎没有传统意义上的春天；天赋被视为国家资源，境内尚存奴隶制度。', area: 350, pop: 1500, coords: { x: 350, y: 125, zoom: 1.5 }, children: [
+            { id: 'huige', name: '彗阁城（都城）', desc: '建在藏雪山脚下不远处的平缓坡地上，海拔较高，空流浓度随高度递增。', area: 0, pop: 0, coords: { x: 375, y: 88, zoom: 7 }, children: [] },
+            { id: 'lives-south', name: '南部谷地 · 矿区 · 要塞城市', desc: '人口集中于南部谷地、矿区及要塞城市。', area: 0, pop: 0, coords: { x: 330, y: 170, zoom: 7 }, children: [] }
+          ] }
+        ] },
+        { id: 'forest', name: '东部 · 佛格特森林', desc: '古老的森林，又称"迷失之森"：迷雾结界保护，若无带领贸然闯入会在渐浓的雾中迷失方向。', area: 50, pop: 90, coords: { x: 570, y: 205, zoom: 3.2 }, children: [
+          { id: 'sencity', name: '森之城', desc: '亚人最早的起源地；居民居住在巨大树木的根系间、树洞中或悬空木廊上，坚守绝对中立。', area: 50, pop: 90, coords: { x: 570, y: 220, zoom: 3.2 }, children: [] }
+        ] }
+      ]
+    },
+    { id: 'shiyuan', name: '始源岛', tier: 'L1', desc: '位于大陆西南方向的近海，面积不大。洛丽玛丝岛人类最初的居住地，如今是"禁忌之地"，由法协/三国联盟/教会轮流看守。', area: 2, pop: 0, coords: { x: 120, y: 430, zoom: 5 }, children: [] },
+    { id: 'meher', name: '梅赫尔', tier: 'L2', desc: '位于异空间中的一座小岛，原是世界树的一部分。大陆人不知道它的存在（密特拉以"救赎之地"的模糊传说间接知晓）。点击后视角会跳跃至异空间。', area: 1, pop: 0, coords: { x: 1450, y: -420, zoom: 4.5 }, offmap: true, children: [] }
+  ]
+};
+
+let currentId = null; // null 表示总览
+let mapSvg, detailPanel, infoPanel;
+
+// ========== 工具 ==========
+const $ = s => document.querySelector(s);
+function esc(s) { return String(s ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
+function buildIndex(nodes, parent) {
+    let map = {}, par = {};
+    const walk = (arr, p) => {
+        (arr || []).forEach(n => {
+            map[n.id] = n; par[n.id] = p;
+            if (n.children) walk(n.children, n.id);
+        });
+    };
+    walk(nodes, null);
+    return { map, par };
+}
+function findNode(arr, id) {
+    for (const n of arr) {
+        if (n.id === id) return n;
+        if (n.children) { const r = findNode(n.children, id); if (r) return r; }
+    }
+    return null;
+}
+
+// ========== 初始化地图 ==========
+const fullViewBox = { x: 0, y: 0, width: 700, height: 480 };
+function initMap() {
+    mapSvg = document.getElementById('mapSvg');
+    detailPanel = document.getElementById('detailPanel');
+    infoPanel = document.getElementById('infoPanel');
+}
+
+function animateMapTo(targetBox, duration = 500) {
+    const startBox = {
+        x: mapSvg.viewBox.baseVal.x, y: mapSvg.viewBox.baseVal.y,
+        width: mapSvg.viewBox.baseVal.width, height: mapSvg.viewBox.baseVal.height
+    };
+    const startTime = performance.now();
+    function ease(t) { return t < 0.5 ? 4*t*t*t : (t-1)*(2*t-2)*(2*t-2)+1; }
+    function step(now) {
+        const t = Math.min((now - startTime) / duration, 1);
+        const e = ease(t);
+        mapSvg.setAttribute('viewBox',
+            `${startBox.x + (targetBox.x-startBox.x)*e} ${startBox.y + (targetBox.y-startBox.y)*e} ${startBox.width + (targetBox.width-startBox.width)*e} ${startBox.height + (targetBox.height-startBox.height)*e}`);
+        if (t < 1) requestAnimationFrame(step);
+    }
+    requestAnimationFrame(step);
+}
+
+// 计算某个节点的目标视角；offmap（异空间）节点允许跳出地图范围
+function viewBoxFor(node) {
+    const w = fullViewBox.width / node.coords.zoom;
+    const h = fullViewBox.height / node.coords.zoom;
+    let x = node.coords.x - w / 2;
+    let y = node.coords.y - h / 2;
+    if (!node.offmap) {
+        x = Math.max(0, Math.min(x, fullViewBox.width - w));
+        y = Math.max(0, Math.min(y, fullViewBox.height - h));
+    }
+    return { x, y, width: w, height: h };
+}
+
+// ========== 地图标记绘制 ==========
+function drawMapMarkers(nodes) {
+    document.querySelectorAll('.map-loc').forEach(g => g.remove());
+
+    const { map } = buildIndex(geoData.overview, null);
+    const current = currentId ? map[currentId] : null;
+    const children = current ? (current.children || []) : geoData.overview;
+
+    children.forEach(n => {
+        if (n.coords) {
+            const g = document.createElementNS('http://www.w3.org/2000/svg', 'g');
+            g.setAttribute('class', 'map-loc');
+            g.setAttribute('data-id', n.id);
+            g.innerHTML = `<circle cx="${n.coords.x}" cy="${n.coords.y}" r="6" fill="#c9a96a" stroke="#ede4d4" stroke-width="1.5" style="cursor:pointer;"/><text x="${n.coords.x}" y="${n.coords.y - 12}" fill="#ede4d4" font-size="12" text-anchor="middle" style="pointer-events:none;">${esc(n.name)}</text>`;
+            mapSvg.appendChild(g);
+            g.addEventListener('click', () => {
+                go(n.id);
+                if (n.coords) animateMapTo(viewBoxFor(n));
+            });
+        }
+    });
+}
+
+// ========== 渲染 ==========
+function render() {
+    const { map, par } = buildIndex(geoData.overview, null);
+    const node = currentId ? map[currentId] : null;
+
+    // 面包屑
+    let path = [];
+    let p = currentId;
+    while (p) { path.unshift(p); p = par[p]; }
+    const crumbEl = document.getElementById('crumb');
+    if (!currentId) {
+        crumbEl.innerHTML = '<span class="cur">总览 · 尤克特拉</span>';
+    } else {
+        crumbEl.innerHTML = '<button onclick="go(null)">总览</button>' + path.map((id, i) => {
+            const n = map[id];
+            return '<span class="sep">›</span>' + (i < path.length - 1
+                ? `<button onclick="go('${n.id}')">${esc(n.name)}</button>`
+                : `<span class="cur">${esc(n.name)}</span>`);
+        }).join('');
+    }
+
+    // 右侧信息面板
+    const infoTitle = document.getElementById('infoTitle');
+    const infoDesc = document.getElementById('infoDesc');
+    if (!node) {
+        infoTitle.textContent = '大陆总览';
+        infoDesc.textContent = '点击气泡逐层进入：大陆 → 地形 → 国家 → 城镇。';
+    } else {
+        infoTitle.innerHTML = esc(node.name) + (node.tier ? `<span class="tier-chip">${esc(node.tier)}</span>` : '');
+        infoDesc.textContent = node.desc || '—';
+    }
+
+    // 气泡
+    const children = node ? (node.children || []) : geoData.overview;
+    const bubbleWrap = document.getElementById('bubbles');
+    if (!children.length) {
+        bubbleWrap.innerHTML = '<div style="font-size:12px;color:var(--text-faint);padding:8px;">此处没有下一层</div>';
+    } else {
+        bubbleWrap.innerHTML = children.map(n => {
+            const areaTxt = n.area ? '约' + n.area + '万km²' : '';
+            const tierTxt = n.tier ? '分级 ' + esc(n.tier) : '';
+            return `<div class="bubble" onclick="go('${n.id}')">
+                <div class="b-name">${esc(n.name)}</div>
+                <div class="b-sub">${[tierTxt, areaTxt].filter(Boolean).join(' · ')}</div>
+            </div>`;
+        }).join('');
+    }
+
+    // 地图标记
+    drawMapMarkers(children);
+
+    // 详情面板（地图点击后显示）
+    if (node && node.coords) {
+        document.getElementById('dpTitle').textContent = node.name;
+        document.getElementById('dpMeta').textContent = '面积 ' + (node.area || '?') + ' 万km²';
+        document.getElementById('dpDesc').textContent = node.desc || '—';
+        detailPanel.style.display = 'block';
+    } else {
+        detailPanel.style.display = 'none';
+    }
+}
+
+// ========== 导航 ==========
+function go(id) {
+    currentId = id;
+    const { map } = buildIndex(geoData.overview, null);
+    const node = id ? map[id] : null;
+    if (node && node.coords) {
+        animateMapTo(viewBoxFor(node));
+    } else if (!id) {
+        animateMapTo(fullViewBox);
+    }
+    render();
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+function goUp() {
+    if (!currentId) return;
+    const { map, par } = buildIndex(geoData.overview, null);
+    go(par[currentId] || null);
+}
+
+// ========== 搜索 ==========
+function doSearch() {
+    const q = ($('#q').value || '').trim().toLowerCase();
+    if (!q) return;
+    const { map } = buildIndex(geoData.overview, null);
+    const hits = Object.values(map).filter(n => (n.name + ' ' + (n.desc || '')).toLowerCase().includes(q));
+    if (hits.length) {
+        go(hits[0].id);
+    } else {
+        alert('未找到');
+    }
+}
+function clearSearch() { $('#q').value = ''; }
+$('#q').addEventListener('keydown', e => { if (e.key === 'Enter') doSearch(); });
+
+// ========== 编辑与新增 ==========
+function editCurrent() {
+    if (!currentId) return;
+    const { map } = buildIndex(geoData.overview, null);
+    const node = map[currentId];
+    openEditor('编辑 · ' + node.name, node, false);
+}
+function addChildCurrent() {
+    if (!currentId) return;
+    const { map } = buildIndex(geoData.overview, null);
+    const node = map[currentId];
+    openEditor('在「' + node.name + '」下新增', { name: '', desc: '', area: 0, pop: 0 }, true);
+}
+function openEditor(title, node, isNew) {
+    const wrap = $('#editorWrap');
+    $('#editorTitle').textContent = title;
+    $('#editorFields').innerHTML = `
+        <label>名称<input id="ef_name" value="${esc(node.name)}"></label>
+        <label>描述<input id="ef_desc" value="${esc(node.desc || '')}"></label>
+        <label>面积（万km²）<input id="ef_area" type="number" value="${node.area || ''}"></label>
+        <label>人口（万）<input id="ef_pop" type="number" value="${node.pop || ''}"></label>
+        <label>X坐标<input id="ef_x" type="number" value="${node.coords ? node.coords.x : ''}"></label>
+        <label>Y坐标<input id="ef_y" type="number" value="${node.coords ? node.coords.y : ''}"></label>
+        <label>缩放级别<input id="ef_zoom" type="number" step="0.5" value="${node.coords ? node.coords.zoom : 3}"></label>
+    `;
+    wrap.classList.add('open');
+    $('#editorSave').onclick = () => {
+        const out = {
+            name: $('#ef_name').value.trim(),
+            desc: $('#ef_desc').value.trim(),
+            area: parseFloat($('#ef_area').value) || 0,
+            pop: parseFloat($('#ef_pop').value) || 0,
+            coords: { x: parseFloat($('#ef_x').value) || 0, y: parseFloat($('#ef_y').value) || 0, zoom: parseFloat($('#ef_zoom').value) || 3 }
+        };
+        if (!out.name) { alert('名称不能为空'); return; }
+        if (isNew) {
+            node.children = node.children || [];
+            node.children.push({ id: 'n' + Date.now(), ...out, children: [] });
+        } else {
+            Object.assign(node, out);
+        }
+        closeEditor();
+        render();
+    };
+}
+function closeEditor() { $('#editorWrap').classList.remove('open'); }
+
+// ========== 启动 ==========
+document.getElementById('resetMapBtn').addEventListener('click', () => go(null));
+initMap();
+render();
+</script>
+</body>
+</html>

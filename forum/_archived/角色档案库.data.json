@@ -1,0 +1,213 @@
+{
+  "groups": [
+    { "id": "alliance", "name": "三国联盟", "tag": "t-alliance" },
+    { "id": "church", "name": "创世神教", "tag": "t-church" },
+    { "id": "guild", "name": "魔法师协会", "tag": "t-guild" },
+    { "id": "meher", "name": "梅赫尔", "tag": "t-meher", "tier": "L2" },
+    { "id": "forest", "name": "森之城", "tag": "t-forest" },
+    { "id": "gone", "name": "「逝者」", "tag": "t-gone" },
+    { "id": "academy", "name": "安玛斯特学院", "tag": "t-academy" }
+  ],
+  "chars": [
+    {
+      "id": "islant", "name": "伊斯兰特·伊德·瑞蒂安", "aliases": "Islant Idr Retian", "race": "人类（亚人-珑混血）", "gender": "男", "element": "火", "identity": "瑞蒂安王国国王", "height": "172cm", "birthday": "4.25", "nation": "瑞蒂安王国", "likes": "—", "dislikes": "—", "appearance": "红色短发，左侧鬓发有黑色挑染；金瞳，左眼正下方有颗痣；整体着装以红与金的色调为主。", "intro": "瑞蒂安国王，握最终决策权与军事统帅权，需在元老院贵族派与学术派之间斡旋。", "group": "alliance", "relations": [
+      { "to": "克里斯托夫", "rel": "君臣·挚友", "note": "克里斯托夫对王室忠诚，不仅因身份，还因与国王关系要好" },
+      { "to": "安缇娜·瑞蒂安", "rel": "祖先", "note": "瑞蒂安王室血脉可追溯至建立者安缇娜" }
+    ] },
+    {
+      "id": "anne", "name": "安妮·菲尔·利夫兹", "aliases": "安妮菲尔 / Anne phil Lives", "race": "人类", "gender": "女", "element": "水", "identity": "利夫兹王国女王", "height": "151cm", "birthday": "2.10", "nation": "利夫兹王国", "likes": "—", "dislikes": "—", "appearance": "银色长发在脑袋两侧束成不高不低的双马尾，束处有黑色蝴蝶结；草绿色双瞳；头戴简单的小皇冠；着装以红色小斗篷或宝蓝色裙子为主。", "intro": "虽未掌握实权，但部下一直倾心倾力守护。天真善良，笑容如利夫兹梦中春天的花朵。", "group": "alliance", "relations": [
+      { "to": "艾萨克·格里芬", "rel": "君主·摄政", "note": "实际政务由摄政王艾萨克与枢密院执掌" }
+    ] },
+    {
+      "id": "isaac", "name": "艾萨克·格里芬", "aliases": "Isaac Griffin", "race": "人类", "gender": "男", "element": "风", "identity": "利夫兹王国摄政王", "height": "172cm", "birthday": "—", "nation": "利夫兹王国", "likes": "—", "dislikes": "—", "appearance": "白色短发，发尾偏长呈狼尾；淡粉色双瞳；整体着装以墨绿色或宝蓝色为主。", "intro": "利夫兹实际掌权者，主持枢密院，内部存在保守派与激进派分歧。", "group": "alliance", "relations": [
+      { "to": "安妮·菲尔·利夫兹", "rel": "摄政·君主", "note": "守护年幼女王，掌管实际政务" }
+    ] },
+    {
+      "id": "yofuti", "name": "约芙蒂", "aliases": "—", "race": "亚人-灵-元素精灵", "gender": "女", "element": "风、火、水、土", "identity": "幻沙帝国皇帝", "height": "168cm", "birthday": "—", "nation": "幻沙帝国", "likes": "—", "dislikes": "—", "appearance": "褐色皮肤，耳朵偏长尖；白色长发，发型偏水母头；紫色双瞳，右眼瞳孔呈十字小花状（原因未知）；着装以薄纱、白金色调为主。", "intro": "皇帝经占卜、试炼与议会推举产生，权威来自对创世神意志与神秘知识的解读。", "group": "alliance", "relations": [
+      { "to": "阿斯", "rel": "皇帝·太子", "note": "阿斯为幻沙帝国太子" },
+      { "to": "图特", "rel": "君臣", "note": "图特为大祭司，辅佐皇帝解读神意" }
+    ] },
+    {
+      "id": "andrei", "name": "安德里·德·瓦兰特", "aliases": "安德里德 / Andrei de Valente", "race": "亚人-珑-龙", "gender": "男", "element": "水", "identity": "利夫兹皇家骑士团团长", "height": "—", "birthday": "—", "nation": "利夫兹王国", "likes": "—", "dislikes": "—", "appearance": "—", "intro": "利夫兹皇家骑士团团长。", "group": "alliance", "relations": [
+      { "to": "利夫兹王室", "rel": "效忠", "note": "统领皇家骑士团" }
+    ] },
+    {
+      "id": "as", "name": "阿斯", "aliases": "—", "race": "亚人-珑-狼", "gender": "男", "element": "风", "identity": "幻沙帝国太子", "height": "—", "birthday": "—", "nation": "幻沙帝国", "likes": "自由、旅行", "dislikes": "被王位束缚", "appearance": "白色短发，恰到好处的黄白皮肤，黄色而明亮的双瞳。", "intro": "性格少年气，比起继承王位更想做个旅行者、向往自由，但他是被选中的，所以没办法。日后会加入主角小队。", "group": "alliance", "relations": [
+      { "to": "约芙蒂", "rel": "太子·皇帝", "note": "幻沙帝国太子" },
+      { "to": "伊芙·艾德", "rel": "同伴", "note": "学院篇相识，日后加入主角小队" }
+    ] },
+    {
+      "id": "thoth", "name": "图特", "aliases": "Thoth", "race": "亚人-珑-鸟", "gender": "男", "element": "水", "identity": "幻沙帝国大祭司", "height": "—", "birthday": "—", "nation": "幻沙帝国", "likes": "—", "dislikes": "—", "appearance": "褐色皮肤，银色长到脚踝的长发；宝蓝色双瞳，眼上画着精致的眼线。", "intro": "语言幽默，同时不失上位者与祭司的尊严和气场。", "group": "alliance", "relations": [
+      { "to": "约芙蒂", "rel": "君臣", "note": "幻沙帝国大祭司" }
+    ] },
+
+    {
+      "id": "gabriel", "name": "查理·加百列", "aliases": "Charlie Gabriel", "race": "亚人-灵-天使/神", "gender": "男", "element": "天", "identity": "创世神教教皇", "height": "153cm", "birthday": "1.31", "nation": "森之城", "likes": "少年、潮流时尚", "dislikes": "—", "appearance": "外表为十来岁的人类孩童模样，但实际年龄未知；金色短发，右侧少量鬓发为宝蓝色；金色双瞳；着装以教会黑金、黑红制服（短裤装）为主，佩戴身份象征的圣带。", "intro": "教会教皇，实力莫测，凭督查司与出色的口才头脑将教会发展强大；来历成谜；自称\"老夫\"，笑眯眯爱开玩笑，愉悦中带威严。", "group": "church", "tier": "L2", "secret": "实为神之时代主神灵魂碎片·奥丁（SEC-03）", "relations": [
+      { "to": "胡音", "rel": "教皇·部下", "note": "\"教皇之眼\"，最忠诚的部下之一" },
+      { "to": "慕灵", "rel": "教皇·部下", "note": "\"教皇之眼\"，最忠诚的部下之一" },
+      { "to": "撒迦利亚·阿斯塔罗斯·贝利亚尔", "rel": "教皇·团长", "note": "圣殿骑士团受教皇与督查司协调" }
+    ] },
+    {
+      "id": "huyin", "name": "胡音", "aliases": "—", "race": "亚人-珑-鸟", "gender": "男", "element": "风", "identity": "创世神教督查司", "height": "165cm", "birthday": "—", "nation": "森之城", "likes": "—", "dislikes": "—", "appearance": "灰色短发，左侧头发别了黑色羽饰；红色双瞳；着装以黑红色制服（短裤装）为主，外套左肩佩黑色羽毛披肩。", "intro": "与慕灵是姐弟，同为教皇最忠诚的部下。性格较冷淡，对外人更严厉。被称为\"教皇之眼\"。", "group": "church", "relations": [
+      { "to": "慕灵", "rel": "姐弟", "note": "慕灵为姐，胡音为弟" },
+      { "to": "查理·加百列", "rel": "忠诚部下", "note": "\"教皇之眼\"" }
+    ] },
+    {
+      "id": "muling", "name": "慕灵", "aliases": "—", "race": "亚人-灵-鸟", "gender": "女", "element": "风", "identity": "创世神教督查司", "height": "165cm", "birthday": "—", "nation": "森之城", "likes": "—", "dislikes": "—", "appearance": "灰色长发在背部束起，右侧头发别了黑色羽饰；红色双瞳；着装以黑红色制服（长裙装）为主，外套右肩佩黑色羽毛披肩。", "intro": "与胡音是姐弟，同为教皇最忠诚的部下。性格较活泼开朗。被称为\"教皇之眼\"。", "group": "church", "relations": [
+      { "to": "胡音", "rel": "姐弟", "note": "慕灵为姐，胡音为弟" },
+      { "to": "查理·加百列", "rel": "忠诚部下", "note": "\"教皇之眼\"" }
+    ] },
+    {
+      "id": "zachariah", "name": "撒迦利亚·阿斯塔罗斯·贝利亚尔", "aliases": "Zechariah Astaroth Beliar", "race": "亚人-珑-龙", "gender": "男", "element": "火", "identity": "圣殿骑士团团长", "height": "184cm", "birthday": "2.8", "nation": "瑞蒂安王国", "likes": "—", "dislikes": "—", "appearance": "皮肤白皙，耳朵偏长尖；红色短发，脸颊两侧鬓角稍长；蓝色双瞳；着装以黑红色制服（长裤装）为主。", "intro": "出身红龙贵族贝利亚尔家，明面上最后的纯血红龙。对骑士团成员如家人般温和慈祥；唯独对法协会长安东尼奥有着深邃、扭曲的感情。", "group": "church", "tier": "L2", "secret": "米迦勒在尤克特拉的卧底（SEC-02）；与安东尼奥为发小（CHB-01）", "relations": [
+      { "to": "安东尼奥", "rel": "发小·宿敌", "note": "表面针锋相对，私下斗嘴打赌；凯旋日曾赌上性命与会长之位（CHB-01，L1）" },
+      { "to": "圣殿骑士十二席", "rel": "团长·追随者", "note": "十二席全部自愿追随，羁绊深厚" },
+      { "to": "查理·加百列", "rel": "教皇·团长", "note": "骑士团行动需经教皇/督查司协调" }
+    ] },
+    {
+      "id": "peter", "name": "彼得·迈恩哈德·韦伯斯特", "aliases": "Peter Meinhard Webster", "race": "人类？", "gender": "男", "element": "火、天", "identity": "圣殿骑士十二席·首席", "height": "179cm", "birthday": "1.11", "nation": "瑞蒂安王国", "likes": "—", "dislikes": "—", "appearance": "黑色齐肩短发，后发束成高马尾，双耳有十字耳坠；金色双瞳；着装以黑红色长披风长裤制服为主。常戴小围巾，围巾与衣领下是曾被父亲砍伤的、永远无法抹去的颈部疤痕。", "intro": "出身尤克特拉著名剑士家族，能将剑术与魔法完美融合，被誉为\"人类最强\"。", "group": "church", "relations": [
+      { "to": "七月·加德纳·爱德华", "rel": "旧同学", "note": "曾与七月是同学，同出身贵族" },
+      { "to": "撒迦利亚·阿斯塔罗斯·贝利亚尔", "rel": "团长·首席", "note": "十二席之首" }
+    ] },
+    {
+      "id": "jake", "name": "雅各", "aliases": "—", "race": "人类", "gender": "女", "element": "土", "identity": "圣殿骑士十二席·第二席", "height": "172cm", "birthday": "—", "nation": "利夫兹王国", "likes": "喝酒", "dislikes": "—", "appearance": "棕色长发在脑后束起长长的高马尾；紫色双瞳；着装以黑红色（高开叉上衣、长裤装）制服为主。", "intro": "外表是典型的知心大姐姐，比团长更接地气地善解人意。喜欢喝酒、酒量很好，即使酒品很差（曾喝醉对着炉子唱歌被老板请出去）。", "group": "church", "relations": [
+      { "to": "泰伦", "rel": "非亲生姐弟", "note": "泰伦是养子" }
+    ] },
+    {
+      "id": "john", "name": "约翰", "aliases": "—", "race": "亚人-珑-犬", "gender": "男", "element": "火、土", "identity": "圣殿骑士十二席·第三席", "height": "—", "birthday": "—", "nation": "瑞蒂安王国", "likes": "—", "dislikes": "—", "appearance": "—", "intro": "圣殿骑士十二席·第三席。", "group": "church", "relations": [] },
+    {
+      "id": "andre", "name": "安德烈", "aliases": "—", "race": "亚人-灵-天使", "gender": "男", "element": "风", "identity": "圣殿骑士十二席·第四席", "height": "—", "birthday": "—", "nation": "森之城", "likes": "—", "dislikes": "—", "appearance": "—", "intro": "圣殿骑士十二席·第四席。", "group": "church", "relations": [] },
+    {
+      "id": "jing", "name": "晶", "aliases": "—", "race": "亚人-灵-元素精灵", "gender": "男", "element": "水", "identity": "圣殿骑士十二席·第五席", "height": "—", "birthday": "—", "nation": "利夫兹王国", "likes": "—", "dislikes": "—", "appearance": "—", "intro": "圣殿骑士十二席·第五席。", "group": "church", "relations": [
+      { "to": "巴格西", "rel": "亲生父女", "note": "晶为女，巴格西为父" }
+    ] },
+    {
+      "id": "bagsee", "name": "巴格西", "aliases": "—", "race": "亚人-灵-元素精灵", "gender": "男", "element": "水", "identity": "圣殿骑士十二席·第六席", "height": "—", "birthday": "—", "nation": "利夫兹王国", "likes": "—", "dislikes": "—", "appearance": "—", "intro": "圣殿骑士十二席·第六席。", "group": "church", "relations": [
+      { "to": "晶", "rel": "亲生父女", "note": "晶为女，巴格西为父" }
+    ] },
+    {
+      "id": "july", "name": "七月·加德纳·爱德华", "aliases": "July Gardner Edward", "race": "人类", "gender": "男", "element": "水", "identity": "圣殿骑士十二席·第七席", "height": "182cm", "birthday": "8.24", "nation": "瑞蒂安王国", "likes": "—", "dislikes": "—", "appearance": "白色长发，红色双瞳，左侧嘴角下有痣；着装以黑红色长披风长裤制服为主。", "intro": "曾与首席彼得是同学，同样出身贵族。外冷内热（\"内热\"的前提是对方得是自己人）。实力不算出彩，但会在故事中得到成长。日后会加入主角团。", "group": "church", "relations": [
+      { "to": "彼得·迈恩哈德·韦伯斯特", "rel": "旧同学", "note": "同出身贵族" },
+      { "to": "伊芙·艾德", "rel": "同伴", "note": "游历大陆时再次相遇并加入主角团" }
+    ] },
+    {
+      "id": "feili", "name": "绯黎", "aliases": "—", "race": "亚人-珑-熊", "gender": "男", "element": "土", "identity": "圣殿骑士十二席·第八席", "height": "—", "birthday": "—", "nation": "幻沙帝国", "likes": "—", "dislikes": "—", "appearance": "—", "intro": "圣殿骑士十二席·第八席。", "group": "church", "relations": [] },
+    {
+      "id": "matia", "name": "玛提亚", "aliases": "—", "race": "人类", "gender": "女", "element": "风", "identity": "圣殿骑士十二席·第九席", "height": "159cm", "birthday": "—", "nation": "瑞蒂安王国", "likes": "调戏别人、开玩笑", "dislikes": "—", "appearance": "粉色短发，草绿色双瞳；着装以黑红色短裙制服为主（无猫耳猫尾）。", "intro": "古灵精怪，喜欢调戏别人、开玩笑；认真场合画风突转严肃。自称\"本小姐\"，说话带\"哼哼～\"\"诶～\"。", "group": "church", "relations": [] },
+    {
+      "id": "meichuan1", "name": "梅川苦一", "aliases": "—", "race": "亚人-灵-元素精灵", "gender": "男", "element": "土", "identity": "圣殿骑士十二席·第十席", "height": "—", "birthday": "—", "nation": "瑞蒂安王国", "likes": "—", "dislikes": "—", "appearance": "—", "intro": "与梅川邪来自同一家族，苦一是弟弟。", "group": "church", "relations": [
+      { "to": "梅川邪", "rel": "亲兄弟", "note": "苦一为弟" }
+    ] },
+    {
+      "id": "meichuan2", "name": "梅川邪", "aliases": "—", "race": "亚人-灵-元素精灵", "gender": "男", "element": "土", "identity": "圣殿骑士十二席·第十一席", "height": "—", "birthday": "—", "nation": "瑞蒂安王国", "likes": "—", "dislikes": "—", "appearance": "—", "intro": "与梅川苦一来自同一家族，邪是哥哥。", "group": "church", "relations": [
+      { "to": "梅川苦一", "rel": "亲兄弟", "note": "邪为兄" }
+    ] },
+    {
+      "id": "tailun", "name": "泰伦", "aliases": "—", "race": "亚人-珑-豹", "gender": "男", "element": "火", "identity": "教会私人雇佣兵团团长", "height": "—", "birthday": "—", "nation": "利夫兹王国", "likes": "—", "dislikes": "—", "appearance": "—", "intro": "教会\"枝\"：雇佣兵团团长，处理灰色事务。", "group": "church", "relations": [
+      { "to": "雅各", "rel": "非亲生姐弟", "note": "泰伦为养子" }
+    ] },
+
+    {
+      "id": "antonio", "name": "安东尼奥", "aliases": "安东尼·阿斯塔罗斯·贝利亚尔（Antoni）/ 哈该·瓦拉克·瑞蒂安（Haggai）", "race": "亚人-珑-龙", "gender": "男", "element": "火", "identity": "魔法师协会会长（第二任）", "height": "154cm（替身）/ 179cm（本体）", "birthday": "6.14", "nation": "森之城（真身为瑞蒂安王室血脉，L2）", "likes": "红色宝石", "dislikes": "撒迦利亚、鱼", "appearance": "替身为少年模样：长尖耳、红短发、两侧鬓角下半部分束起、红瞳；本体为青年：红长发脑后束低马尾、右侧鬓发较长、末端束起、红瞳。无论哪种身姿，着装以白金色制服或白色长外套为主。", "intro": "法协第二任会长，来历成谜，以旁人无法知晓的手段拯救腐朽破碎的法协并发展成大陆最大势力之一。公开猜测出身亚人高贵神秘家族。", "group": "guild", "tier": "L2", "secret": "真名为哈该·瓦拉克·瑞蒂安（瑞蒂安王室私生子）；双身机制；华城研究所大火与 C 计划关联（SEC-03）", "relations": [
+      { "to": "撒迦利亚·阿斯塔罗斯·贝利亚尔", "rel": "发小·宿敌", "note": "表面针锋相对，私下斗嘴打赌（CHB-01，L1）" },
+      { "to": "埃弗蒙德", "rel": "近乎子与父", "note": "安东尼奥为其赎身、赐予玻璃眼球，埃弗蒙德视之如父（CHB-02，L1）" },
+      { "to": "沃特·梅林", "rel": "会长·皇家级", "note": "巴尔匕首被顺走，睁一只眼闭一只眼" },
+      { "to": "奥托·米歇尔", "rel": "大学老师（L2）", "note": "华城研究所大火与奥托（=米迦勒）相关（SEC-03）" },
+      { "to": "玛格丽特·卡斯特利亚", "rel": "会长·皇家级", "note": "联手杀死第一任会长；给她一个月假期（CHS-01，L1）" },
+      { "to": "花立安 / 花稚生", "rel": "杀父之人", "note": "当着兄妹的面处决花稚禾（CHS-02，L1）" }
+    ] },
+    {
+      "id": "margaret", "name": "玛格丽特·卡斯特利亚", "aliases": "Margaret Castalia", "race": "亚人-灵-元素精灵", "gender": "女", "element": "风、火、水、土（专精水）", "identity": "法协皇家级 / 第二区域·灵区-欧诺弥亚管理者", "height": "153cm", "birthday": "11.28", "nation": "利夫兹王国", "likes": "—", "dislikes": "—", "appearance": "—", "intro": "历史上最年轻的皇家级魔法师；卡斯特利亚是很有名的元素精灵贵族大家族。被誉为\"最强魔法师\"。", "group": "guild", "tier": "L1", "secret": "曾受第一任会长要挟毁掉华城研究所 C 计划资料；艾格伯特之死（CHS-01，L1）", "relations": [
+      { "to": "艾格伯特（已故）", "rel": "恋人", "note": "\"待大地逢春之时，我便会回到这里\"——未能见他最后一面（CHS-01，L1）" },
+      { "to": "安东尼奥", "rel": "会长·皇家级", "note": "联手杀死第一任会长" },
+      { "to": "维帕尔·莫森", "rel": "偶像·崇拜者", "note": "维帕尔因她而来学魔法" }
+    ] },
+    {
+      "id": "lively", "name": "莱夫利", "aliases": "—", "race": "亚人-珑-狮", "gender": "男", "element": "火", "identity": "法协皇家级", "height": "—", "birthday": "—", "nation": "森之城", "likes": "—", "dislikes": "—", "appearance": "—", "intro": "法协皇家级成员，与玛格丽特、沃特·梅林同属前三位（实力分水岭之上）。", "group": "guild", "tier": "L2", "secret": "旧设为早已灭亡的皇族子嗣（SEC-03）", "relations": [] },
+    {
+      "id": "wort", "name": "沃特·梅林", "aliases": "？", "race": "？", "gender": "女", "element": "水、风", "identity": "法协皇家级", "height": "—", "birthday": "—", "nation": "利夫兹王国", "likes": "自言自语、恶作剧式社交", "dislikes": "—", "appearance": "—", "intro": "典型\"社交恐怖分子\"，喜欢不顾他人自言自语；战斗时会变成戏谑的\"捕食者\"姿态。爱用匕首\"巴尔\"（附空流转火元素魔法式，可施雷电法术）。", "group": "guild", "tier": "L2", "secret": "华城研究所幸存者，被奥托保护才得以存活（SEC-03）", "relations": [
+      { "to": "安东尼奥", "rel": "会长·皇家级", "note": "巴尔匕首从武器库顺走，安东尼奥睁一只眼闭一只眼" },
+      { "to": "奥托·米歇尔", "rel": "救命恩人（L2）", "note": "华城大火中被奥托保护（SEC-03）" }
+    ] },
+    {
+      "id": "evmond", "name": "埃弗蒙德", "aliases": "—", "race": "亚人-灵-元素精灵（永夜精灵）", "gender": "男", "element": "土", "identity": "法协皇家级 / 安玛斯特学院院长", "height": "—", "birthday": "—", "nation": "利夫兹王国", "likes": "—", "dislikes": "—", "appearance": "白色长发，刘海长过盖住双目（不影响视力），彩色玻璃眼球。", "intro": "永夜精灵一族出身，天蓝色双眸被视为祸害而遭迫害；被安东尼奥赎身并赐予玻璃眼球，视其如父。成长后任学院院长。", "group": "guild", "tier": "L1", "secret": "身世与玻璃眼球来历（CHB-02，L1）", "relations": [
+      { "to": "安东尼奥", "rel": "近乎子与父", "note": "被赎身、被赐予双眼，关系更接近\"子与父\"（CHB-02，L1）" }
+    ] },
+    {
+      "id": "christoph", "name": "克里斯托夫", "aliases": "—", "race": "人类", "gender": "男", "element": "风", "identity": "法协皇家级 / 瑞蒂安皇家护卫队副队长", "height": "—", "birthday": "—", "nation": "瑞蒂安王国", "likes": "—", "dislikes": "—", "appearance": "—", "intro": "对瑞蒂安王室很忠诚，不仅因为身份，还因为与伊斯兰特关系要好。", "group": "guild", "relations": [
+      { "to": "伊斯兰特·伊德·瑞蒂安", "rel": "君臣·挚友", "note": "忠诚源于身份与私交" }
+    ] },
+    {
+      "id": "hualian", "name": "花立安", "aliases": "—", "race": "人类", "gender": "男", "element": "土、火", "identity": "法协皇家级", "height": "—", "birthday": "—", "nation": "利夫兹王国", "likes": "—", "dislikes": "—", "appearance": "—", "intro": "顶替死去的上一任第六位皇家级魔法师。誓要守护妹妹直至死去。", "group": "guild", "tier": "L1", "secret": "父亲花稚禾被安东尼奥处决；母亲被暗物质侵蚀（CHS-02，L1）", "relations": [
+      { "to": "花稚生", "rel": "亲兄妹", "note": "\"我会一直守护你，直至我死去。\"" },
+      { "to": "安东尼奥", "rel": "杀父之人", "note": "花稚禾被安东尼奥处决（CHS-02，L1）" }
+    ] },
+    {
+      "id": "huazhisheng", "name": "花稚生", "aliases": "—", "race": "人类", "gender": "女", "element": "水", "identity": "法协高级成员 / 第二区域·人类区-厄瑞涅管理者", "height": "—", "birthday": "—", "nation": "利夫兹王国", "likes": "—", "dislikes": "—", "appearance": "—", "intro": "花立安的妹妹，见证父母往事记忆后被安东尼奥送走，开启全新人生。", "group": "guild", "tier": "L1", "secret": "父母往事（CHS-02，L1）", "relations": [
+      { "to": "花立安", "rel": "亲兄妹", "note": "被哥哥誓死守护" },
+      { "to": "安东尼奥", "rel": "杀父之人", "note": "（CHS-02，L1）" }
+    ] },
+    {
+      "id": "dragon", "name": "德拉贡", "aliases": "—", "race": "亚人-珑-龙", "gender": "男", "element": "风", "identity": "法协高级成员 / 第二区域·珑区-狄刻管理者", "height": "—", "birthday": "—", "nation": "利夫兹王国", "likes": "—", "dislikes": "—", "appearance": "—", "intro": "法协高级成员，管理何莱珑区-狄刻。", "group": "guild", "relations": [] },
+
+    {
+      "id": "michael", "name": "米迦勒", "aliases": "Michael / 奥托·米歇尔（Otto Michelle）", "race": "神", "gender": "未知/男", "element": "全元素（含天）", "identity": "梅赫尔三神之首", "height": "179cm", "birthday": "—", "nation": "梅赫尔（异空间）", "likes": "—", "dislikes": "—", "appearance": "身为米迦勒时：金色长发、赤红色双瞳、眼神无光、双眼正下方有痣、十指均戴银戒；身为奥托时：白金色长发、两侧鬓发细长末端束起、后发脖处束低马尾、淡红色双瞳。无论哪种姿态，着装以白色为主。", "intro": "世界树安保系统化身；梅赫尔三神之主，承担秩序与教义；最终目的是\"修正\"世界。", "group": "meher", "tier": "L2", "secret": "修正计划、C 计划、对伊芙的植入（SEC-02 / SEC-04）", "relations": [
+      { "to": "尼德霍格", "rel": "契约者", "note": "缔结契约共同行动（SEC-02）" },
+      { "to": "耶梦加得", "rel": "共同统治者", "note": "三神之一（SEC-02）" },
+      { "to": "撒迦利亚·阿斯塔罗斯·贝利亚尔", "rel": "神·卧底（L2）", "note": "撒迦利亚为米迦勒在尤克特拉的剑（SEC-02）" },
+      { "to": "安东尼奥", "rel": "老师·奥托（L2）", "note": "以奥托身份引导华城研究所（SEC-03）" },
+      { "to": "伊芙·艾德", "rel": "造物主（L2）", "note": "仿造人类创造，植入惰性本质（SEC-04）" }
+    ] },
+    {
+      "id": "nidhogg", "name": "尼德霍格", "aliases": "Nidhogg", "race": "神（黑龙始祖）", "gender": "表面为男性", "element": "全元素（含天）", "identity": "梅赫尔三神之一", "height": "195cm", "birthday": "—", "nation": "梅赫尔（异空间）", "likes": "—", "dislikes": "—", "appearance": "长尖耳朵，黑色中长发，发尾束成细麻花辫搭在左肩上；血红色双瞳；着装便于行动、露出整条手臂。", "intro": "啃食世界树根部的毒龙；负责梅赫尔的战斗训练与警戒。言语严厉但从未真正伤害过任何人。", "group": "meher", "tier": "L2", "secret": "封印耶梦加得残余、流放异空间、解除米迦勒封印（SEC-02）", "relations": [
+      { "to": "米迦勒", "rel": "契约者", "note": "强制解除封印并缔约（SEC-02）" },
+      { "to": "耶梦加得", "rel": "挚友", "note": "封印其残余力量以待唤醒（SEC-02）" }
+    ] },
+    {
+      "id": "jormungand", "name": "耶梦加得", "aliases": "Jormungand", "race": "神", "gender": "表面为男性", "element": "全元素（含天）", "identity": "梅赫尔三神之一", "height": "205cm", "birthday": "—", "nation": "梅赫尔（异空间）", "likes": "—", "dislikes": "—", "appearance": "短尖耳朵，墨绿色及地长发，后发较短的部分在脑后束成高马尾；金色双瞳；着装以白色、黑色为主，喜爱佩戴金饰。", "intro": "负责梅赫尔的知识传承与居民精神抚慰，最随和、最受居民喜爱。临别时赐予伊芙祝福。", "group": "meher", "tier": "L2", "secret": "残余力量曾被封印；密特拉\"咏梦者\"（SEC-02）", "relations": [
+      { "to": "尼德霍格", "rel": "挚友", "note": "残余力量被封印，等待唤醒（SEC-02）" },
+      { "to": "伊芙·艾德", "rel": "神·神司", "note": "伊芙为耶梦加得的神司，受其临别祝福（SEC-04）" }
+    ] },
+    {
+      "id": "eve", "name": "伊芙·艾德", "aliases": "Eve", "race": "人类（神造物）", "gender": "女", "element": "水", "identity": "耶梦加得的神司（侍奉者）", "height": "163cm", "birthday": "—", "nation": "梅赫尔（于大陆以旅人身份活动）", "likes": "—", "dislikes": "—", "appearance": "银白头发（扎成短翘的双马尾）、蓝色眼睛（左眼比右眼更偏紫一点点）的少女，单从外表来看平平无奇。", "intro": "主线主角。最开始是个对尤克特拉充满向往和好奇的少女，活泼开朗、富有善心。开篇年龄 17 岁，成为耶梦加得的神司已有两年。", "group": "meher", "tier": "L2", "secret": "C 计划最终产物；体内有米迦勒植入的惰性本质（\"黑匣子\"）；对空流有超常耐性（SEC-04）", "relations": [
+      { "to": "耶梦加得", "rel": "神司·神", "note": "侍奉者，受临别祝福（SEC-04）" },
+      { "to": "米迦勒", "rel": "造物主（L2）", "note": "仿造人类所创，植入本质（SEC-04）" },
+      { "to": "维帕尔·莫森", "rel": "室友", "note": "安玛斯特学院室友" },
+      { "to": "阿斯", "rel": "同伴", "note": "学院篇相识，日后成为旅伴" },
+      { "to": "七月·加德纳·爱德华", "rel": "同伴", "note": "游历大陆时再次相遇" }
+    ] },
+
+    {
+      "id": "oric", "name": "奥里克", "aliases": "树长老 / Orick", "race": "亚人-灵-木", "gender": "男", "element": "土", "identity": "森之城管理者", "height": "—", "birthday": "—", "nation": "森之城（佛格特森林）", "likes": "—", "dislikes": "—", "appearance": "—", "intro": "森之城树长老，主持各族长者会议，以调解与共识治理，坚守绝对中立。", "group": "forest", "relations": [] },
+
+    {
+      "id": "antina", "name": "安缇娜·瑞蒂安", "aliases": "\"弑神者\"", "race": "亚人-珑-龙", "gender": "女", "element": "全元素（含天）", "identity": "瑞蒂安王国建立者", "height": "182cm", "birthday": "—", "nation": "瑞蒂安王国", "likes": "—", "dislikes": "—", "appearance": "—", "intro": "红龙，历史记载的\"弑神者\"；用从神那里夺取的力量统一大陆、建立瑞蒂安王国。", "group": "gone", "tier": "L2", "secret": "并未弑神——创世神将守护大陆的使命与力量交予她；与艾尔亚共眠于虚无之庭（SEC-05）", "relations": [
+      { "to": "艾尔亚·利夫兹", "rel": "发小·扭曲情感", "note": "被艾尔亚困住；如今共眠虚无之庭（SEC-05，L2）" },
+      { "to": "洛丽玛丝", "rel": "继承者·神", "note": "继承守护大陆的使命与力量（SEC-05，L2）" },
+      { "to": "伊芙·艾德", "rel": "试炼者", "note": "在虚无之庭对伊芙进行关于\"死\"的试炼" }
+    ] },
+    {
+      "id": "eliah", "name": "艾尔亚·利夫兹", "aliases": "—", "race": "亚人-珑-龙", "gender": "男", "element": "水", "identity": "利夫兹王国建立者", "height": "187cm", "birthday": "—", "nation": "利夫兹王国", "likes": "—", "dislikes": "—", "appearance": "—", "intro": "白龙，白雾战争发起者，结束第一王国时代；与安缇娜之间有着扭曲的情感。", "group": "gone", "tier": "L2", "secret": "为安缇娜留下\"弑神者\"称号；因暗物质侵蚀而沉睡于虚无之庭（SEC-05）", "relations": [
+      { "to": "安缇娜·瑞蒂安", "rel": "发小·扭曲情感", "note": "共眠虚无之庭，靠坐于对面椅背（SEC-05，L2）" }
+    ] },
+    {
+      "id": "lolimasi", "name": "洛丽玛丝", "aliases": "创世神", "race": "神", "gender": "女", "element": "全元素（含天）", "identity": "创世神 / 死亡之神 / 预言神", "height": "—", "birthday": "—", "nation": "神代", "likes": "—", "dislikes": "—", "appearance": "—", "intro": "教会信仰的创世神。真实身份：预言神、死亡之神；用世界树残骸创造新陆地；其血即生命长河。", "group": "gone", "tier": "L2", "secret": "以世界树残骸创世、传位安缇娜、开辟虚无之庭（SEC-01 / SEC-05）", "relations": [
+      { "to": "安缇娜·瑞蒂安", "rel": "传承·继承者", "note": "将守护大陆的使命与力量交给安缇娜（SEC-05，L2）" }
+    ] },
+
+    {
+      "id": "grace", "name": "格拉西亚·拉波拉斯", "aliases": "—", "race": "亚人-珑-龙", "gender": "男", "element": "水", "identity": "安玛斯特学院学生", "height": "175cm", "birthday": "—", "nation": "瑞蒂安王国", "likes": "艺术", "dislikes": "作弊、偷窃等\"罪恶\"", "appearance": "长尖耳，银白色长发，脑后扎有位置偏低的细长辫子；紫色双瞳，右眼眼下有并列的两颗痣。学院篇以男装校服为主。", "intro": "自诩\"艺术家\"。偶尔在言语中夹带\"知心者\"（指圣天使），用学来的魔法式\"惩戒\"自己眼中的罪恶。学院篇冲突围绕他展开。", "group": "academy", "tier": "L1", "secret": "曾身负重伤被密特拉守夜人所救、被圣天使言论打动；\"知心者\"即米迦勒（L1/L2）", "relations": [
+      { "to": "维帕尔·莫森", "rel": "利用·帮凶", "note": "用\"我能帮你接近玛格丽特\"忽悠维帕尔" },
+      { "to": "米迦勒（知心者）", "rel": "信仰对象（L2）", "note": "以\"知心者\"称呼圣天使" }
+    ] },
+    {
+      "id": "vipar", "name": "维帕尔·莫森", "aliases": "—", "race": "人类", "gender": "女", "element": "火", "identity": "安玛斯特学院学生", "height": "160cm", "birthday": "—", "nation": "利夫兹王国", "likes": "玛格丽特·卡斯特利亚", "dislikes": "—", "appearance": "棕色短发（长度到锁骨），戴有黑色发卡；金色双瞳，双耳佩戴星星耳钉。学院篇以女装校服为主。", "intro": "玛格丽特的忠实崇拜者（\"我是因为她才想来学魔法的\"）。心思单纯，被格拉西亚几句\"我能帮助你接近玛格丽特\"忽悠成帮凶；若被合理说服可以反水。", "group": "academy", "relations": [
+      { "to": "玛格丽特·卡斯特利亚", "rel": "崇拜者·偶像", "note": "因她而来学魔法" },
+      { "to": "格拉西亚·拉波拉斯", "rel": "被利用", "note": "格拉西亚的\"帮凶\"，可被合理说服反水" },
+      { "to": "伊芙·艾德", "rel": "室友", "note": "伊芙在安玛斯特的室友" }
+    ] },
+    {
+      "id": "raphael", "name": "拉法叶尔", "aliases": "—", "race": "—", "gender": "—", "element": "水、土、天", "identity": "校医兼魔药课老师（玫瑰十字会）", "height": "—", "birthday": "—", "nation": "安玛斯特学院 / 晏海城", "likes": "—", "dislikes": "—", "appearance": "—", "intro": "安玛斯特学院校医兼魔药课老师，属于教会的玫瑰十字会。", "group": "academy", "relations": [
+      { "to": "玫瑰十字会", "rel": "所属", "note": "教会\"花\"：传教与基层教区管理" }
+    ] }
+  ]
+}

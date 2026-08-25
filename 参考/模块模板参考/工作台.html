@@ -1,0 +1,1406 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>工作台</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,600;0,700;1,400&family=Inter:wght@300;400;500;600&family=Noto+Serif+SC:wght@400;600&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg: #0f1116;
+            --bg-elevated: #14171e;
+            --surface: #1a1e27;
+            --surface-hover: #20242f;
+            --gold: #c9a96a;
+            --gold-bright: #e8d5a4;
+            --gold-mid: #a88955;
+            --gold-dim: #6e5a3a;
+            --text-primary: #ede4d4;
+            --text-secondary: #a8a091;
+            --text-faint: #6f6a5e;
+            --line: rgba(201, 169, 106, 0.25);
+            --font-display: 'Cormorant Garamond', 'Noto Serif SC', serif;
+            --font-body: 'Inter', 'Noto Sans SC', sans-serif;
+            --radius: 2px;
+            --transition: 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+
+        body {
+            background: var(--bg);
+            color: var(--text-primary);
+            font-family: var(--font-body);
+            min-height: 100vh;
+            display: flex;
+            position: relative;
+            overflow-x: hidden;
+            background-image:
+                radial-gradient(circle at 50% 120%, rgba(201,169,106,0.06) 0%, transparent 50%),
+                radial-gradient(circle at 50% -20%, rgba(158,59,52,0.04) 0%, transparent 40%);
+        }
+
+        body::before {
+            content: '';
+            position: fixed;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background-image:
+                repeating-linear-gradient(0deg, transparent, transparent 7px, rgba(201,169,106,0.015) 7px, rgba(201,169,106,0.015) 8px),
+                repeating-linear-gradient(90deg, transparent, transparent 7px, rgba(201,169,106,0.01) 7px, rgba(201,169,106,0.01) 8px);
+            pointer-events: none;
+            z-index: 0;
+        }
+
+        /* ========== 侧边栏 ========== */
+        .sidebar {
+            width: 210px;
+            min-height: 100vh;
+            background: rgba(20, 23, 30, 0.97);
+            border-right: 2px solid transparent;
+            border-image: linear-gradient(180deg, transparent 0%, rgba(201,169,106,0.5) 20%, rgba(201,169,106,0.5) 80%, transparent 100%) 1;
+            position: sticky;
+            top: 0;
+            left: 0;
+            z-index: 10;
+            display: flex;
+            flex-direction: column;
+            flex-shrink: 0;
+            backdrop-filter: blur(20px);
+        }
+
+        .sidebar-brand {
+            text-align: center;
+            padding: 24px 18px 18px;
+            position: relative;
+            margin-bottom: 6px;
+        }
+
+        .sidebar-brand::after {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 65%;
+            height: 1px;
+            background: linear-gradient(90deg, transparent, var(--gold-dim), var(--gold), var(--gold-dim), transparent);
+        }
+
+        .sidebar-brand h1 {
+            font-family: var(--font-display);
+            font-size: 22px;
+            font-weight: 700;
+            color: var(--text-primary);
+            letter-spacing: 0.08em;
+            text-shadow: 0 0 30px rgba(201,169,106,0.4);
+        }
+
+        .sidebar-brand span {
+            font-family: var(--font-body);
+            font-size: 9px;
+            color: var(--gold-dim);
+            letter-spacing: 0.5em;
+            text-transform: uppercase;
+            display: block;
+            margin-top: 5px;
+        }
+
+        .sidebar-section {
+            font-family: var(--font-body);
+            font-size: 10px;
+            color: var(--gold-mid);
+            letter-spacing: 0.28em;
+            text-transform: uppercase;
+            padding: 16px 22px 8px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .sidebar-section::after {
+            content: '';
+            flex: 1;
+            height: 1px;
+            background: linear-gradient(90deg, rgba(201,169,106,0.4), transparent);
+        }
+
+        .sidebar-nav {
+            list-style: none;
+            padding: 0;
+        }
+
+        .sidebar-nav li { margin: 1px 0; }
+
+        .sidebar-nav a {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 9px 22px;
+            color: var(--text-secondary);
+            font-family: var(--font-body);
+            font-size: 13px;
+            font-weight: 400;
+            text-decoration: none;
+            letter-spacing: 0.04em;
+            border-left: 2px solid transparent;
+            transition: var(--transition);
+        }
+
+        .sidebar-nav a:hover {
+            color: var(--text-primary);
+            background: rgba(201,169,106,0.04);
+        }
+
+        .sidebar-nav a.active {
+            color: var(--gold-bright);
+            border-left-color: var(--gold);
+            background: rgba(201,169,106,0.06);
+        }
+
+        .sidebar-nav .nav-num {
+            font-family: var(--font-display);
+            font-size: 11px;
+            color: var(--gold-dim);
+            width: 16px;
+            text-align: center;
+            flex-shrink: 0;
+        }
+
+        /* ========== 侧边栏分组与子项 ========== */
+        .sidebar-nav a.nav-toggle {
+            cursor: pointer;
+            user-select: none;
+        }
+
+        .sidebar-nav a.nav-toggle.open { color: var(--gold-mid); }
+
+        .sidebar-nav .nav-arrow {
+            margin-left: auto;
+            font-size: 9px;
+            color: var(--gold-dim);
+            transition: transform var(--transition);
+            flex-shrink: 0;
+        }
+
+        .sidebar-nav a.nav-toggle.open .nav-arrow { transform: rotate(90deg); }
+
+        .nav-sub {
+            list-style: none;
+            padding: 0;
+            display: none;
+        }
+
+        .nav-sub.open { display: block; }
+
+        .nav-sub a {
+            padding: 7px 22px 7px 46px;
+            font-size: 12px;
+            font-weight: 300;
+            color: var(--text-faint);
+            letter-spacing: 0.05em;
+        }
+
+        .nav-sub a:hover {
+            color: var(--text-primary);
+            background: rgba(201,169,106,0.04);
+        }
+
+        .nav-sub a.active {
+            color: var(--gold-bright);
+            border-left-color: var(--gold);
+            background: rgba(201,169,106,0.06);
+        }
+
+        .nav-sub .nav-dot {
+            width: 4px; height: 4px;
+            background: var(--gold-dim);
+            transform: rotate(45deg);
+            flex-shrink: 0;
+            transition: var(--transition);
+        }
+
+        .nav-sub a.active .nav-dot {
+            background: var(--gold);
+            box-shadow: 0 0 6px rgba(201,169,106,0.7);
+        }
+
+        .sidebar-footer {
+            margin-top: auto;
+            padding: 14px 22px 18px;
+            font-size: 10px;
+            color: var(--text-faint);
+            letter-spacing: 0.15em;
+            text-align: center;
+            border-top: 1px solid rgba(201,169,106,0.2);
+            position: relative;
+        }
+
+        .sidebar-footer::before {
+            content: '❖';
+            position: absolute;
+            top: -7px;
+            left: 50%;
+            transform: translateX(-50%);
+            color: var(--gold-dim);
+            font-size: 9px;
+            background: var(--bg-elevated);
+            padding: 0 8px;
+        }
+
+        /* ========== 主区域 ========== */
+        .main {
+            flex: 1;
+            position: relative;
+            z-index: 5;
+            padding: 28px 40px 50px;
+            min-width: 0;
+        }
+
+        .topbar {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding-bottom: 16px;
+            margin-bottom: 28px;
+            position: relative;
+        }
+
+        .topbar::after {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            height: 2px;
+            background: linear-gradient(90deg, 
+                rgba(201,169,106,0.9) 0%, 
+                rgba(201,169,106,0.5) 20%,
+                rgba(201,169,106,0.15) 50%,
+                rgba(201,169,106,0.5) 80%,
+                rgba(201,169,106,0.9) 100%);
+        }
+
+        .topbar::before {
+            content: '❖';
+            position: absolute;
+            bottom: -8px;
+            left: 50%;
+            transform: translateX(-50%);
+            color: var(--gold);
+            font-size: 11px;
+            text-shadow: 0 0 15px rgba(201,169,106,0.8);
+            background: var(--bg);
+            padding: 0 10px;
+            z-index: 2;
+        }
+
+        .breadcrumb {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-size: 12px;
+            color: var(--text-faint);
+            letter-spacing: 0.08em;
+        }
+
+        .breadcrumb .separator { color: var(--gold-dim); font-size: 9px; }
+        .breadcrumb .current { color: var(--gold); }
+
+        .topbar-status {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            font-size: 11px;
+            color: var(--text-faint);
+            letter-spacing: 0.1em;
+        }
+
+        .status-dot {
+            width: 6px; height: 6px;
+            border-radius: 50%;
+            background: var(--gold);
+            box-shadow: 0 0 12px rgba(201,169,106,0.8);
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 1; box-shadow: 0 0 12px rgba(201,169,106,0.8); }
+            50% { opacity: 0.4; box-shadow: 0 0 4px rgba(201,169,106,0.3); }
+        }
+
+        .page-heading {
+            margin-bottom: 30px;
+        }
+
+        .page-heading h2 {
+            font-family: var(--font-display);
+            font-size: 30px;
+            font-weight: 700;
+            color: var(--text-primary);
+            letter-spacing: 0.06em;
+            text-shadow: 0 2px 20px rgba(0,0,0,0.5), 0 0 40px rgba(201,169,106,0.15);
+        }
+
+        .page-heading p {
+            font-size: 13px;
+            color: var(--text-secondary);
+            font-weight: 300;
+            letter-spacing: 0.04em;
+            margin-top: 6px;
+        }
+
+        /* ========== 待办模块 ========== */
+        .todo-card {
+            background: var(--surface);
+            border-radius: var(--radius);
+            padding: 18px 22px 20px;
+            margin-bottom: 40px;
+            position: relative;
+            border: 1px solid rgba(201, 169, 106, 0.2);
+            outline: 1px solid rgba(201, 169, 106, 0.06);
+            outline-offset: 4px;
+        }
+
+        .todo-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 12px;
+        }
+
+        .todo-title {
+            font-family: var(--font-display);
+            font-size: 17px;
+            font-weight: 600;
+            color: var(--gold);
+            letter-spacing: 0.1em;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .todo-title .diamond {
+            width: 6px; height: 6px;
+            background: var(--gold);
+            transform: rotate(45deg);
+            box-shadow: 0 0 8px rgba(201,169,106,0.5);
+        }
+
+        .todo-count {
+            font-size: 11px;
+            color: var(--text-faint);
+            letter-spacing: 0.1em;
+        }
+
+        .todo-input-row {
+            display: flex;
+            gap: 8px;
+            margin-bottom: 10px;
+        }
+
+        .todo-input {
+            flex: 1;
+            padding: 10px 14px;
+            background: rgba(0,0,0,0.35);
+            border: 1px solid rgba(201,169,106,0.25);
+            border-radius: var(--radius);
+            color: var(--text-primary);
+            font-family: var(--font-body);
+            font-size: 13px;
+            outline: none;
+            transition: var(--transition);
+        }
+
+        .todo-input:focus {
+            border-color: rgba(201,169,106,0.6);
+            box-shadow: 0 0 15px rgba(201,169,106,0.1);
+        }
+
+        .todo-input::placeholder {
+            color: var(--text-faint);
+            letter-spacing: 0.05em;
+        }
+
+        .btn {
+            padding: 10px 16px;
+            background: transparent;
+            border: 1px solid rgba(201,169,106,0.4);
+            border-radius: var(--radius);
+            color: var(--gold);
+            font-family: var(--font-body);
+            font-size: 12px;
+            font-weight: 600;
+            cursor: pointer;
+            letter-spacing: 0.08em;
+            transition: var(--transition);
+            white-space: nowrap;
+        }
+
+        .btn:hover {
+            background: rgba(201,169,106,0.08);
+            border-color: rgba(201,169,106,0.7);
+            box-shadow: 0 0 15px rgba(201,169,106,0.15);
+        }
+
+        .btn:active {
+            transform: scale(0.96);
+        }
+
+        .btn-danger {
+            border-color: rgba(158, 59, 52, 0.5);
+            color: #c46b63;
+        }
+
+        .btn-danger:hover {
+            background: rgba(158, 59, 52, 0.1);
+            border-color: rgba(158, 59, 52, 0.8);
+            box-shadow: 0 0 15px rgba(158, 59, 52, 0.2);
+        }
+
+        /* 待办列表 */
+        .todo-list {
+            list-style: none;
+            padding: 0;
+        }
+
+        .todo-item {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 8px 10px;
+            border-bottom: 1px solid rgba(201,169,106,0.08);
+            transition: var(--transition);
+            border-radius: var(--radius);
+        }
+
+        .todo-item:hover {
+            background: rgba(201,169,106,0.04);
+        }
+
+        .todo-checkbox {
+            width: 16px;
+            height: 16px;
+            border: 1px solid rgba(201,169,106,0.5);
+            border-radius: var(--radius);
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-shrink: 0;
+            transition: var(--transition);
+            background: transparent;
+            color: transparent;
+            font-size: 10px;
+        }
+
+        .todo-checkbox:hover {
+            border-color: var(--gold);
+            box-shadow: 0 0 8px rgba(201,169,106,0.3);
+        }
+
+        .todo-checkbox.done {
+            background: rgba(201,169,106,0.15);
+            border-color: var(--gold);
+            color: var(--gold);
+        }
+
+        .todo-text {
+            flex: 1;
+            font-size: 13px;
+            color: var(--text-primary);
+            letter-spacing: 0.03em;
+            transition: var(--transition);
+            cursor: pointer;
+            user-select: none;
+            word-break: break-all;
+        }
+
+        .todo-text.done {
+            text-decoration: line-through;
+            color: var(--text-faint);
+        }
+
+        .todo-del {
+            background: none;
+            border: none;
+            color: var(--text-faint);
+            cursor: pointer;
+            font-size: 12px;
+            padding: 4px 6px;
+            transition: var(--transition);
+            flex-shrink: 0;
+            border-radius: var(--radius);
+            font-family: var(--font-body);
+        }
+
+        .todo-del:hover {
+            color: #c46b63;
+            background: rgba(158, 59, 52, 0.1);
+        }
+
+        /* ========== 分区标题 ========== */
+        .section-heading {
+            display: flex;
+            align-items: center;
+            gap: 14px;
+            margin: 36px 0 20px;
+        }
+
+        .section-heading .diamond {
+            width: 7px; height: 7px;
+            background: var(--gold);
+            transform: rotate(45deg);
+            box-shadow: 0 0 10px rgba(201,169,106,0.6);
+            flex-shrink: 0;
+        }
+
+        .section-heading .section-line {
+            flex: 1;
+            height: 1px;
+            background: linear-gradient(90deg, rgba(201,169,106,0.5), transparent);
+        }
+
+        .section-heading h3 {
+            font-family: var(--font-display);
+            font-size: 17px;
+            font-weight: 600;
+            color: var(--gold);
+            letter-spacing: 0.12em;
+            flex-shrink: 0;
+        }
+
+        .section-heading .section-sub {
+            font-size: 10px;
+            color: var(--text-faint);
+            letter-spacing: 0.3em;
+            text-transform: uppercase;
+            flex-shrink: 0;
+        }
+
+        /* ========== 卡片网格 ========== */
+        .grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+            gap: 32px;
+        }
+
+        /* ========== 带边框的卡片 ========== */
+        .frame-card {
+            position: relative;
+            background: var(--surface);
+            padding: 36px 28px 28px;
+            border-radius: var(--radius);
+            display: flex;
+            flex-direction: column;
+            min-height: 165px;
+            transition: var(--transition);
+        }
+
+        .frame-card:hover {
+            transform: translateY(-3px);
+            filter: brightness(1.1);
+            background: var(--surface-hover);
+        }
+
+        .frame-overlay {
+            position: absolute;
+            top: 0; left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: 2;
+        }
+
+        .frame-overlay svg {
+            width: 100%;
+            height: 100%;
+            display: block;
+        }
+
+        .card-number {
+            font-family: var(--font-display);
+            font-size: 10px;
+            color: var(--gold-mid);
+            letter-spacing: 0.3em;
+            margin-bottom: 8px;
+        }
+
+        .card-title {
+            font-family: var(--font-display);
+            font-size: 19px;
+            font-weight: 700;
+            color: var(--text-primary);
+            letter-spacing: 0.04em;
+            margin-bottom: 3px;
+        }
+
+        .card-title-en {
+            font-size: 8px;
+            color: var(--text-faint);
+            letter-spacing: 0.25em;
+            text-transform: uppercase;
+            margin-bottom: 10px;
+        }
+
+        .card-desc {
+            font-size: 12px;
+            color: var(--text-secondary);
+            line-height: 1.65;
+            font-weight: 300;
+            flex: 1;
+            margin-bottom: 12px;
+        }
+
+        .card-meta {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 5px;
+        }
+
+        .meta-chip {
+            display: inline-flex;
+            align-items: center;
+            padding: 3px 8px;
+            font-size: 9px;
+            letter-spacing: 0.1em;
+            color: var(--text-secondary);
+            border: 1px solid rgba(201,169,106,0.2);
+            border-radius: 2px;
+            text-transform: uppercase;
+            background: rgba(201,169,106,0.03);
+        }
+
+        .meta-chip.active {
+            color: var(--gold-bright);
+            border-color: rgba(201,169,106,0.5);
+            background: rgba(201,169,106,0.07);
+        }
+
+        .meta-chip.wip {
+            color: var(--text-faint);
+            border-color: rgba(160,154,142,0.2);
+            background: rgba(160,154,142,0.03);
+        }
+
+        .card-footer {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-top: 10px;
+            padding-top: 10px;
+            border-top: 1px solid rgba(201,169,106,0.12);
+        }
+
+        .card-footer-text {
+            font-size: 9px;
+            color: var(--text-faint);
+            letter-spacing: 0.1em;
+        }
+
+        .card-arrow {
+            color: var(--gold-mid);
+            font-size: 12px;
+            transition: var(--transition);
+        }
+
+        .frame-card:hover .card-arrow {
+            color: var(--gold-bright);
+            transform: translateX(4px);
+        }
+
+        /* ========== 响应式 ========== */
+        @media (max-width: 768px) {
+            .sidebar { display: none; }
+            .main { padding: 20px 16px; }
+            .page-heading h2 { font-size: 24px; }
+            .topbar-status { display: none; }
+            .frame-card { padding: 30px 22px 24px; }
+            .todo-card { padding: 14px 16px 16px; }
+        }
+        /* ========== 侧边栏折叠 ========== */
+        .sidebar { transition: width 0.3s cubic-bezier(0.4, 0, 0.2, 1); }
+        .sidebar.collapsed { width: 56px; }
+        .sidebar.collapsed .sidebar-brand h1,
+        .sidebar.collapsed .sidebar-brand span,
+        .sidebar.collapsed .sidebar-section,
+        .sidebar.collapsed .sidebar-nav,
+        .sidebar.collapsed .sidebar-footer { display: none; }
+        .sb-brand-v {
+            display: none;
+            writing-mode: vertical-rl;
+            font-family: var(--font-display);
+            font-size: 12px;
+            letter-spacing: 0.4em;
+            line-height: 1.4;
+            color: var(--gold-bright);
+            text-shadow: 0 0 16px rgba(201,169,106,0.35);
+        }
+        .sidebar.collapsed .sb-brand-v { display: block; order: 1; }
+        .sidebar.collapsed .sidebar-brand {
+            padding: 14px 0;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 12px;
+        }
+        .sb-toggle {
+            position: absolute;
+            right: 8px; top: 50%;
+            transform: translateY(-50%);
+            width: 20px; height: 20px;
+            border-radius: 4px;
+            background: transparent;
+            border: 1px solid rgba(201,169,106,0.35);
+            color: var(--gold-mid);
+            font-size: 9px;
+            cursor: pointer;
+            display: flex; align-items: center; justify-content: center;
+            transition: var(--transition);
+            font-family: var(--font-body);
+            z-index: 2;
+        }
+        .sb-toggle:hover { color: var(--gold-bright); border-color: var(--gold); background: rgba(201,169,106,0.1); }
+        .sidebar.collapsed .sb-toggle { position: static; transform: none; order: 0; }
+        .sidebar-brand span {
+            font-size: 7px;
+            letter-spacing: 0.22em;
+            text-transform: uppercase;
+            margin-top: 6px;
+        }
+        /* ========== 亮色主题（白 + 宝蓝，参考 亮色工作台.html） ========== */
+        body.light {
+            --bg: #f5f8fc;
+            --bg-elevated: #ffffff;
+            --surface: #ffffff;
+            --surface-hover: #f0f4fa;
+            --gold: #1e40af;
+            --gold-bright: #2563eb;
+            --gold-mid: #3b82f6;
+            --gold-dim: #93b4f5;
+            --red: #c0392b;
+            --purple: #5a6fa8;
+            --blue: #2563eb;
+            --text-primary: #1a2538;
+            --text-secondary: #4a5870;
+            --text-faint: #8a95a8;
+            --line: rgba(30, 64, 175, 0.18);
+        }
+        body.light {
+            background-image:
+                radial-gradient(circle at 50% 0%, rgba(30, 64, 175, 0.06) 0%, transparent 45%),
+                radial-gradient(circle at 50% 110%, rgba(37, 99, 235, 0.04) 0%, transparent 40%);
+        }
+        body.light::before {
+            background-image:
+                repeating-linear-gradient(0deg, transparent, transparent 7px, rgba(30, 64, 175, 0.015) 7px, rgba(30, 64, 175, 0.015) 8px),
+                repeating-linear-gradient(90deg, transparent, transparent 7px, rgba(30, 64, 175, 0.01) 7px, rgba(30, 64, 175, 0.01) 8px);
+        }
+        .theme-toggle {
+            margin: 12px 16px 6px;
+            padding: 7px 12px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            border: 1px solid var(--line);
+            border-radius: var(--radius);
+            color: var(--text-secondary);
+            cursor: pointer;
+            transition: var(--transition);
+            font-size: 12px;
+            flex-shrink: 0;
+            background: var(--surface);
+        }
+        .theme-toggle:hover { background: var(--surface-hover); color: var(--gold); border-color: var(--gold); }
+        .theme-toggle .tt-icon { font-size: 13px; }
+        .theme-toggle .tt-text { letter-spacing: 0.1em; }
+        .sidebar.collapsed .theme-toggle { display: none; }
+        .mc-theme {
+            position: absolute;
+            top: 12px; right: 12px;
+            width: 26px; height: 26px;
+            border-radius: 6px;
+            border: 1px solid var(--line);
+            background: var(--surface-hover);
+            color: var(--gold-mid);
+            cursor: pointer;
+            font-size: 13px;
+            display: flex; align-items: center; justify-content: center;
+            transition: var(--transition);
+            z-index: 3;
+        }
+        .mc-theme {
+            position: static;
+            display: inline-flex;
+            align-items: center;
+            gap: 7px;
+            padding: 6px 12px;
+            border: 1px solid var(--line);
+            border-radius: var(--radius);
+            background: var(--surface);
+            color: var(--text-secondary);
+            cursor: pointer;
+            font-size: 12px;
+            transition: var(--transition);
+        }
+        .mc-theme:hover { color: var(--gold); border-color: var(--gold); background: var(--surface-hover); }
+        .mc-theme .tt-icon { font-size: 13px; }
+        .mc-theme .tt-text { letter-spacing: 0.1em; }
+        /* 亮色去金化：圆角对齐模板，容器/输入/按钮边框统一为宝蓝线条 */
+        body.light { --radius: 6px; }
+        body.light .card,
+        body.light .frame-card,
+        body.light .todo-card,
+        body.light .mini-cal,
+        body.light .modal,
+        body.light .event-card,
+        body.light .cal-card,
+        body.light .char-card,
+        body.light .term-card,
+        body.light .bubble,
+        body.light .notice,
+        body.light .pt-card,
+        body.light .info-card,
+        body.light .map-card,
+        body.light .input,
+        body.light .search-input,
+        body.light .year-input,
+        body.light .todo-input,
+        body.light .comment-input,
+        body.light .feed-input,
+        body.light .chat-input,
+        body.light .pt-input,
+        body.light .modal input,
+        body.light .modal textarea,
+        body.light .modal select,
+        body.light .field .input,
+        body.light .relcanvas { border-color: var(--line); }
+        body.light .btn,
+        body.light .chip,
+        body.light .tag,
+        body.light .tag-user,
+        body.light .meta-chip,
+        body.light .member-chip,
+        body.light .sub-node-chip,
+        body.light .tl-tag { border-color: var(--line); }
+        body.light .btn:hover,
+        body.light .chip:hover,
+        body.light .meta-chip:hover { border-color: var(--gold); background: var(--surface-hover); }
+        body.light input:focus,
+        body.light textarea:focus,
+        body.light select:focus { border-color: var(--gold-bright); }
+        body.light .card,
+        body.light .frame-card,
+        body.light .todo-card,
+        body.light .mini-cal,
+        body.light .modal,
+        body.light .char-card,
+        body.light .term-card,
+        body.light .bubble { box-shadow: 0 2px 12px rgba(30, 64, 175, 0.08); }
+        /* ========== 亮色补全：去黑去金 ========== */
+        body.light .input,
+        body.light .search-input,
+        body.light .year-input,
+        body.light .todo-input,
+        body.light .comment-input,
+        body.light .feed-input,
+        body.light .chat-input,
+        body.light .pt-input,
+        body.light .modal input,
+        body.light .modal textarea,
+        body.light .modal select,
+        body.light .field .input { background: var(--bg); color: var(--text-primary); }
+        body.light .day-cell { background: var(--surface-hover); border-color: var(--line); }
+        body.light .relcanvas { background: var(--surface-hover); }
+        body.light .frame-card,
+        body.light .card,
+        body.light .todo-card,
+        body.light .mini-cal,
+        body.light .modal,
+        body.light .char-card,
+        body.light .term-card,
+        body.light .bubble,
+        body.light .event-card,
+        body.light .cal-card,
+        body.light .info-card { outline: 1px solid var(--line); outline-offset: 3px; }
+        body.light .topbar::after {
+            background: linear-gradient(90deg, var(--gold) 0%, rgba(30,64,175,0.5) 20%, rgba(30,64,175,0.15) 50%, rgba(30,64,175,0.5) 80%, var(--gold) 100%);
+        }
+        body.light .sidebar { background: var(--bg-elevated); border-image: linear-gradient(180deg, transparent 0%, rgba(30,64,175,0.5) 20%, rgba(30,64,175,0.5) 80%, transparent 100%) 1; }
+        body.light .status-dot { box-shadow: 0 0 12px rgba(37,99,235,0.5); animation: pulseLight 2s infinite; }
+        /* ========== 亮色统一补丁 ========== */
+        body.light .header h1,
+        body.light .page-heading h2 { color: var(--gold); }
+        body.light .page-heading h2 { text-shadow: none; }
+        body.light .mc-chip { border-color: var(--line); background: var(--surface-hover); }
+        .theme-toggle, .mc-theme { white-space: nowrap; }
+        body.light .delbar { background: var(--surface); }
+        /* ========== 侧边栏固定视口高度 + 主题滚动条 ========== */
+        .sidebar { height: 100vh; min-height: 100vh; overflow-y: auto; }
+        ::-webkit-scrollbar { width: 8px; height: 8px; }
+        ::-webkit-scrollbar-track { background: transparent; }
+        ::-webkit-scrollbar-thumb { background: var(--gold-dim); border-radius: 4px; }
+        ::-webkit-scrollbar-thumb:hover { background: var(--gold-mid); }
+        * { scrollbar-width: thin; scrollbar-color: var(--gold-dim) transparent; }
+        @keyframes pulseLight {
+            0%, 100% { opacity: 1; box-shadow: 0 0 12px rgba(37,99,235,0.5); }
+            50% { opacity: 0.4; box-shadow: 0 0 4px rgba(37,99,235,0.15); }
+        }
+    </style>
+</head>
+<body>
+
+    <!-- ========== 侧边栏 ========== -->
+    <aside class="sidebar">
+        <div class="sidebar-brand">
+            <h1>工作台</h1>
+            <span>The Poetry of Desert</span>
+            <div class="sb-brand-v">工作台·导航栏</div>
+            <button class="sb-toggle" onclick="toggleSidebar()" title="折叠/展开侧边栏">❮</button>
+        </div>
+
+        <div class="sidebar-section">导航</div>
+        <ul class="sidebar-nav">
+            <li><a href="#" class="active"><span class="nav-num">I</span>欢迎</a></li>
+            <li>
+                <a href="#" class="nav-toggle" onclick="toggleNav(event, this)"><span class="nav-num">II</span>功能模块<span class="nav-arrow">▸</span></a>
+                <ul class="nav-sub">
+                    <li><a href="功能模块/酒馆.html"><span class="nav-dot"></span>酒馆</a></li>
+                    <li><a href="功能模块/日历.html"><span class="nav-dot"></span>日历</a></li>
+                </ul>
+            </li>
+            <li>
+                <a href="#" class="nav-toggle" onclick="toggleNav(event, this)"><span class="nav-num">III</span>设定资料<span class="nav-arrow">▸</span></a>
+                <ul class="nav-sub">
+                    <li><a href="设定资料/势力与阵营.html"><span class="nav-dot"></span>势力与阵营</a></li>
+                    <li><a href="设定资料/历史事件.html"><span class="nav-dot"></span>历史事件</a></li>
+                    <li><a href="设定资料/地理总览.html"><span class="nav-dot"></span>地理总览</a></li>
+                    <li><a href="设定资料/术语库.html"><span class="nav-dot"></span>术语库</a></li>
+                    <li><a href="设定资料/角色档案库.html"><span class="nav-dot"></span>角色档案库</a></li>
+                </ul>
+            </li>
+        </ul>
+
+        <div class="sidebar-footer">v 0.4.0 · 模板</div>
+
+        <div class="theme-toggle" onclick="toggleTheme()" title="切换亮色 / 暗色主题">
+            <span class="tt-icon">🌙</span>
+            <span class="tt-text">暗色</span>
+        </div>
+    </aside>
+
+    <!-- ========== 主区域 ========== -->
+    <main class="main">
+        <div class="topbar">
+            <div class="breadcrumb">
+                首页 <span class="separator">❖</span> <span class="current">欢迎</span>
+            </div>
+            <div class="topbar-status">
+                <span class="status-dot"></span>
+                <span>系统正常</span>
+                <span style="color:var(--gold-dim);">|</span>
+                <span>示例日期</span>
+            </div>
+        </div>
+
+        <div class="page-heading">
+            <h2>工作台</h2>
+            <p>欢迎回来。这里是你的工作台。</p>
+        </div>
+
+        <!-- ========== 待办模块 ========== -->
+        <div class="todo-card">
+            <div class="todo-header">
+                <div class="todo-title">
+                    <div class="diamond"></div>
+                    待办事项
+                </div>
+                <span class="todo-count" id="todoCount">共 0 项</span>
+            </div>
+            <div class="todo-input-row">
+                <input type="text" class="todo-input" id="todoInput" placeholder="输入新的待办事项，按回车添加..." maxlength="100">
+                <button class="btn" id="todoAddBtn">添加</button>
+            </div>
+            <ul class="todo-list" id="todoList">
+                <!-- 待办项由 JS 动态生成 -->
+            </ul>
+        </div>
+
+        <!-- ========== 功能模块分区 ========== -->
+        <div class="section-heading">
+            <div class="diamond"></div>
+            <h3>功能模块</h3>
+            <div class="section-line"></div>
+            <span class="section-sub">Modules</span>
+        </div>
+
+        <div class="grid">
+            <!-- 卡片 1 -->
+            <div class="frame-card">
+                <div class="frame-overlay">
+                    <svg viewBox="0 0 300 200" preserveAspectRatio="none" fill="none">
+                        <rect x="1" y="1" width="298" height="198" stroke="rgba(201,169,106,0.9)" stroke-width="3" fill="none"/>
+                        <rect x="10" y="10" width="280" height="180" stroke="rgba(168,137,85,0.5)" stroke-width="0.7" fill="none"/>
+                        <path d="M8,40 L8,20 L20,20 L20,8 L40,8" stroke="rgba(201,169,106,0.6)" stroke-width="1.8"/>
+                        <path d="M260,8 L280,8 L280,20 L292,20 L292,40" stroke="rgba(201,169,106,0.6)" stroke-width="1.8"/>
+                        <path d="M292,160 L292,180 L280,180 L280,192 L260,192" stroke="rgba(201,169,106,0.6)" stroke-width="1.8"/>
+                        <path d="M40,192 L20,192 L20,180 L8,180 L8,160" stroke="rgba(201,169,106,0.6)" stroke-width="1.8"/>
+                        <path d="M40,8 L140,8 M160,8 L260,8" stroke="rgba(201,169,106,0.7)" stroke-width="1.8"/>
+                        <path d="M40,192 L140,192 M160,192 L260,192" stroke="rgba(201,169,106,0.7)" stroke-width="1.8"/>
+                        <path d="M8,40 L8,88 M8,112 L8,160" stroke="rgba(201,169,106,0.7)" stroke-width="1.8"/>
+                        <path d="M292,40 L292,88 M292,112 L292,160" stroke="rgba(201,169,106,0.7)" stroke-width="1.8"/>
+                        <g transform="translate(150,8)">
+                            <path d="M0,-10 L3,-4 L10,0 L3,4 L0,10 L-3,4 L-10,0 L-3,-4 Z" stroke="rgba(201,169,106,0.5)" stroke-width="1.2"/>
+                            <circle cx="0" cy="0" r="2" fill="rgba(201,169,106,0.5)"/>
+                        </g>
+                        <g transform="translate(150,192)">
+                            <path d="M0,-10 L3,-4 L10,0 L3,4 L0,10 L-3,4 L-10,0 L-3,-4 Z" stroke="rgba(201,169,106,0.5)" stroke-width="1.2"/>
+                            <circle cx="0" cy="0" r="2" fill="rgba(201,169,106,0.5)"/>
+                        </g>
+                        <g transform="translate(8,100)">
+                            <path d="M0,-10 L3,-4 L10,0 L3,4 L0,10 L-3,4 L-10,0 L-3,-4 Z" stroke="rgba(201,169,106,0.5)" stroke-width="1.2"/>
+                            <circle cx="0" cy="0" r="2" fill="rgba(201,169,106,0.5)"/>
+                        </g>
+                        <g transform="translate(292,100)">
+                            <path d="M0,-10 L3,-4 L10,0 L3,4 L0,10 L-3,4 L-10,0 L-3,-4 Z" stroke="rgba(201,169,106,0.5)" stroke-width="1.2"/>
+                            <circle cx="0" cy="0" r="2" fill="rgba(201,169,106,0.5)"/>
+                        </g>
+                    </svg>
+                </div>
+                <div class="card-number">MODULE I</div>
+                <div class="card-title">示例模块 A</div>
+                <div class="card-title-en">Module Alpha</div>
+                <div class="card-desc">这是示例模块的描述文字，用于展示卡片的基本布局。</div>
+                <div class="card-meta">
+                    <span class="meta-chip active">可用</span>
+                    <span class="meta-chip">标签</span>
+                </div>
+                <div class="card-footer">
+                    <span class="card-footer-text">最近更新：示例日期</span>
+                    <span class="card-arrow">→</span>
+                </div>
+            </div>
+
+            <!-- 卡片 2 -->
+            <div class="frame-card">
+                <div class="frame-overlay">
+                    <svg viewBox="0 0 300 200" preserveAspectRatio="none" fill="none">
+                        <rect x="1" y="1" width="298" height="198" stroke="rgba(201,169,106,0.9)" stroke-width="3" fill="none"/>
+                        <rect x="10" y="10" width="280" height="180" stroke="rgba(168,137,85,0.5)" stroke-width="0.7" fill="none"/>
+                        <path d="M8,40 L8,20 L20,20 L20,8 L40,8" stroke="rgba(201,169,106,0.6)" stroke-width="1.8"/>
+                        <path d="M260,8 L280,8 L280,20 L292,20 L292,40" stroke="rgba(201,169,106,0.6)" stroke-width="1.8"/>
+                        <path d="M292,160 L292,180 L280,180 L280,192 L260,192" stroke="rgba(201,169,106,0.6)" stroke-width="1.8"/>
+                        <path d="M40,192 L20,192 L20,180 L8,180 L8,160" stroke="rgba(201,169,106,0.6)" stroke-width="1.8"/>
+                        <path d="M40,8 L140,8 M160,8 L260,8" stroke="rgba(201,169,106,0.7)" stroke-width="1.8"/>
+                        <path d="M40,192 L140,192 M160,192 L260,192" stroke="rgba(201,169,106,0.7)" stroke-width="1.8"/>
+                        <path d="M8,40 L8,88 M8,112 L8,160" stroke="rgba(201,169,106,0.7)" stroke-width="1.8"/>
+                        <path d="M292,40 L292,88 M292,112 L292,160" stroke="rgba(201,169,106,0.7)" stroke-width="1.8"/>
+                        <g transform="translate(150,8)">
+                            <path d="M0,-10 L3,-4 L10,0 L3,4 L0,10 L-3,4 L-10,0 L-3,-4 Z" stroke="rgba(201,169,106,0.5)" stroke-width="1.2"/>
+                            <circle cx="0" cy="0" r="2" fill="rgba(201,169,106,0.5)"/>
+                        </g>
+                        <g transform="translate(150,192)">
+                            <path d="M0,-10 L3,-4 L10,0 L3,4 L0,10 L-3,4 L-10,0 L-3,-4 Z" stroke="rgba(201,169,106,0.5)" stroke-width="1.2"/>
+                            <circle cx="0" cy="0" r="2" fill="rgba(201,169,106,0.5)"/>
+                        </g>
+                        <g transform="translate(8,100)">
+                            <path d="M0,-10 L3,-4 L10,0 L3,4 L0,10 L-3,4 L-10,0 L-3,-4 Z" stroke="rgba(201,169,106,0.5)" stroke-width="1.2"/>
+                            <circle cx="0" cy="0" r="2" fill="rgba(201,169,106,0.5)"/>
+                        </g>
+                        <g transform="translate(292,100)">
+                            <path d="M0,-10 L3,-4 L10,0 L3,4 L0,10 L-3,4 L-10,0 L-3,-4 Z" stroke="rgba(201,169,106,0.5)" stroke-width="1.2"/>
+                            <circle cx="0" cy="0" r="2" fill="rgba(201,169,106,0.5)"/>
+                        </g>
+                    </svg>
+                </div>
+                <div class="card-number">MODULE II</div>
+                <div class="card-title">示例模块 B</div>
+                <div class="card-title-en">Module Beta</div>
+                <div class="card-desc">这是另一个示例模块的描述，内容可以自由替换。</div>
+                <div class="card-meta">
+                    <span class="meta-chip active">可用</span>
+                    <span class="meta-chip wip">更新中</span>
+                </div>
+                <div class="card-footer">
+                    <span class="card-footer-text">最近更新：示例日期</span>
+                    <span class="card-arrow">→</span>
+                </div>
+            </div>
+
+            <!-- 卡片 3 -->
+            <div class="frame-card">
+                <div class="frame-overlay">
+                    <svg viewBox="0 0 300 200" preserveAspectRatio="none" fill="none">
+                        <rect x="1" y="1" width="298" height="198" stroke="rgba(201,169,106,0.9)" stroke-width="3" fill="none"/>
+                        <rect x="10" y="10" width="280" height="180" stroke="rgba(168,137,85,0.5)" stroke-width="0.7" fill="none"/>
+                        <path d="M8,40 L8,20 L20,20 L20,8 L40,8" stroke="rgba(201,169,106,0.6)" stroke-width="1.8"/>
+                        <path d="M260,8 L280,8 L280,20 L292,20 L292,40" stroke="rgba(201,169,106,0.6)" stroke-width="1.8"/>
+                        <path d="M292,160 L292,180 L280,180 L280,192 L260,192" stroke="rgba(201,169,106,0.6)" stroke-width="1.8"/>
+                        <path d="M40,192 L20,192 L20,180 L8,180 L8,160" stroke="rgba(201,169,106,0.6)" stroke-width="1.8"/>
+                        <path d="M40,8 L140,8 M160,8 L260,8" stroke="rgba(201,169,106,0.7)" stroke-width="1.8"/>
+                        <path d="M40,192 L140,192 M160,192 L260,192" stroke="rgba(201,169,106,0.7)" stroke-width="1.8"/>
+                        <path d="M8,40 L8,88 M8,112 L8,160" stroke="rgba(201,169,106,0.7)" stroke-width="1.8"/>
+                        <path d="M292,40 L292,88 M292,112 L292,160" stroke="rgba(201,169,106,0.7)" stroke-width="1.8"/>
+                        <g transform="translate(150,8)">
+                            <path d="M0,-10 L3,-4 L10,0 L3,4 L0,10 L-3,4 L-10,0 L-3,-4 Z" stroke="rgba(201,169,106,0.5)" stroke-width="1.2"/>
+                            <circle cx="0" cy="0" r="2" fill="rgba(201,169,106,0.5)"/>
+                        </g>
+                        <g transform="translate(150,192)">
+                            <path d="M0,-10 L3,-4 L10,0 L3,4 L0,10 L-3,4 L-10,0 L-3,-4 Z" stroke="rgba(201,169,106,0.5)" stroke-width="1.2"/>
+                            <circle cx="0" cy="0" r="2" fill="rgba(201,169,106,0.5)"/>
+                        </g>
+                        <g transform="translate(8,100)">
+                            <path d="M0,-10 L3,-4 L10,0 L3,4 L0,10 L-3,4 L-10,0 L-3,-4 Z" stroke="rgba(201,169,106,0.5)" stroke-width="1.2"/>
+                            <circle cx="0" cy="0" r="2" fill="rgba(201,169,106,0.5)"/>
+                        </g>
+                        <g transform="translate(292,100)">
+                            <path d="M0,-10 L3,-4 L10,0 L3,4 L0,10 L-3,4 L-10,0 L-3,-4 Z" stroke="rgba(201,169,106,0.5)" stroke-width="1.2"/>
+                            <circle cx="0" cy="0" r="2" fill="rgba(201,169,106,0.5)"/>
+                        </g>
+                    </svg>
+                </div>
+                <div class="card-number">MODULE III</div>
+                <div class="card-title">示例模块 C</div>
+                <div class="card-title-en">Module Gamma</div>
+                <div class="card-desc">第三张示例卡片，用于展示网格布局中的模块。</div>
+                <div class="card-meta">
+                    <span class="meta-chip wip">设计稿</span>
+                </div>
+                <div class="card-footer">
+                    <span class="card-footer-text">计划开发</span>
+                    <span class="card-arrow">→</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- ========== 资料分区 ========== -->
+        <div class="section-heading">
+            <div class="diamond"></div>
+            <h3>设定资料</h3>
+            <div class="section-line"></div>
+            <span class="section-sub">Reference</span>
+        </div>
+
+        <div class="grid">
+            <!-- 卡片 4 -->
+            <div class="frame-card">
+                <div class="frame-overlay">
+                    <svg viewBox="0 0 300 200" preserveAspectRatio="none" fill="none">
+                        <rect x="1" y="1" width="298" height="198" stroke="rgba(201,169,106,0.9)" stroke-width="3" fill="none"/>
+                        <rect x="10" y="10" width="280" height="180" stroke="rgba(168,137,85,0.5)" stroke-width="0.7" fill="none"/>
+                        <path d="M8,40 L8,20 L20,20 L20,8 L40,8" stroke="rgba(201,169,106,0.6)" stroke-width="1.8"/>
+                        <path d="M260,8 L280,8 L280,20 L292,20 L292,40" stroke="rgba(201,169,106,0.6)" stroke-width="1.8"/>
+                        <path d="M292,160 L292,180 L280,180 L280,192 L260,192" stroke="rgba(201,169,106,0.6)" stroke-width="1.8"/>
+                        <path d="M40,192 L20,192 L20,180 L8,180 L8,160" stroke="rgba(201,169,106,0.6)" stroke-width="1.8"/>
+                        <path d="M40,8 L140,8 M160,8 L260,8" stroke="rgba(201,169,106,0.7)" stroke-width="1.8"/>
+                        <path d="M40,192 L140,192 M160,192 L260,192" stroke="rgba(201,169,106,0.7)" stroke-width="1.8"/>
+                        <path d="M8,40 L8,88 M8,112 L8,160" stroke="rgba(201,169,106,0.7)" stroke-width="1.8"/>
+                        <path d="M292,40 L292,88 M292,112 L292,160" stroke="rgba(201,169,106,0.7)" stroke-width="1.8"/>
+                        <g transform="translate(150,8)">
+                            <path d="M0,-10 L3,-4 L10,0 L3,4 L0,10 L-3,4 L-10,0 L-3,-4 Z" stroke="rgba(201,169,106,0.5)" stroke-width="1.2"/>
+                            <circle cx="0" cy="0" r="2" fill="rgba(201,169,106,0.5)"/>
+                        </g>
+                        <g transform="translate(150,192)">
+                            <path d="M0,-10 L3,-4 L10,0 L3,4 L0,10 L-3,4 L-10,0 L-3,-4 Z" stroke="rgba(201,169,106,0.5)" stroke-width="1.2"/>
+                            <circle cx="0" cy="0" r="2" fill="rgba(201,169,106,0.5)"/>
+                        </g>
+                        <g transform="translate(8,100)">
+                            <path d="M0,-10 L3,-4 L10,0 L3,4 L0,10 L-3,4 L-10,0 L-3,-4 Z" stroke="rgba(201,169,106,0.5)" stroke-width="1.2"/>
+                            <circle cx="0" cy="0" r="2" fill="rgba(201,169,106,0.5)"/>
+                        </g>
+                        <g transform="translate(292,100)">
+                            <path d="M0,-10 L3,-4 L10,0 L3,4 L0,10 L-3,4 L-10,0 L-3,-4 Z" stroke="rgba(201,169,106,0.5)" stroke-width="1.2"/>
+                            <circle cx="0" cy="0" r="2" fill="rgba(201,169,106,0.5)"/>
+                        </g>
+                    </svg>
+                </div>
+                <div class="card-number">ARCHIVE I</div>
+                <div class="card-title">示例资料 A</div>
+                <div class="card-title-en">Reference Alpha</div>
+                <div class="card-desc">资料模块的示例内容，展示已收录的设定信息。</div>
+                <div class="card-meta">
+                    <span class="meta-chip active">已收录</span>
+                </div>
+                <div class="card-footer">
+                    <span class="card-footer-text">v1.0</span>
+                    <span class="card-arrow">→</span>
+                </div>
+            </div>
+
+            <!-- 卡片 5 -->
+            <div class="frame-card">
+                <div class="frame-overlay">
+                    <svg viewBox="0 0 300 200" preserveAspectRatio="none" fill="none">
+                        <rect x="1" y="1" width="298" height="198" stroke="rgba(201,169,106,0.9)" stroke-width="3" fill="none"/>
+                        <rect x="10" y="10" width="280" height="180" stroke="rgba(168,137,85,0.5)" stroke-width="0.7" fill="none"/>
+                        <path d="M8,40 L8,20 L20,20 L20,8 L40,8" stroke="rgba(201,169,106,0.6)" stroke-width="1.8"/>
+                        <path d="M260,8 L280,8 L280,20 L292,20 L292,40" stroke="rgba(201,169,106,0.6)" stroke-width="1.8"/>
+                        <path d="M292,160 L292,180 L280,180 L280,192 L260,192" stroke="rgba(201,169,106,0.6)" stroke-width="1.8"/>
+                        <path d="M40,192 L20,192 L20,180 L8,180 L8,160" stroke="rgba(201,169,106,0.6)" stroke-width="1.8"/>
+                        <path d="M40,8 L140,8 M160,8 L260,8" stroke="rgba(201,169,106,0.7)" stroke-width="1.8"/>
+                        <path d="M40,192 L140,192 M160,192 L260,192" stroke="rgba(201,169,106,0.7)" stroke-width="1.8"/>
+                        <path d="M8,40 L8,88 M8,112 L8,160" stroke="rgba(201,169,106,0.7)" stroke-width="1.8"/>
+                        <path d="M292,40 L292,88 M292,112 L292,160" stroke="rgba(201,169,106,0.7)" stroke-width="1.8"/>
+                        <g transform="translate(150,8)">
+                            <path d="M0,-10 L3,-4 L10,0 L3,4 L0,10 L-3,4 L-10,0 L-3,-4 Z" stroke="rgba(201,169,106,0.5)" stroke-width="1.2"/>
+                            <circle cx="0" cy="0" r="2" fill="rgba(201,169,106,0.5)"/>
+                        </g>
+                        <g transform="translate(150,192)">
+                            <path d="M0,-10 L3,-4 L10,0 L3,4 L0,10 L-3,4 L-10,0 L-3,-4 Z" stroke="rgba(201,169,106,0.5)" stroke-width="1.2"/>
+                            <circle cx="0" cy="0" r="2" fill="rgba(201,169,106,0.5)"/>
+                        </g>
+                        <g transform="translate(8,100)">
+                            <path d="M0,-10 L3,-4 L10,0 L3,4 L0,10 L-3,4 L-10,0 L-3,-4 Z" stroke="rgba(201,169,106,0.5)" stroke-width="1.2"/>
+                            <circle cx="0" cy="0" r="2" fill="rgba(201,169,106,0.5)"/>
+                        </g>
+                        <g transform="translate(292,100)">
+                            <path d="M0,-10 L3,-4 L10,0 L3,4 L0,10 L-3,4 L-10,0 L-3,-4 Z" stroke="rgba(201,169,106,0.5)" stroke-width="1.2"/>
+                            <circle cx="0" cy="0" r="2" fill="rgba(201,169,106,0.5)"/>
+                        </g>
+                    </svg>
+                </div>
+                <div class="card-number">ARCHIVE II</div>
+                <div class="card-title">示例资料 B</div>
+                <div class="card-title-en">Reference Beta</div>
+                <div class="card-desc">另一个资料示例，展示正在整理中的信息模块。</div>
+                <div class="card-meta">
+                    <span class="meta-chip wip">整理中</span>
+                </div>
+                <div class="card-footer">
+                    <span class="card-footer-text">进度 60%</span>
+                    <span class="card-arrow">→</span>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <script>
+        // ========== 侧边栏分组展开/收起 ==========
+        function toggleNav(event, el) {
+            if (event) event.preventDefault();
+            el.classList.toggle('open');
+            const sub = el.nextElementSibling;
+            if (sub) sub.classList.toggle('open');
+        }
+
+        // ========== 侧边栏折叠 ==========
+        function toggleSidebar() {
+            const sb = document.querySelector('.sidebar');
+            const collapsed = sb.classList.toggle('collapsed');
+            const btn = document.querySelector('.sb-toggle');
+            if (btn) btn.textContent = collapsed ? '❯' : '❮';
+            try { localStorage.setItem('smq_sidebar_collapsed', collapsed ? '1' : '0'); } catch (e) {}
+        }
+        (function initSidebar() {
+            const sb = document.querySelector('.sidebar');
+            const btn = document.querySelector('.sb-toggle');
+            if (!sb || !btn) return;
+            try {
+                if (localStorage.getItem('smq_sidebar_collapsed') === '1') {
+                    sb.classList.add('collapsed');
+                    btn.textContent = '❯';
+                }
+            } catch (e) {}
+        })();
+
+        // ========== 主题切换（暗色 / 亮色） ==========
+        function applyTheme(light) {
+            document.body.classList.toggle('light', light);
+            document.querySelectorAll('.theme-toggle, .mc-theme').forEach(btn => {
+                const icon = btn.querySelector('.tt-icon');
+                const text = btn.querySelector('.tt-text');
+                if (icon) icon.textContent = light ? '☀' : '🌙';
+                if (text) text.textContent = light ? '亮色' : '暗色';
+            });
+        }
+        function toggleTheme() {
+            const light = !document.body.classList.contains('light');
+            applyTheme(light);
+            try { localStorage.setItem('smq_theme', light ? 'light' : 'dark'); } catch (e) {}
+        }
+        (function initTheme() {
+            try {
+                if (localStorage.getItem('smq_theme') === 'light') applyTheme(true);
+            } catch (e) {}
+        })();
+
+        // ========== 待办事项功能 ==========
+        const todoList = document.getElementById('todoList');
+        const todoInput = document.getElementById('todoInput');
+        const todoAddBtn = document.getElementById('todoAddBtn');
+        const todoCount = document.getElementById('todoCount');
+        let todos = [];
+
+        function renderTodos() {
+            todoList.innerHTML = '';
+            todos.forEach((todo, index) => {
+                const li = document.createElement('li');
+                li.className = 'todo-item';
+
+                // 复选框
+                const checkbox = document.createElement('div');
+                checkbox.className = 'todo-checkbox' + (todo.done ? ' done' : '');
+                checkbox.textContent = todo.done ? '✓' : '';
+                checkbox.addEventListener('click', () => {
+                    todos[index].done = !todos[index].done;
+                    renderTodos();
+                });
+
+                // 待办文本
+                const text = document.createElement('span');
+                text.className = 'todo-text' + (todo.done ? ' done' : '');
+                text.textContent = todo.text;
+                text.addEventListener('click', () => {
+                    todos[index].done = !todos[index].done;
+                    renderTodos();
+                });
+
+                // 删除按钮
+                const del = document.createElement('button');
+                del.className = 'todo-del';
+                del.textContent = '✕';
+                del.title = '删除';
+                del.addEventListener('click', () => {
+                    todos.splice(index, 1);
+                    renderTodos();
+                });
+
+                li.appendChild(checkbox);
+                li.appendChild(text);
+                li.appendChild(del);
+                todoList.appendChild(li);
+            });
+            updateCount();
+        }
+
+        function updateCount() {
+            const total = todos.length;
+            const done = todos.filter(t => t.done).length;
+            todoCount.textContent = `共 ${total} 项 · 已完成 ${done} 项`;
+        }
+
+        function addTodo() {
+            const text = todoInput.value.trim();
+            if (text) {
+                todos.push({ text, done: false });
+                todoInput.value = '';
+                renderTodos();
+            }
+        }
+
+        todoAddBtn.addEventListener('click', addTodo);
+        todoInput.addEventListener('keydown', (e) => {
+            if (e.key === 'Enter') {
+                addTodo();
+            }
+        });
+
+        // 初始示例待办
+        todos = [
+            { text: '欢迎使用工作台，点击可标记完成', done: false },
+            { text: '这是一个已完成示例', done: true }
+        ];
+        renderTodos();
+    </script>
+</body>
+</html>

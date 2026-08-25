@@ -1,0 +1,15 @@
+{
+  "world": { "era": "星陨 2000 年", "season": "凯旋之月（7 月）", "clock": "黄昏时分" },
+  "boards": [
+    { "id": "tavern", "name": "黄昏酒馆", "desc": "角色扮演主广场——以世界中的身份发言、回帖、推进故事", "icon": "🍺", "file": "forum/tavern.html", "tag": "角色扮演", "tagClass": "t-sun" },
+    { "id": "bounty", "name": "佣兵悬赏板", "desc": "三大势力张贴的委托与悬赏，接取后回到对话推进剧情", "icon": "⚔️", "file": "forum/bounty.html", "tag": "任务", "tagClass": "t-alliance" },
+    { "id": "intel", "name": "情报交换所", "desc": "流传于大陆的传闻与情报，按公开/限定/隐秘分级标注", "icon": "🕯️", "file": "forum/intel.html", "tag": "情报", "tagClass": "t-meher" },
+    { "id": "announce", "name": "王国公告栏", "desc": "凯旋日公告、学院通知、教会谕令与大陆要闻", "icon": "📜", "file": "forum/announce.html", "tag": "公告", "tagClass": "t-church" }
+  ],
+  "notices": [
+    { "title": "凯旋日临近 · 第 500 届", "text": "本届主会场定于幻沙帝国绿洲都城。庆典首日大型传送阵免费（魔法师协会承担），请提前规划行程。", "tag": "大陆要闻", "tagClass": "t-sun" },
+    { "title": "安玛斯特学院招生季", "text": "中高级贵族魔法学院本年度招收固定人数，报名截止于凯旋日假期结束后三日，详见学院公告。", "tag": "学院", "tagClass": "t-academy" },
+    { "title": "始源岛轮值看守", "text": "本季度由魔法师协会轮值看守始源岛。禁忌之地，未经许可接近者将被劝返。", "tag": "法协", "tagClass": "t-guild" },
+    { "title": "黄昏神殿的传闻", "text": "沙漠深处再度流传起『生命长河』的消息。幻沙帝国提醒：未经向导深入瓦格尔沙漠者，概不负责。", "tag": "幻沙", "tagClass": "t-alliance" }
+  ]
+}

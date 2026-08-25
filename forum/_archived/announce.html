@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>王国公告栏</title>
+  <link rel="stylesheet" href="./forum.css">
+</head>
+<body>
+  <div class="page">
+    <header class="header">
+      <div class="brand">王国公告栏 <em>· 大陆公告</em></div>
+      <div class="worldline">星陨 2000 · 凯旋之月</div>
+    </header>
+
+    <div class="card" style="border-color:var(--line-strong);">
+      <div class="card-title"><span class="ic">📜</span>说明</div>
+      <p class="desc">点击「查看设定依据」会在内容浏览器中打开对应的知识库条目文件。公告均为公开信息（L0）。</p>
+    </div>
+
+    <div id="anns"><div class="empty">加载中…</div></div>
+
+    <footer class="footer">王国公告栏 · 三国联盟 / 创世神教 / 魔法师协会 联合发布</footer>
+  </div>
+
+  <script>
+    const $ = (s) => document.querySelector(s);
+    let anns = [];
+
+    function esc(s) {
+      return String(s ?? "").replace(/[&<>"']/g, (c) => ({
+        "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;"
+      }[c]));
+    }
+
+    async function load() {
+      try { anns = (await fetch("./announce.data.json").then((r) => r.json())).anns || []; }
+      catch { anns = []; }
+      render();
+    }
+
+    function render() {
+      $("#anns").innerHTML = anns.length ? anns.slice().sort((a, b) => (b.id || 0) - (a.id || 0)).map((a) => `
+        <div class="card">
+          <div class="ann-head">
+            <span class="tag ${esc(a.tag || "t-alliance")}">${esc(a.org)}</span>
+            <span class="ann-date">${esc(a.date)}</span>
+          </div>
+          <div class="quest-title">${esc(a.title)}</div>
+          <p class="ann-text">${esc(a.text)}</p>
+          <button class="btn btn-ghost btn-sm" onclick="spherse.openFile('${esc(a.file)}')">查看设定依据</button>
+        </div>`).join("") : '<div class="empty">暂无公告</div>';
+    }
+
+    spherse.events.on("file:update", { path: "./announce.data.json" }, load);
+    load();
+  </script>
+</body>
+</html>

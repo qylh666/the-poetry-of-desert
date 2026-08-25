@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>情报交换所</title>
+  <link rel="stylesheet" href="./forum.css">
+</head>
+<body>
+  <div class="page">
+    <header class="header">
+      <div class="brand">情报交换所 <em>· 传闻与密报</em></div>
+      <div class="worldline">按公开 / 限定 / 隐秘分级</div>
+    </header>
+
+    <div class="card" style="border-color:var(--line-strong);">
+      <div class="card-title"><span class="ic">🕯️</span>分级说明</div>
+      <p class="desc">
+        <span class="tier tier-l0">L0 公开</span> 大众常识，人人可谈 ·
+        <span class="tier tier-l1">L1 限定</span> 少数人知晓，打探时注意场合 ·
+        <span class="tier tier-l2">L2 隐秘</span> 不为人知的情报，<b>锁定</b>——需对「设定管理员」开放授权（在对话中说"开放隐秘档案"）后才能查看。
+      </p>
+    </div>
+
+    <div id="intels"><div class="empty">加载中…</div></div>
+    <div class="tip" id="tip" style="margin-top:.6rem;"></div>
+
+    <footer class="footer">情报交换所 · 所有情报须经设定管理员核验分级，防止越界</footer>
+  </div>
+
+  <script>
+    const $ = (s) => document.querySelector(s);
+    let intels = [];
+
+    function esc(s) {
+      return String(s ?? "").replace(/[&<>"']/g, (c) => ({
+        "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;"
+      }[c]));
+    }
+
+    function setTip(t, ok) {
+      const el = $("#tip");
+      el.textContent = t;
+      el.style.color = ok ? "var(--gold)" : "var(--danger)";
+    }
+
+    async function load() {
+      try { intels = (await fetch("./intel.data.json").then((r) => r.json())).intels || []; }
+      catch { intels = []; }
+      render();
+    }
+
+    function render() {
+      $("#intels").innerHTML = intels.length ? intels.slice().sort((a, b) => (b.id || 0) - (a.id || 0)).map((it) => {
+        const tierCls = it.tier === "L2" ? "tier-l2" : it.tier === "L1" ? "tier-l1" : "tier-l0";
+        const tierLabel = it.tier === "L2" ? "🔒 L2 隐秘" : it.tier === "L1" ? "L1 限定" : "L0 公开";
+        return `
+        <div class="card">
+          <div class="quest-head">
+            <span class="quest-title">${esc(it.title)}</span>
+            <span class="tier ${tierCls}">${tierLabel}</span>
+          </div>
+          <p class="desc">${esc(it.text)}</p>
+          <div class="intel-source">来源：${esc(it.source)}${it.scope ? " · " + esc(it.scope) : ""}</div>
+          <div class="intel-actions">
+            ${it.locked
+              ? `<button class="btn btn-ghost btn-sm" onclick="unlock(${it.id})">需开放授权</button>`
+              : `<button class="btn btn-primary btn-sm" onclick="probe(${it.id})">深入打探</button>`}
+          </div>
+        </div>`;
+      }).join("") : '<div class="empty">情报网寂静无声</div>';
+    }
+
+    async function probe(id) {
+      const it = intels.find((x) => x.id === id);
+      if (!it) return;
+      const rt = await spherse.getRuntime().catch(() => null);
+      if (!rt?.sessionId) return setTip("当前不在会话中：请从聊天卡片打开本页再打探", false);
+      const message = `（情报交换所 · 角色扮演）我想深入打探这条${it.tier}情报《${it.title}》：${it.text}。来源：${it.source}。请以符合其知晓范围的方式展开调查。`;
+      try {
+        await spherse.sendMessage({ sessionId: rt.sessionId, message });
+        setTip(`已发起对《${it.title}》的调查`, true);
+      } catch (e) {
+        setTip(e.message === "session_busy" ? "会话正在生成，请稍后重试" : "发送失败，请重试", false);
+      }
+    }
+
+    function unlock(id) {
+      setTip("L2 隐秘情报锁定中：请在对话中向「设定管理员」说『开放隐秘档案』，获得授权后即可查看 SEC 档案", false);
+    }
+
+    spherse.events.on("file:update", { path: "./intel.data.json" }, load);
+    load();
+  </script>
+</body>
+</html>

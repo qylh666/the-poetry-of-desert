@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>沙漠之歌 · 论坛广场</title>
+  <link rel="stylesheet" href="./forum.css">
+</head>
+<body>
+  <div class="page">
+    <header class="header">
+      <div class="brand">沙漠之歌 <em>· 大陆论坛</em></div>
+      <div class="worldline" id="worldline">…</div>
+    </header>
+
+    <h2 class="section-title">板块</h2>
+    <div id="boards"></div>
+
+    <h2 class="section-title">大陆要闻</h2>
+    <div id="notices"></div>
+
+    <div class="card" style="display:flex;justify-content:space-between;align-items:center;gap:.8rem;flex-wrap:wrap;">
+      <div>
+        <div class="card-title"><span class="ic">📖</span>设定知识库</div>
+        <p class="desc">写作与角色扮演的设定依据：<kbd>知识库/_INDEX.md</kbd>（L0/L1/L2 分级）。</p>
+      </div>
+      <button class="btn btn-ghost btn-sm" onclick="spherse.openFile('知识库/_INDEX.md')">打开索引</button>
+    </div>
+
+    <footer class="footer">沙漠之歌 · 星陨 2000 · 论坛为角色扮演用界面，非正文依据</footer>
+  </div>
+
+  <script>
+    const $ = (s) => document.querySelector(s);
+
+    function esc(s) {
+      return String(s ?? "").replace(/[&<>"']/g, (c) => ({
+        "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;"
+      }[c]));
+    }
+
+    async function render() {
+      let data = {};
+      try { data = await fetch("./index.data.json").then((r) => r.json()); }
+      catch { /* 数据文件缺失时使用空态 */ }
+
+      const world = data.world || {};
+      $("#worldline").innerHTML =
+        `<b>${esc(world.era || "星陨 2000 年")}</b> · ${esc(world.season || "")} · ${esc(world.clock || "")}`;
+
+      $("#boards").innerHTML = (data.boards || []).map((b) => `
+        <div class="card board-card" onclick="spherse.openFile('${esc(b.file)}')">
+          <div class="board-ic">${esc(b.icon)}</div>
+          <div class="board-main">
+            <h3>${esc(b.name)} <span class="tag ${esc(b.tagClass)}">${esc(b.tag)}</span></h3>
+            <p class="desc">${esc(b.desc)}</p>
+          </div>
+        </div>`).join("") || '<div class="empty">暂无板块</div>';
+
+      $("#notices").innerHTML = (data.notices || []).map((n) => `
+        <div class="card">
+          <div class="card-title"><span class="tag ${esc(n.tagClass)}">${esc(n.tag)}</span>${esc(n.title)}</div>
+          <p class="desc">${esc(n.text)}</p>
+        </div>`).join("") || '<div class="empty">暂无要闻</div>';
+    }
+
+    spherse.events.on("file:update", { path: "./index.data.json" }, render);
+    render();
+  </script>
+</body>
+</html>
