@@ -9,6 +9,7 @@
  * ============================================================ */
 window.SMQ = (function () {
     var KEY = 'smq_standalone_v1';
+    var pageExport = null; // { file, filename, get } 由页面注册，用于「导出本页」
 
     function isNative() {
         return !!(window.spherse && window.spherse.data && window.spherse.data.set);
@@ -51,14 +52,24 @@ window.SMQ = (function () {
             exportedAt: new Date().toISOString(),
             files: all
         };
-        var blob = new Blob([JSON.stringify(payload, null, 2)], { type: 'application/json' });
+        downloadObject('沙漠之歌-数据导出-' + new Date().toISOString().slice(0, 10) + '.json', payload);
+    }
+
+    /* 直接下载一个对象为 JSON 文件（文件名可含中文，GitHub 支持） */
+    function downloadObject(filename, obj) {
+        var blob = new Blob([JSON.stringify(obj, null, 2)], { type: 'application/json' });
         var a = document.createElement('a');
         a.href = URL.createObjectURL(blob);
-        a.download = '沙漠之歌-数据导出-' + new Date().toISOString().slice(0, 10) + '.json';
+        a.download = filename;
         document.body.appendChild(a);
         a.click();
         a.remove();
         URL.revokeObjectURL(a.href);
+    }
+
+    /* 页面注册「导出本页」：导出当前页面数据文件（已含本地编辑），可直接覆盖上传仓库 */
+    function registerPageExport(file, filename, get) {
+        pageExport = { file: file, filename: filename, get: get };
     }
 
     /* 从 JSON 文件导入数据到 localStorage（兼容导出格式 / 裸 files 对象） */
@@ -140,6 +151,23 @@ window.SMQ = (function () {
         document.body.appendChild(fileInput);
 
         wrap.appendChild(exp);
+
+        /* 本页数据导出：可直接覆盖上传仓库对应 data.json */
+        if (pageExport) {
+            var pageExp = document.createElement('button');
+            pageExp.type = 'button';
+            pageExp.textContent = '⇩ 导出本页';
+            pageExp.title = '导出本页数据文件（' + pageExport.filename + '），可在仓库中覆盖上传更新';
+            pageExp.style.cssText = exp.style.cssText;
+            pageExp.addEventListener('mouseenter', function () { pageExp.style.color = 'var(--gold-bright,#e8d5a4)'; pageExp.style.borderColor = 'var(--gold,#c9a96a)'; });
+            pageExp.addEventListener('mouseleave', function () { pageExp.style.color = 'var(--gold-mid,#a88955)'; pageExp.style.borderColor = 'var(--line,rgba(201,169,106,.3))'; });
+            pageExp.addEventListener('click', function () {
+                downloadObject(pageExport.filename, pageExport.get());
+                SMQ.toast('已导出 ' + pageExport.filename + '，上传覆盖到仓库 forum/ 即可更新');
+            });
+            wrap.appendChild(pageExp);
+        }
+
         wrap.appendChild(imp);
         container.appendChild(wrap);
         return { exportAll: SMQ.exportAll, importAll: SMQ.importAll };
@@ -151,6 +179,8 @@ window.SMQ = (function () {
         getLocal: getLocal,
         exportAll: exportAll,
         importAll: importAll,
+        registerPageExport: registerPageExport,
+        downloadObject: downloadObject,
         mountDataTools: mountDataTools,
         toast: toast
     };
