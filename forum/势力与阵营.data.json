@@ -61,5 +61,14 @@
         { "id": "guardian", "name": "守护者", "desc": "接受\"静默者\"（尼德霍格）赐福的神眷，为受迫害信徒提供武力庇护。" }
       ] }
     ] }
+  ],
+  "relations": [
+    { "from": "guild", "to": "alliance", "type": "合作" },
+    { "from": "church", "to": "alliance", "type": "合作" },
+    { "from": "church", "to": "guild", "type": "竞争" },
+    { "from": "meher", "to": "church", "type": "渗透" },
+    { "from": "meher", "to": "guild", "type": "渗透" },
+    { "from": "sencity", "to": "alliance", "type": "中立" },
+    { "from": "church", "to": "sencity", "type": "中立" }
   ]
 }

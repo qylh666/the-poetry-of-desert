@@ -520,6 +520,8 @@
                 <ul class="nav-sub">
                     <li><a href="../功能模块/酒馆.html"><span class="nav-dot"></span>酒馆</a></li>
                     <li><a href="../功能模块/日历.html"><span class="nav-dot"></span>日历</a></li>
+                    <li><a href="../功能模块/书架.html"><span class="nav-dot"></span>书架</a></li>
+                    <li><a href="../功能模块/魔法解析器.html"><span class="nav-dot"></span>魔法解析器</a></li>
                 </ul>
             </li>
             <li>
@@ -650,6 +652,8 @@
         <div class="mnav-sec">功能模块</div>
         <a href="../功能模块/酒馆.html"><span class="mnav-dot"></span>酒馆</a>
         <a href="../功能模块/日历.html"><span class="mnav-dot"></span>日历</a>
+        <a href="../功能模块/书架.html"><span class="mnav-dot"></span>书架</a>
+        <a href="../功能模块/魔法解析器.html"><span class="mnav-dot"></span>魔法解析器</a>
         <div class="mnav-sec">设定资料</div>
         <a href="势力与阵营.html"><span class="mnav-dot"></span>势力与阵营</a>
         <a href="历史事件.html"><span class="mnav-dot"></span>历史事件</a>
@@ -789,6 +793,7 @@ let editingId = null;
 let tagList = [];
 let cropId = "", cropScale = 1, cropX = 0, cropY = 0, dragging = false, dragStart = null;
 let cropImg = null;
+let lastCropDataUrl = null;
 
 const ELEM_COLOR = { "土": "#8a6d3b", "火": "#c14b3a", "水": "#3f7c9c", "风": "#5f8f7c", "天": "#a8873a", "全": "#6b4a7a" };
 const ALIAS = { "奥托·米歇尔": ["michael"], "米迦勒（知心者）": ["michael"], "花立安 / 花稚生": ["hualian", "huazhisheng"] };
@@ -1274,32 +1279,34 @@ function saveCrop() {
         const srcR = (box / 2) / cropScale; // 对应源图半径
         const sx = (centerX - cropX) / cropScale - srcR;
         const sy = (centerY - cropY) / cropScale - srcR;
-        const cv = document.createElement("canvas"); cv.width = 128; cv.height = 128;
+        const cv = document.createElement("canvas"); cv.width = 96; cv.height = 96;
         const ctx = cv.getContext("2d");
-        ctx.drawImage(img, sx, sy, srcR * 2, srcR * 2, 0, 0, 128, 128);
-        cv.toBlob(async (blob) => {
-            if (!blob) { $("#cropTip").textContent = "图片处理失败，请重试"; return; }
-            const fileName = cropId + ".png";
-            const relPath = "avatars/" + fileName;
-            // 1) 只记录相对路径引用（不再内嵌 base64，避免数据文件膨胀）
-            const avatars = Object.assign({}, data.avatars || {});
-            avatars[cropId] = relPath;
-            try {
-                const res = await SMQ.save(DATA, "avatars", avatars);
-                data.avatars = avatars;
-                if (res.mode === 'local') SMQ.toast('头像路径已存本地；请把下载的 ' + fileName + ' 放回电脑 forum/avatars/ 目录');
-            } catch (e) { $("#cropTip").textContent = "路径记录保存失败，请重试"; return; }
-            // 2) 导出 PNG 文件，供放入 forum/avatars/
-            const url = URL.createObjectURL(blob);
-            const a = document.createElement("a");
-            a.href = url; a.download = fileName;
-            document.body.appendChild(a); a.click(); a.remove();
-            setTimeout(() => URL.revokeObjectURL(url), 5000);
-            $("#cropTip").innerHTML = "已导出 <b>" + fileName + "</b>（" + (blob.size / 1024).toFixed(1) + " KB）✓<br>请把下载的文件保存到项目 <b>forum/avatars/</b> 目录，头像即可显示。";
-            closeCrop(); render(); renderWeb();
+        ctx.drawImage(img, sx, sy, srcR * 2, srcR * 2, 0, 0, 96, 96);
+        // 头像以独立 PNG 文件存放（forum/avatars/），数据只存路径引用，保持数据文件精简
+        const dataUrl = cv.toDataURL("image/png");
+        lastCropDataUrl = dataUrl;
+        const fileName = cropId + ".png";
+        const relPath = "avatars/" + fileName;
+        const avatars = Object.assign({}, data.avatars || {});
+        avatars[cropId] = relPath;
+        SMQ.save(DATA, "avatars", avatars).then((res) => {
+            data.avatars = avatars;
+            render(); renderWeb();
+            // 不强制弹下载：给出可选手动下载 + 放置指引
+            $("#cropTip").innerHTML = "头像路径已保存 ✓<br>请把 <b>" + esc(fileName) + "</b> 放进项目 <b>forum/avatars/</b> 目录（Spherse 文件树里可直接把图片拖入该文件夹），头像即可显示。<br><button class=\"btn btn-sm\" style=\"margin-top:6px;\" onclick=\"downloadCropPng()\">下载 PNG 文件</button>";
             if ($("#modal").classList.contains("open")) openModal($("#modalBody").dataset.cur);
-        }, "image/png");
+            if (window.SMQ) SMQ.toast("头像路径已保存，请放置 PNG 文件");
+        }).catch(() => { $("#cropTip").textContent = "保存失败，请重试"; });
     } catch (err) { $("#cropTip").textContent = "保存失败"; }
+}
+
+// 用户主动点击时才下载（不会自动弹保存框）
+function downloadCropPng() {
+    if (!lastCropDataUrl || !cropId) return;
+    const a = document.createElement("a");
+    a.href = lastCropDataUrl;
+    a.download = cropId + ".png";
+    document.body.appendChild(a); a.click(); a.remove();
 }
 
 $("#q").addEventListener("input", render);

@@ -935,6 +935,9 @@
 </head>
 <body>
 
+    <!-- ========== 无 Spherse 环境降级层（localStorage 编辑 + 导出/导入） ========== -->
+    <script src="../../forum/standalone.js"></script>
+
     <!-- ========== 侧边栏 ========== -->
     <aside class="sidebar">
         <div class="sidebar-brand">
@@ -952,6 +955,8 @@
                 <ul class="nav-sub open">
                     <li><a href="酒馆.html" class="active"><span class="nav-dot"></span>酒馆</a></li>
                     <li><a href="日历.html"><span class="nav-dot"></span>日历</a></li>
+                    <li><a href="书架.html"><span class="nav-dot"></span>书架</a></li>
+                    <li><a href="魔法解析器.html"><span class="nav-dot"></span>魔法解析器</a></li>
                 </ul>
             </li>
             <li>
@@ -988,6 +993,7 @@
                 <span>系统正常</span>
                 <span style="color:var(--gold-dim);">|</span>
                 <span>星陨 2000 a.s.</span>
+                <span class="data-tools"></span>
             </div>
         </div>
 
@@ -1132,6 +1138,8 @@
         <div class="mnav-sec">功能模块</div>
         <a href="酒馆.html" class="active"><span class="mnav-dot"></span>酒馆</a>
         <a href="日历.html"><span class="mnav-dot"></span>日历</a>
+        <a href="书架.html"><span class="mnav-dot"></span>书架</a>
+        <a href="魔法解析器.html"><span class="mnav-dot"></span>魔法解析器</a>
         <div class="mnav-sec">设定资料</div>
         <a href="../设定资料/势力与阵营.html"><span class="mnav-dot"></span>势力与阵营</a>
         <a href="../设定资料/历史事件.html"><span class="mnav-dot"></span>历史事件</a>
@@ -1251,64 +1259,56 @@ function toggleTheme() {
     }
 })();
 
-// ========== 数据（来自 forum/*.data.json） ==========
-let notices = [
-    { type: '告示', title: '救赎之地的低语', desc: '咏梦者又在梦中低语了：候至诸界清明，圣火重燃。勿急躁，勿动摇。愿守夜者同行。', time: '凯旋之月 · 6 日 · 匿名（密特拉）', tier: 'L1' },
-    { type: '告示', title: '祈愿礼拜 · 凯旋前夜', desc: '凯旋日前夜，白塔底层教堂将举行例行礼拜，欢迎信众参与（非强制）。神之音将由教皇亲自传颂。', time: '凯旋之月 · 5 日 · 创世神教 · 白塔', tier: 'L0' },
-    { type: '告示', title: '香料商队招募护卫', desc: '一支香料商队需在日落前穿越瓦格尔沙漠边缘抵达绿洲城，招募会魔法的护卫同行。报酬面议，以晶体结算。', time: '凯旋之月 · 4 日 · 幻沙帝国商会', tier: 'L0' },
-    { type: '告示', title: '学院图书馆延长开放', desc: '凯旋日假期期间，图书馆延长开放至晚间。地下商店街 5:30–23:30 照常营业。花园仍为实验场地，请勿靠近。', time: '凯旋之月 · 3 日 · 安玛斯特学院', tier: 'L0' },
-    { type: '告示', title: '凯旋日协防招募', desc: '第 500 届凯旋日主会场设于幻沙绿洲都城，庆典期间招募临时协防人手，服从骑士团调度即可。薪酬 35 晶体。', time: '凯旋之月 · 1 日 · 圣殿骑士团', tier: 'L0' },
-    { type: '传闻', title: '黄昏神殿的钟声', desc: '据说有人在沙漠深处的沙暴里听见了钟声，还看见一座被紫光环绕的神殿轮廓。等他追过去，只剩下一片沙子。（此条已加密）', time: '隐秘档案 · SEC-01', tier: 'L2' },
-    { type: '传闻', title: '学院花园的芙罗花', desc: '安玛斯特学院花园里的三株芙罗花，今年开得异常旺盛，连园丁都说从没见过。有学生说夜里看见花园有奇怪的影子。', time: '学院学生间流传', tier: 'L1' },
-    { type: '传闻', title: '骑士团长与法协会长', desc: '有人在凯旋日前，看见圣殿骑士团团长和法协那位会长在希尼尔城郊外私下碰面。两人似乎认识很久，气氛说不上融洽。', time: '街头流言', tier: 'L1' },
-    { type: '传闻', title: '藏雪山的『心跳声』', desc: '藏雪山矿脉深处传来规律的轰鸣，矿工们说像大地的心跳。法协勘测队已封锁了那段矿道。', time: '矿区工人', tier: 'L1' },
-    { type: '传闻', title: '晏海城的银发少女', desc: '有人看见一位银白双马尾、蓝眼睛的少女在晏海城码头跟海鸟说话，还向路过的商贩打听凯旋日烟火会的事。', time: '码头闲谈', tier: 'L0' },
-    { type: '传闻', title: '始源岛最近很安静', desc: '本季度轮到法协看守始源岛。轮值的人说岛上没什么异常，就是夜里遗迹里偶尔有光。', time: '轮值人员口述', tier: 'L0' }
+// ========== 数据（来自 forum/酒馆.data.json） ==========
+const DATA = "forum/酒馆.data.json";
+// 兜底数据（与 forum/酒馆.data.json 同步；fetch 成功时以外部数据为准）
+const FALLBACK_NOTICES = [
+    { type: '告示', title: '学院图书馆延长开放', desc: '凯旋日假期期间，图书馆延长开放至晚间。地下商店街 5:30–23:30 照常营业。花园仍为实验场地，请勿靠近。', time: '凯旋之月 · 3 日 · 安玛斯特学院', tier: 'L0' }
 ];
+let notices = [];
 
 let characters = ['我', '伊芙', '玛提亚', '阿斯', '维帕尔', '安东尼奥', '玛格丽特·卡斯特利亚', '撒迦利亚·阿斯塔罗斯·贝利亚尔', '加百列', '彼得·迈恩哈德·韦伯斯特', '埃弗蒙德', '慕灵', '胡音', '约芙蒂', '伊斯兰特·伊德·瑞蒂安', '艾萨克·格里芬', '雅各', '拉法叶尔', '沃特·梅林'];
 let currentChar = '我';
 
-let feed = [
-    { name: '玛提亚', avatar: '玛', color: '#5f8f7c', text: '哼哼～本小姐今天给圣殿骑士团广场的鸽子都起了名字。头号选手：『叫团长请客』。', time: '凯旋之月 · 5 日', likes: 8, liked: false, comments: [], commentCount: 2 },
-    { name: '阿斯', avatar: '阿', color: '#5f8f7c', text: '从绿洲都城溜出来了。沙漠边缘的星星，比皇宫里的吊灯好看一百倍。', time: '凯旋之月 · 4 日', likes: 12, liked: false, comments: [], commentCount: 3 },
-    { name: '维帕尔', avatar: '维', color: '#c14b3a', text: '今天见到玛格丽特大人了！！她从我身边走过去的时候，我感觉整个走廊都在发光！！', time: '凯旋之月 · 3 日', likes: 15, liked: false, comments: [], commentCount: 4 },
-    { name: '伊芙', avatar: '伊', color: '#3f7c9c', text: '第一次来到尤克特拉大陆。晏海城的海风是咸的，街角煎鱼的香味能飘出三条巷子。想去看凯旋日的烟火会。', time: '凯旋之月 · 1 日', likes: 21, liked: false, comments: [], commentCount: 6 }
-];
+let feed = [];
 
-let groups = [
-    { id: 'alliance', name: '三国联盟工作群', color: '#8c7853', icon: '🏛️', last: '阿斯：父皇……我能溜去夜市吗', time: '09:44', messages: [
-        { from: '伊斯兰特·伊德·瑞蒂安', text: '凯旋日协防事宜，请各国代表明日午前回复。', time: '09:12' },
-        { from: '艾萨克·格里芬', text: '利夫兹会准时出席。', time: '09:30' },
-        { from: '约芙蒂', text: '幻沙已备好主会场，庆典第三夜的烟火会也在准备了。', time: '09:41' },
-        { from: '阿斯', text: '父皇……我能溜去夜市吗。', time: '09:44' }
-    ] },
-    { id: 'guild', name: '法协消息通知群', color: '#4a7a9c', icon: '🔮', last: '埃弗蒙德：学院假期安排已提交', time: '09:05', messages: [
-        { from: '安东尼奥', text: '新评级制度自下月起执行，各分会注意同步。', time: '08:20' },
-        { from: '玛格丽特·卡斯特利亚', text: '收到。本周例会取消，改为书面述职。', time: '08:45' },
-        { from: '沃特·梅林', text: '哎呀，怎么一不小心就发了言呢，真是不小心～', time: '08:47' },
-        { from: '埃弗蒙德', text: '学院假期安排已提交。', time: '09:05' }
-    ] },
-    { id: 'orbis', name: '奥比斯工作群', color: '#a83232', icon: '⛪', last: '？', time: '今天', messages: [
-        { from: '胡音', text: '白塔周边巡逻已排班，凯旋日前加强一班。', time: '昨天' },
-        { from: '慕灵', text: '好嘞～我这边情报汇总下午交。', time: '昨天' },
-        { from: '加百列', text: '老夫提醒一句：别让客人等太久，旅店街的摊子该整理整理了。', time: '今天 08:10' },
-        { from: '我', text: '？', time: '17:09' }
-    ] },
-    { id: 'academy', name: '安玛斯特学院群', color: '#2c5f7c', icon: '🎓', last: '埃弗蒙德：确有此事，日期待定', time: '08:33', messages: [
-        { from: '拉法叶尔', text: '凯旋日假期后，魔药课补考安排已发布，记得查看。', time: '昨天' },
-        { from: '维帕尔', text: '听说玛格丽特大人会来做客座讲座！是真的吗！', time: '今天 08:30' },
-        { from: '埃弗蒙德', text: '确有此事，日期待定。', time: '今天 08:33' }
-    ] },
-    { id: 'templar', name: '圣殿骑士团群', color: '#b8863b', icon: '🛡️', last: '彼得：收到，我周内回希尼尔', time: '08:02', messages: [
-        { from: '玛提亚', text: '哼哼～凯旋日协防缺人手，本小姐已经替团长把名报了。', time: '今天 07:50' },
-        { from: '雅各', text: '……玛提亚，你至少问一下团长。', time: '今天 07:52' },
-        { from: '撒迦利亚·阿斯塔罗斯·贝利亚尔', text: '无妨。协防名单按惯例排。', time: '今天 08:01' },
-        { from: '彼得·迈恩哈德·韦伯斯特', text: '收到，我周内回希尼尔。', time: '今天 08:02' }
-    ] }
-];
+let groups = [];
 
 let delMode = false;
+
+// ========== 酒馆数据加载 / 保存 ==========
+async function loadTavern() {
+    try {
+        const j = await fetch("../../forum/酒馆.data.json").then(r => r.json());
+        notices = (j && Array.isArray(j.notices)) ? j.notices : JSON.parse(JSON.stringify(FALLBACK_NOTICES));
+        feed = (j && Array.isArray(j.feed)) ? j.feed : [];
+        groups = (j && Array.isArray(j.groups)) ? j.groups : [];
+    } catch {
+        notices = JSON.parse(JSON.stringify(FALLBACK_NOTICES));
+        feed = [];
+        groups = [];
+    }
+    // 无 Spherse 环境：应用浏览器本地编辑的数据
+    try { const l = SMQ.getLocal(DATA, 'notices'); if (l && l.length) notices = l; } catch (e) {}
+    try { const l = SMQ.getLocal(DATA, 'feed'); if (l) feed = l; } catch (e) {}
+    try { const l = SMQ.getLocal(DATA, 'groups'); if (l) groups = l; } catch (e) {}
+    renderBoard();
+    renderCharSelect();
+    renderCharChips();
+    renderFeed();
+    renderFeedEdit();
+    renderGroupList();
+    renderGroupEdit();
+}
+async function saveTavern() {
+    try {
+        const r1 = await SMQ.save(DATA, 'notices', notices);
+        const r2 = await SMQ.save(DATA, 'feed', feed);
+        const r3 = await SMQ.save(DATA, 'groups', groups);
+        if (r1.mode === 'local' || r2.mode === 'local' || r3.mode === 'local') SMQ.toast('已保存到浏览器本地（可用顶栏「导出本页」同步到 forum）');
+    } catch (e) {}
+}
+SMQ.registerPageExport(DATA, '酒馆.data.json', () => ({ notices, feed, groups }));
 let delSel = new Set();
 let page = 0;
 const PAGE_SIZE = 6;
@@ -1357,6 +1357,7 @@ function saveTimeEdit() {
         const g = groups[timeEditTarget.index];
         if (g) { g.time = newTime; renderGroupList(); renderGroupEdit(); }
     }
+    saveTavern();
     closeTimeModal();
 }
 
@@ -1394,6 +1395,7 @@ function deleteSelected() {
     const idxs = [...delSel].sort((a, b) => b - a);
     idxs.forEach(i => notices.splice(i, 1));
     delSel.clear(); delMode = false; renderBoard();
+    saveTavern();
 }
 function openNoticeModal(title, type) {
     document.getElementById('noticeModalTitle').textContent = title;
@@ -1412,6 +1414,7 @@ function saveNotice() {
     if (!title || !desc) return;
     notices.unshift({ type, title, desc, time: '星陨2000年7月', tier: '' });
     closeNoticeModal(); page = 0; renderBoard();
+    saveTavern();
 }
 
 // ========== 小手机 ==========
@@ -1499,6 +1502,7 @@ function sendFeed() {
     feed.unshift({ name: currentChar, text, time: '刚刚', likes: 0, liked: false, comments: [], commentCount: 0 });
     document.getElementById('feedInput').value = '';
     renderFeed(); renderFeedEdit();
+    saveTavern();
 }
 function addFeedFromPanel() {
     const text = document.getElementById('newFeedText').value.trim();
@@ -1506,14 +1510,16 @@ function addFeedFromPanel() {
     feed.unshift({ name: currentChar, text, time: '刚刚', likes: 0, liked: false, comments: [], commentCount: 0 });
     document.getElementById('newFeedText').value = '';
     renderFeed(); renderFeedEdit();
+    saveTavern();
 }
-function deleteFeed(i) { feed.splice(i, 1); renderFeed(); renderFeedEdit(); }
+function deleteFeed(i) { feed.splice(i, 1); renderFeed(); renderFeedEdit(); saveTavern(); }
 
 // 点赞评论
 function toggleLike(i) {
     feed[i].liked = !feed[i].liked;
     feed[i].likes += feed[i].liked ? 1 : -1;
     renderFeed();
+    saveTavern();
 }
 function toggleComments(i) {
     feed[i].commentsOpen = !feed[i].commentsOpen;
@@ -1531,10 +1537,12 @@ function addComment(i) {
     // 保持评论区展开
     feed[i].commentsOpen = true;
     renderFeed();
+    saveTavern();
 }
 function deleteComment(fi, ci) {
     feed[fi].comments.splice(ci, 1);
     renderFeed();
+    saveTavern();
 }
 
 // 群聊
@@ -1565,6 +1573,7 @@ function addGroupFromPanel() {
     groups.unshift({ id: 'g' + Date.now(), name, color: colors[Math.floor(Math.random() * colors.length)], icon: '✦', last: '新建的群聊', time: '刚刚', messages: [] });
     document.getElementById('newGroupInput').value = '';
     renderGroupList(); renderGroupEdit();
+    saveTavern();
 }
 function closeGroupModal() { document.getElementById('groupModal').classList.remove('open'); }
 function saveGroup() {
@@ -1574,8 +1583,9 @@ function saveGroup() {
     groups.unshift({ id: 'g' + Date.now(), name, color: colors[Math.floor(Math.random() * colors.length)], icon: '✦', last: '新建的群聊', time: '刚刚', messages: [] });
     closeGroupModal();
     renderGroupList(); renderGroupEdit();
+    saveTavern();
 }
-function deleteGroup(i) { groups.splice(i, 1); renderGroupList(); renderGroupEdit(); }
+function deleteGroup(i) { groups.splice(i, 1); renderGroupList(); renderGroupEdit(); saveTavern(); }
 
 function openChat(id) {
     const g = groups.find(x => x.id === id);
@@ -1621,23 +1631,19 @@ function sendMsg() {
     document.getElementById('msgInput').value = '';
     renderMsgs();
     renderGroupList(); renderGroupEdit();
+    saveTavern();
 }
 function deleteMsg(i) {
     if (!currentGroup) return;
     currentGroup.messages.splice(i, 1);
     renderMsgs();
     renderGroupList(); renderGroupEdit();
+    saveTavern();
 }
 
 // 初始化
-renderBoard();
-updateTime();
-renderCharSelect();
-renderCharChips();
-renderFeed();
-renderFeedEdit();
-renderGroupList();
-renderGroupEdit();
+loadTavern();
+setInterval(updateTime, 30000);
 </script>
 </body>
 </html>

@@ -967,6 +967,8 @@
                 <ul class="nav-sub">
                     <li><a href="功能模块/酒馆.html"><span class="nav-dot"></span>酒馆</a></li>
                     <li><a href="功能模块/日历.html"><span class="nav-dot"></span>日历</a></li>
+                    <li><a href="功能模块/书架.html"><span class="nav-dot"></span>书架</a></li>
+                    <li><a href="功能模块/魔法解析器.html"><span class="nav-dot"></span>魔法解析器</a></li>
                 </ul>
             </li>
             <li>
@@ -1319,9 +1321,18 @@
             try { localStorage.setItem('smq_theme', light ? 'light' : 'dark'); } catch (e) {}
         }
         (function initTheme() {
-            try {
-                if (localStorage.getItem('smq_theme') === 'light') applyTheme(true);
-            } catch (e) {}
+            function systemLight() { return !!(window.matchMedia && matchMedia('(prefers-color-scheme: light)').matches); }
+            let saved = null;
+            try { saved = localStorage.getItem('smq_theme'); } catch (e) {}
+            applyTheme(saved === 'light' || (saved !== 'dark' && systemLight()));
+            // 跟随系统主题：仅当用户未手动选择时生效
+            if (window.matchMedia && matchMedia.addEventListener) {
+                matchMedia('(prefers-color-scheme: light)').addEventListener('change', (e) => {
+                    let s = null;
+                    try { s = localStorage.getItem('smq_theme'); } catch (err) {}
+                    if (s !== 'light' && s !== 'dark') applyTheme(e.matches);
+                });
+            }
         })();
 
         // ========== 待办事项功能 ==========

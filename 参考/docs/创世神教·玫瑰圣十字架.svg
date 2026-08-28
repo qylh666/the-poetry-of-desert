@@ -1,0 +1,39 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 200" role="img" aria-label="创世神教徽章 · 玫瑰圣十字架">
+  <!-- 创世神教纹章「玫瑰圣十字架」· 纯黑线条徽章版 -->
+  <!-- ☩ 四T头十字 + 凯尔特圆环 + 中心简约玫瑰（线勾无叶）+ 四角单根尖刺 -->
+
+  <!-- ========== 十字四臂（细线） ========== -->
+  <g stroke="#000" stroke-width="8" stroke-linecap="round">
+    <line x1="100" y1="30" x2="100" y2="170"/>
+    <line x1="30" y1="100" x2="170" y2="100"/>
+  </g>
+
+  <!-- ========== 凯尔特圆环（环绕交叉点） ========== -->
+  <circle cx="100" cy="100" r="34" fill="none" stroke="#000" stroke-width="8"/>
+
+  <!-- ========== 四 T 头（☩ 造型：臂端独立横杠） ========== -->
+  <g stroke="#000" stroke-width="8" stroke-linecap="round">
+    <line x1="76" y1="18" x2="124" y2="18"/>   <!-- 上T头横杠 -->
+    <line x1="76" y1="182" x2="124" y2="182"/> <!-- 下T头横杠 -->
+    <line x1="18" y1="76" x2="18" y2="124"/>   <!-- 左T头横杠 -->
+    <line x1="182" y1="76" x2="182" y2="124"/> <!-- 右T头横杠 -->
+  </g>
+
+  <!-- ========== 四角尖刺（每端一根，短刺） ========== -->
+  <g fill="#000">
+    <polygon points="97,16 103,16 100,2"/>     <!-- 上刺 -->
+    <polygon points="97,184 103,184 100,198"/> <!-- 下刺 -->
+    <polygon points="16,97 16,103 2,100"/>     <!-- 左刺 -->
+    <polygon points="184,97 184,103 198,100"/> <!-- 右刺 -->
+  </g>
+
+  <!-- ========== 中心简约玫瑰（线条勾勒，无叶） ========== -->
+  <g fill="none" stroke="#000" stroke-width="3">
+    <ellipse cx="100" cy="89" rx="8" ry="12" transform="rotate(0 100 100)"/>
+    <ellipse cx="100" cy="89" rx="8" ry="12" transform="rotate(72 100 100)"/>
+    <ellipse cx="100" cy="89" rx="8" ry="12" transform="rotate(144 100 100)"/>
+    <ellipse cx="100" cy="89" rx="8" ry="12" transform="rotate(216 100 100)"/>
+    <ellipse cx="100" cy="89" rx="8" ry="12" transform="rotate(288 100 100)"/>
+  </g>
+  <circle cx="100" cy="100" r="5" fill="#000"/>
+</svg>

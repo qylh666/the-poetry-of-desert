@@ -1,0 +1,652 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>书库</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,600;0,700;1,400&family=Inter:wght@300;400;500;600&family=JetBrains+Mono:wght@300;400;500&family=Noto+Serif+SC:wght@400;600&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg: #0f1116;
+            --surface: #181b21;
+            --surface-hover: #1e222a;
+            --gold: #c9a96a;
+            --gold-bright: #e8d5a4;
+            --gold-mid: #a88955;
+            --gold-dim: #6e5a3a;
+            --text-primary: #ede4d4;
+            --text-secondary: #a8a091;
+            --text-faint: #6f6a5e;
+            --font-display: 'Cormorant Garamond', 'Noto Serif SC', serif;
+            --font-body: 'Inter', 'Noto Sans SC', sans-serif;
+            --font-mono: 'JetBrains Mono', monospace;
+            --radius: 4px;
+            --transition: 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            --reader-bg: #f0e8d8;
+            --reader-text: #3a3228;
+        }
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body {
+            background: var(--bg);
+            color: var(--text-primary);
+            font-family: var(--font-body);
+            min-height: 100vh;
+            overflow-x: hidden;
+        }
+
+        /* ========== 书库首页 ========== */
+        .library-page { max-width: 1100px; margin: 0 auto; padding: 24px 28px 50px; }
+        .library-page.hidden { display: none; }
+        .header { text-align: center; margin-bottom: 18px; position: relative; padding-bottom: 14px; }
+        .header::after { content: ''; position: absolute; bottom: 0; left: 50%; transform: translateX(-50%); width: 60%; height: 1px; background: linear-gradient(90deg, transparent, var(--gold-dim), var(--gold), var(--gold-dim), transparent); }
+        .header h1 { font-family: var(--font-display); font-size: 26px; font-weight: 700; letter-spacing: 0.06em; color: var(--gold-bright); }
+        .header .sub { font-size: 9px; color: var(--text-faint); letter-spacing: 0.3em; text-transform: uppercase; margin-top: 4px; }
+
+        .toolbar { display: flex; gap: 8px; margin-bottom: 16px; flex-wrap: wrap; align-items: center; }
+        .search-input { flex: 1; min-width: 180px; padding: 9px 14px; background: var(--surface); border: 1px solid rgba(201,169,106,0.25); border-radius: var(--radius); color: var(--text-primary); font-family: var(--font-body); font-size: 13px; outline: none; }
+        .btn { padding: 8px 14px; background: var(--surface); border: 1px solid rgba(201,169,106,0.4); border-radius: var(--radius); color: var(--gold); font-family: var(--font-body); font-size: 12px; cursor: pointer; letter-spacing: 0.06em; transition: var(--transition); white-space: nowrap; }
+        .btn:hover { background: var(--surface-hover); border-color: var(--gold-bright); }
+        .btn-primary { background: linear-gradient(135deg, var(--gold-mid), var(--gold)); border-color: var(--gold-bright); color: #1a1512; font-weight: 700; }
+
+        .category-chips { display: flex; gap: 6px; margin-bottom: 16px; flex-wrap: wrap; }
+        .chip { padding: 5px 12px; font-size: 11px; border: 1px solid rgba(201,169,106,0.25); border-radius: 16px; color: var(--text-secondary); cursor: pointer; background: var(--surface); transition: var(--transition); }
+        .chip:hover { border-color: rgba(201,169,106,0.6); color: var(--gold); }
+        .chip.active { background: rgba(201,169,106,0.15); border-color: var(--gold); color: var(--gold-bright); }
+
+        .book-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(160px, 1fr)); gap: 14px; }
+        .book-card { background: var(--surface); border: 1px solid rgba(201,169,106,0.2); border-radius: var(--radius); padding: 12px; cursor: pointer; transition: var(--transition); }
+        .book-card:hover { border-color: var(--gold); transform: translateY(-2px); box-shadow: 0 4px 16px rgba(0,0,0,0.4); }
+        .book-card .bc-cover { height: 80px; border-radius: 4px; margin-bottom: 8px; display: flex; align-items: center; justify-content: center; font-size: 24px; color: rgba(255,255,255,0.8); background-size: cover; background-position: center; }
+        .book-card .bc-title { font-family: var(--font-display); font-size: 14px; font-weight: 700; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+        .book-card .bc-category { font-size: 10px; color: var(--gold-mid); margin-top: 2px; }
+        .book-card .bc-meta { font-size: 9px; color: var(--text-faint); font-family: var(--font-mono); margin-top: 2px; }
+
+        /* ========== 书本详情悬浮窗 ========== */
+        .book-detail-modal { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.75); z-index: 100; align-items: center; justify-content: center; padding: 20px; }
+        .book-detail-modal.open { display: flex; }
+        .detail-card { background: var(--surface); border: 1px solid rgba(201,169,106,0.4); border-radius: 10px; padding: 24px; width: 100%; max-width: 480px; max-height: 80vh; overflow-y: auto; box-shadow: 0 12px 50px rgba(0,0,0,0.6); }
+        .detail-cover { width: 100%; height: 160px; border-radius: 6px; margin-bottom: 14px; display: flex; align-items: center; justify-content: center; font-size: 36px; color: rgba(255,255,255,0.85); background-size: cover; background-position: center; cursor: pointer; position: relative; }
+        .detail-cover .cover-hint { position: absolute; bottom: 6px; right: 8px; font-size: 9px; color: rgba(255,255,255,0.7); background: rgba(0,0,0,0.5); padding: 2px 8px; border-radius: 10px; }
+        .detail-title { font-family: var(--font-display); font-size: 20px; font-weight: 700; color: var(--gold-bright); margin-bottom: 4px; }
+        .detail-category { font-size: 10px; color: var(--gold-mid); letter-spacing: 0.1em; margin-bottom: 10px; }
+        .detail-desc { font-size: 12px; color: var(--text-secondary); line-height: 1.7; margin-bottom: 14px; min-height: 40px; }
+        .detail-btns { display: flex; gap: 8px; flex-wrap: wrap; }
+        .detail-btns .btn { flex: 1; text-align: center; min-width: 100px; }
+        .detail-chapters { margin-top: 14px; border-top: 1px solid rgba(201,169,106,0.2); padding-top: 10px; display: none; }
+        .detail-chapters.open { display: block; }
+        .detail-chapters .dc-vol { font-size: 11px; font-weight: 600; color: #9b7dc9; margin: 6px 0 2px; }
+        .detail-chapters .dc-chap { font-size: 12px; color: var(--text-secondary); padding: 4px 8px; cursor: pointer; border-radius: 4px; transition: var(--transition); }
+        .detail-chapters .dc-chap:hover { background: var(--surface-hover); color: var(--text-primary); }
+
+        /* ========== 阅读器 ========== */
+        .reader-page { display: none; position: fixed; inset: 0; background: var(--reader-bg); color: var(--reader-text); z-index: 50; flex-direction: row; }
+        .reader-page.visible { display: flex; }
+        .reader-left { width: 200px; background: var(--surface); border-right: 1px solid rgba(201,169,106,0.2); display: flex; flex-direction: column; flex-shrink: 0; z-index: 10; }
+        .reader-left .rl-head { padding: 12px 14px; border-bottom: 1px solid rgba(201,169,106,0.15); display: flex; align-items: center; gap: 6px; }
+        .reader-left .rl-title { flex: 1; font-size: 12px; color: var(--gold); font-weight: 600; }
+        .reader-left .rl-toc { flex: 1; overflow-y: auto; padding: 8px; }
+        .reader-right { width: 180px; background: var(--surface); border-left: 1px solid rgba(201,169,106,0.2); display: flex; flex-direction: column; flex-shrink: 0; z-index: 10; }
+        .reader-right .rr-head { padding: 12px 14px; border-bottom: 1px solid rgba(201,169,106,0.15); font-size: 12px; color: var(--gold); font-weight: 600; }
+        .reader-right .rr-body { flex: 1; overflow-y: auto; padding: 10px 14px; display: flex; flex-direction: column; gap: 12px; }
+        .setting-group .sg-label { font-size: 9px; color: var(--gold-mid); letter-spacing: 0.1em; text-transform: uppercase; margin-bottom: 5px; }
+        .setting-group .sg-row { display: flex; gap: 4px; flex-wrap: wrap; }
+        .sg-btn { padding: 4px 8px; font-size: 10px; background: var(--surface-hover); border: 1px solid rgba(201,169,106,0.3); border-radius: 4px; color: var(--text-secondary); cursor: pointer; transition: var(--transition); }
+        .sg-btn:hover { border-color: var(--gold); color: var(--text-primary); }
+        .sg-btn.active { background: rgba(201,169,106,0.15); border-color: var(--gold); color: var(--gold-bright); }
+        .reader-center { flex: 1; display: flex; flex-direction: column; min-width: 0; background: var(--reader-bg); }
+        .reader-topbar { padding: 10px 16px; display: flex; align-items: center; gap: 8px; border-bottom: 1px solid rgba(0,0,0,0.1); background: var(--reader-bg); z-index: 20; }
+        .reader-topbar.hidden { opacity: 0; pointer-events: none; }
+        .reader-topbar .rt-back { font-size: 18px; cursor: pointer; padding: 4px 8px; border-radius: 4px; color: var(--reader-text); }
+        .reader-topbar .rt-back:hover { background: rgba(0,0,0,0.06); }
+        .reader-topbar .rt-title { flex: 1; text-align: center; font-family: var(--font-display); font-size: 14px; font-weight: 600; }
+        .reader-topbar .rt-toggle { font-size: 11px; cursor: pointer; padding: 4px 10px; border: 1px solid rgba(0,0,0,0.2); border-radius: 4px; background: transparent; color: var(--reader-text); }
+        .reader-topbar .rt-toggle:hover { background: rgba(0,0,0,0.05); }
+        .reader-content { flex: 1; display: flex; align-items: center; justify-content: center; padding: 16px 32px; position: relative; overflow: hidden; cursor: pointer; }
+        .page-container { max-width: 480px; width: 100%; height: 100%; overflow-y: auto; scrollbar-width: none; -ms-overflow-style: none; }
+        .page-container::-webkit-scrollbar { display: none; }
+        .page-content { font-family: var(--font-display); font-size: var(--reader-font-size, 16px); line-height: 2; white-space: pre-wrap; word-break: break-word; color: var(--reader-text); padding-bottom: 16px; }
+        .page-content .pg-chapter { font-size: 1.2em; font-weight: 700; margin-bottom: 10px; }
+        .page-indicator { position: absolute; bottom: 8px; right: 14px; font-size: 10px; opacity: 0.5; font-family: var(--font-mono); pointer-events: none; }
+
+        /* ========== 编辑器 ========== */
+        .editor-page { display: none; position: fixed; inset: 0; background: var(--bg); color: var(--text-primary); z-index: 60; flex-direction: row; }
+        .editor-page.visible { display: flex; }
+        .editor-left { width: 240px; background: var(--surface); border-right: 1px solid rgba(201,169,106,0.2); display: flex; flex-direction: column; flex-shrink: 0; }
+        .editor-left .el-head { padding: 12px 14px; border-bottom: 1px solid rgba(201,169,106,0.15); display: flex; align-items: center; gap: 6px; }
+        .editor-left .el-title { flex: 1; font-size: 12px; color: var(--gold); font-weight: 600; }
+        .editor-left .el-tree { flex: 1; overflow-y: auto; padding: 8px; }
+        .tree-vol { margin-bottom: 4px; }
+        .tree-vol-head { display: flex; align-items: center; gap: 4px; padding: 6px 6px; font-size: 12px; font-weight: 600; color: #9b7dc9; border-radius: 4px; cursor: pointer; transition: var(--transition); }
+        .tree-vol-head:hover { background: var(--surface-hover); }
+        .tree-vol-head .tv-title { flex: 1; }
+        .tree-action { width: 20px; height: 20px; border-radius: 4px; background: transparent; border: 1px solid rgba(201,169,106,0.3); color: var(--text-secondary); font-size: 11px; cursor: pointer; display: flex; align-items: center; justify-content: center; transition: var(--transition); flex-shrink: 0; }
+        .tree-action:hover { background: var(--surface-hover); border-color: var(--gold); color: var(--gold); }
+        .tree-action.danger:hover { border-color: #9e3b34; color: #c46b63; background: rgba(158,59,52,0.1); }
+        .tree-chap { margin-left: 14px; margin-bottom: 3px; }
+        .tree-chap-head { display: flex; align-items: center; gap: 4px; padding: 5px 6px; font-size: 11px; color: var(--text-secondary); border-radius: 4px; cursor: pointer; transition: var(--transition); }
+        .tree-chap-head:hover { background: var(--surface-hover); }
+        .tree-chap-head.active { background: rgba(201,169,106,0.1); color: var(--gold-bright); }
+        .tree-chap-head .tc-title { flex: 1; }
+        .tree-section { margin-left: 14px; margin-bottom: 2px; }
+        .tree-section-head { display: flex; align-items: center; gap: 4px; padding: 3px 6px; font-size: 10px; color: var(--text-faint); border-radius: 4px; cursor: pointer; transition: var(--transition); }
+        .tree-section-head:hover { background: var(--surface-hover); }
+        .tree-section-head.active { background: rgba(201,169,106,0.08); color: var(--gold-mid); }
+        .tree-section-head .ts-title { flex: 1; }
+
+        .editor-center { flex: 1; display: flex; flex-direction: column; min-width: 0; }
+        .editor-topbar { padding: 10px 16px; display: flex; align-items: center; gap: 6px; background: var(--surface); border-bottom: 1px solid rgba(201,169,106,0.2); }
+        .editor-topbar .et-back { font-size: 16px; cursor: pointer; padding: 4px 8px; border-radius: 4px; color: var(--text-secondary); }
+        .editor-topbar .et-back:hover { background: var(--surface-hover); color: var(--text-primary); }
+        .editor-topbar .et-title { flex: 1; text-align: center; font-family: var(--font-display); font-size: 13px; font-weight: 600; color: var(--text-primary); }
+        .editor-topbar .et-actions { display: flex; gap: 6px; }
+
+        .editor-toolbar { display: flex; gap: 4px; padding: 6px 12px; flex-wrap: wrap; align-items: center; background: var(--surface); border-bottom: 1px solid rgba(201,169,106,0.15); }
+        .editor-toolbar select { padding: 4px 6px; background: var(--surface-hover); border: 1px solid rgba(201,169,106,0.3); border-radius: 4px; color: var(--text-primary); font-size: 10px; cursor: pointer; outline: none; }
+        .editor-toolbar .theme-btn { padding: 3px 8px; font-size: 10px; border: 1px solid rgba(201,169,106,0.3); border-radius: 4px; color: var(--text-secondary); cursor: pointer; background: var(--surface-hover); transition: var(--transition); }
+        .editor-toolbar .theme-btn:hover { border-color: var(--gold); color: var(--text-primary); }
+        .editor-toolbar .theme-btn.active { background: rgba(201,169,106,0.15); border-color: var(--gold); color: var(--gold-bright); }
+
+        .editor-content { flex: 1; padding: 16px 24px; background: var(--reader-bg); color: var(--reader-text); font-family: var(--font-display); font-size: var(--reader-font-size, 16px); line-height: 2; outline: none; overflow-y: auto; white-space: pre-wrap; word-break: break-word; }
+        .editor-content:empty::before { content: '开始书写...'; opacity: 0.4; }
+
+        /* 弹窗通用 */
+        .modal-overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.7); z-index: 200; align-items: center; justify-content: center; padding: 20px; }
+        .modal-overlay.open { display: flex; }
+        .modal { background: var(--surface); border: 1px solid rgba(201,169,106,0.4); border-radius: 8px; padding: 20px; width: 100%; max-width: 420px; box-shadow: 0 8px 40px rgba(0,0,0,0.6); }
+        .modal .modal-title { font-family: var(--font-display); font-size: 17px; font-weight: 700; color: var(--gold-bright); margin-bottom: 12px; }
+        .modal .modal-field { margin-bottom: 10px; }
+        .modal .modal-field label { display: block; font-size: 10px; color: var(--gold-mid); letter-spacing: 0.1em; text-transform: uppercase; margin-bottom: 4px; }
+        .modal .modal-field input, .modal .modal-field select, .modal .modal-field textarea { width: 100%; padding: 8px 10px; background: rgba(0,0,0,0.35); border: 1px solid rgba(201,169,106,0.25); border-radius: 4px; color: var(--text-primary); font-family: var(--font-body); font-size: 13px; outline: none; }
+        .modal .modal-field textarea { min-height: 60px; resize: vertical; }
+        .modal .modal-btns { display: flex; gap: 8px; justify-content: flex-end; margin-top: 16px; }
+
+        /* 响应式 */
+        @media (max-width: 768px) {
+            .reader-left, .reader-right { position: absolute; top: 0; bottom: 0; height: 100%; transform: translateX(-100%); }
+            .reader-left { left: 0; }
+            .reader-left.open { transform: translateX(0); }
+            .reader-right { right: 0; transform: translateX(100%); }
+            .reader-right.open { transform: translateX(0); }
+            .reader-content { padding: 10px 14px; }
+            .editor-left { position: absolute; left: 0; top: 0; bottom: 0; transform: translateX(-100%); z-index: 10; }
+            .editor-left.open { transform: translateX(0); }
+        }
+    </style>
+</head>
+<body>
+
+<!-- 书库首页 -->
+<div class="library-page" id="libraryPage">
+    <div class="header"><h1>书库</h1><div class="sub">Library</div></div>
+    <div class="toolbar">
+        <input class="search-input" id="searchInput" placeholder="搜索书名..." oninput="renderBooks()">
+        <button class="btn btn-primary" onclick="openNewBookModal()">＋ 新建书本</button>
+    </div>
+    <div class="category-chips" id="categoryChips"></div>
+    <div class="book-grid" id="bookGrid"></div>
+</div>
+
+<!-- 书本详情悬浮窗 -->
+<div class="book-detail-modal" id="bookDetailModal">
+    <div class="detail-card">
+        <div class="detail-cover" id="detailCover" onclick="changeCover()">
+            <span id="detailCoverText">?</span>
+            <span class="cover-hint">点击更换封面</span>
+        </div>
+        <div class="detail-title" id="detailTitle"></div>
+        <div class="detail-category" id="detailCategory"></div>
+        <div class="detail-desc" id="detailDesc"></div>
+        <div class="detail-btns">
+            <button class="btn btn-primary" onclick="startReading()">开始阅读</button>
+            <button class="btn" onclick="toggleChapterList()">章节选择</button>
+            <button class="btn" onclick="enterEditor()">进入编辑</button>
+            <button class="btn" onclick="closeBookDetail()">关闭</button>
+        </div>
+        <div class="detail-chapters" id="detailChapters"></div>
+    </div>
+</div>
+
+<!-- 阅读器 -->
+<div class="reader-page" id="readerPage">
+    <div class="reader-left" id="readerLeft">
+        <div class="rl-head">
+            <span class="rl-title">目录</span>
+            <button class="btn" style="padding:3px 7px;font-size:10px;" onclick="closeReaderLeft()">✕</button>
+        </div>
+        <div class="rl-toc" id="readerToc"></div>
+    </div>
+    <div class="reader-right" id="readerRight">
+        <div class="rr-head">阅读设置</div>
+        <div class="rr-body">
+            <div class="setting-group">
+                <div class="sg-label">字体大小</div>
+                <div class="sg-row">
+                    <button class="sg-btn" onclick="setFontSize(14,this)">小</button>
+                    <button class="sg-btn active" onclick="setFontSize(16,this)">中</button>
+                    <button class="sg-btn" onclick="setFontSize(18,this)">大</button>
+                    <button class="sg-btn" onclick="setFontSize(21,this)">特大</button>
+                </div>
+            </div>
+            <div class="setting-group">
+                <div class="sg-label">主题</div>
+                <div class="sg-row">
+                    <button class="sg-btn" id="themeLightBtn" onclick="setReaderTheme('light')">浅色</button>
+                    <button class="sg-btn active" id="themeWarmBtn" onclick="setReaderTheme('warm')">暖色</button>
+                    <button class="sg-btn" id="themeDarkBtn" onclick="setReaderTheme('dark')">暗色</button>
+                </div>
+            </div>
+            <div class="setting-group">
+                <div class="sg-label">操作</div>
+                <div class="sg-row">
+                    <button class="sg-btn" onclick="backToLibrary()">返回书库</button>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="reader-center">
+        <div class="reader-topbar" id="readerTopbar">
+            <span class="rt-back" onclick="backToLibrary()">←</span>
+            <span class="rt-title" id="readerTopTitle"></span>
+            <button class="rt-toggle" onclick="toggleReaderLeft()">目录</button>
+            <button class="rt-toggle" onclick="toggleReaderRight()">设置</button>
+        </div>
+        <div class="reader-content" id="readerContent" onclick="handleReaderClick(event)">
+            <div class="page-container">
+                <div class="page-content" id="pageContent"></div>
+            </div>
+            <div class="page-indicator" id="pageIndicator"></div>
+        </div>
+    </div>
+</div>
+
+<!-- 编辑器 -->
+<div class="editor-page" id="editorPage">
+    <div class="editor-left" id="editorLeft">
+        <div class="el-head">
+            <span class="el-title">目录结构</span>
+            <button class="btn" style="padding:3px 7px;font-size:10px;" onclick="closeEditorLeft()">✕</button>
+        </div>
+        <div class="el-tree" id="editorTree"></div>
+    </div>
+    <div class="editor-center">
+        <div class="editor-topbar">
+            <span class="et-back" onclick="backToLibraryFromEditor()">←</span>
+            <span class="et-title" id="editorTopTitle"></span>
+            <div class="et-actions">
+                <button class="btn" style="padding:4px 10px;font-size:10px;" onclick="toggleEditorLeft()">目录</button>
+                <button class="btn btn-primary" style="padding:4px 10px;font-size:10px;" onclick="saveEditorContent()">保存</button>
+                <button class="btn" style="padding:4px 10px;font-size:10px;border-color:rgba(107,74,122,0.5);color:#b89ad9;" onclick="enterReaderFromEditor()">电子书</button>
+            </div>
+        </div>
+        <div class="editor-toolbar">
+            <select onchange="execEditorCmd('fontSize', this.value)">
+                <option value="3">小</option>
+                <option value="4" selected>中</option>
+                <option value="5">大</option>
+                <option value="6">特大</option>
+            </select>
+            <button class="sg-btn" onclick="execEditorCmd('formatBlock','h1')">H1</button>
+            <button class="sg-btn" onclick="execEditorCmd('formatBlock','h2')">H2</button>
+            <button class="sg-btn" onclick="execEditorCmd('formatBlock','h3')">H3</button>
+            <button class="sg-btn" onclick="execEditorCmd('bold')"><b>B</b></button>
+            <button class="sg-btn" onclick="execEditorCmd('italic')"><i>I</i></button>
+            <div style="flex:1;"></div>
+            <button class="theme-btn" id="editorThemeLightBtn" onclick="setEditorTheme('light')">浅</button>
+            <button class="theme-btn active" id="editorThemeWarmBtn" onclick="setEditorTheme('warm')">暖</button>
+            <button class="theme-btn" id="editorThemeDarkBtn" onclick="setEditorTheme('dark')">暗</button>
+        </div>
+        <div class="editor-content" id="editorContent" contenteditable="true"></div>
+    </div>
+</div>
+
+<!-- 新建书本弹窗 -->
+<div class="modal-overlay" id="newBookModal">
+    <div class="modal">
+        <div class="modal-title">新建书本</div>
+        <div class="modal-field"><label>书名</label><input id="newBookTitle" placeholder="输入书名"></div>
+        <div class="modal-field"><label>分类</label><select id="newBookCategory"><option value="主线">主线</option><option value="设定集">设定集</option><option value="番外">番外</option><option value="外传">外传</option><option value="笔记">笔记</option><option value="其他">其他</option></select></div>
+        <div class="modal-field"><label>简介</label><textarea id="newBookDesc" placeholder="写点简介..."></textarea></div>
+        <div class="modal-btns"><button class="btn" onclick="closeNewBookModal()">取消</button><button class="btn btn-primary" onclick="createNewBook()">创建</button></div>
+    </div>
+</div>
+
+<!-- 新增卷弹窗 -->
+<div class="modal-overlay" id="newVolModal">
+    <div class="modal">
+        <div class="modal-title">新增卷</div>
+        <div class="modal-field"><label>卷标题</label><input id="newVolTitle" placeholder="输入卷标题"></div>
+        <div class="modal-btns"><button class="btn" onclick="closeNewVolModal()">取消</button><button class="btn btn-primary" onclick="createNewVol()">创建</button></div>
+    </div>
+</div>
+
+<!-- 新增章弹窗 -->
+<div class="modal-overlay" id="newChapModal">
+    <div class="modal">
+        <div class="modal-title">新增章</div>
+        <div class="modal-field"><label>章标题</label><input id="newChapTitle" placeholder="输入章标题"></div>
+        <div class="modal-btns"><button class="btn" onclick="closeNewChapModal()">取消</button><button class="btn btn-primary" onclick="createNewChap()">创建</button></div>
+    </div>
+</div>
+
+<!-- 新增节弹窗 -->
+<div class="modal-overlay" id="newSectionModal">
+    <div class="modal">
+        <div class="modal-title">新增节</div>
+        <div class="modal-field"><label>节标题</label><input id="newSectionTitle" placeholder="输入节标题"></div>
+        <div class="modal-btns"><button class="btn" onclick="closeNewSectionModal()">取消</button><button class="btn btn-primary" onclick="createNewSection()">创建</button></div>
+    </div>
+</div>
+
+<!-- 封面选择弹窗 -->
+<div class="modal-overlay" id="coverModal">
+    <div class="modal">
+        <div class="modal-title">更换封面</div>
+        <div class="modal-field"><label>上传图片</label><input type="file" id="coverFile" accept="image/*"></div>
+        <div class="modal-field"><label>或选择纯色</label><div style="display:flex;gap:6px;flex-wrap:wrap;" id="coverColorOptions"></div></div>
+        <div class="modal-btns"><button class="btn" onclick="closeCoverModal()">关闭</button></div>
+    </div>
+</div>
+
+<script>
+// ========== 数据 ==========
+const STORAGE_KEY = 'library_books_v5';
+let books = [];
+let categories = ['全部', '主线', '设定集', '番外', '外传', '笔记', '其他'];
+let activeCategory = '全部';
+let currentBookId = null;
+let currentChapId = null;
+let currentSectionId = null;
+let currentPage = 0;
+let readerTheme = 'warm';
+let coverTargetBookId = null;
+
+// ========== 加载/保存 ==========
+function loadBooks() {
+    try { const raw = localStorage.getItem(STORAGE_KEY); if (raw) books = JSON.parse(raw); } catch (e) { books = []; }
+    if (books.length === 0) {
+        books = [{
+            id: 'book1', title: '示例之书', category: '主线', coverColor: '#8a6d3b', coverImage: null,
+            desc: '这是一本示例书籍。', lastReadChapId: null, lastReadPage: 0,
+            volumes: [{ id: 'vol1', title: '第一卷', chapters: [{ id: 'chap1', title: '第一章', sections: [
+                { id: 'sec1', title: '第一节', content: '示例内容。\n\n这是电子书阅读器的示例章节。' },
+                { id: 'sec2', title: '第二节', content: '第二节的示例内容。' }
+            ]}, { id: 'chap2', title: '第二章', sections: [{ id: 'sec3', title: '第一节', content: '第二章第一节的示例内容。' }] }] }]
+        }];
+        saveBooks();
+    }
+}
+function saveBooks() { try { localStorage.setItem(STORAGE_KEY, JSON.stringify(books)); } catch (e) {} }
+
+// ========== 书库渲染 ==========
+function renderCategoryChips() {
+    document.getElementById('categoryChips').innerHTML = categories.map(c => `<span class="chip ${c === activeCategory ? 'active' : ''}" onclick="setCategory('${c}')">${c}</span>`).join('');
+}
+function setCategory(c) { activeCategory = c; renderCategoryChips(); renderBooks(); }
+function renderBooks() {
+    const query = document.getElementById('searchInput').value.trim().toLowerCase();
+    const filtered = books.filter(b => {
+        if (activeCategory !== '全部' && b.category !== activeCategory) return false;
+        if (query && !b.title.toLowerCase().includes(query)) return false;
+        return true;
+    });
+    document.getElementById('bookGrid').innerHTML = filtered.map(b => {
+        const volCount = (b.volumes || []).length;
+        const chapCount = (b.volumes || []).reduce((s, v) => s + (v.chapters || []).length, 0);
+        const coverStyle = b.coverImage ? `background-image:url(${b.coverImage});` : `background:${b.coverColor || '#8a6d3b'};`;
+        return `<div class="book-card" onclick="openBookDetail('${b.id}')"><div class="bc-cover" style="${coverStyle}">${b.coverImage ? '' : esc(b.title[0] || '?')}</div><div class="bc-title">${esc(b.title)}</div><div class="bc-category">${esc(b.category)}</div><div class="bc-meta">${volCount}卷 · ${chapCount}章</div></div>`;
+    }).join('') || '<div style="color:var(--text-faint);text-align:center;padding:30px;">没有找到书籍</div>';
+}
+
+// ========== 书本详情 ==========
+function openBookDetail(bookId) {
+    currentBookId = bookId;
+    const book = books.find(b => b.id === bookId);
+    if (!book) return;
+    document.getElementById('detailTitle').textContent = book.title;
+    document.getElementById('detailCategory').textContent = book.category;
+    document.getElementById('detailDesc').textContent = book.desc || '暂无简介';
+    const cover = document.getElementById('detailCover');
+    if (book.coverImage) { cover.style.backgroundImage = `url(${book.coverImage})`; cover.style.backgroundColor = ''; document.getElementById('detailCoverText').textContent = ''; }
+    else { cover.style.backgroundImage = ''; cover.style.backgroundColor = book.coverColor || '#8a6d3b'; document.getElementById('detailCoverText').textContent = book.title[0] || '?'; }
+    document.getElementById('detailChapters').classList.remove('open');
+    renderDetailChapters();
+    document.getElementById('bookDetailModal').classList.add('open');
+}
+function closeBookDetail() { document.getElementById('bookDetailModal').classList.remove('open'); }
+function renderDetailChapters() {
+    const book = books.find(b => b.id === currentBookId); if (!book) return;
+    let html = '';
+    for (const vol of book.volumes || []) {
+        html += `<div class="dc-vol">${esc(vol.title)}</div>`;
+        for (const chap of vol.chapters || []) html += `<div class="dc-chap" onclick="jumpToChapterFromDetail('${chap.id}')">${esc(chap.title)}</div>`;
+    }
+    document.getElementById('detailChapters').innerHTML = html;
+}
+function toggleChapterList() { document.getElementById('detailChapters').classList.toggle('open'); renderDetailChapters(); }
+function jumpToChapterFromDetail(chapId) { currentChapId = chapId; currentSectionId = getFirstSectionId(chapId); closeBookDetail(); openReader(); }
+
+// ========== 封面 ==========
+function changeCover() {
+    coverTargetBookId = currentBookId;
+    const colors = ['#8a6d3b','#3f7c9c','#5a7a4a','#6b4a7a','#9e3b34','#b5803c','#4a7a9c','#c46a5a','#5f8f7c','#a8873a'];
+    document.getElementById('coverColorOptions').innerHTML = colors.map(c => `<div style="width:28px;height:28px;border-radius:4px;background:${c};cursor:pointer;border:1px solid rgba(255,255,255,0.3);" onclick="setCoverColor('${c}')"></div>`).join('');
+    document.getElementById('coverModal').classList.add('open');
+}
+function closeCoverModal() { document.getElementById('coverModal').classList.remove('open'); }
+function setCoverColor(color) {
+    const book = books.find(b => b.id === coverTargetBookId); if (!book) return;
+    book.coverColor = color; book.coverImage = null; saveBooks(); closeCoverModal(); openBookDetail(book.id); renderBooks();
+}
+document.getElementById('coverFile').addEventListener('change', function(e) {
+    const file = e.target.files[0]; if (!file) return;
+    const reader = new FileReader();
+    reader.onload = function(ev) {
+        const book = books.find(b => b.id === coverTargetBookId);
+        if (book) { book.coverImage = ev.target.result; saveBooks(); closeCoverModal(); openBookDetail(book.id); renderBooks(); }
+    };
+    reader.readAsDataURL(file);
+});
+
+// ========== 工具 ==========
+function esc(s) { return String(s ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
+function findBook(bookId) { return books.find(b => b.id === bookId); }
+function findChapter(chapId) { const book = findBook(currentBookId); if (!book) return null; for (const vol of book.volumes || []) for (const chap of vol.chapters || []) if (chap.id === chapId) return chap; return null; }
+function findVol(volId) { const book = findBook(currentBookId); return book ? (book.volumes || []).find(v => v.id === volId) || null : null; }
+function findSection(secId) { const book = findBook(currentBookId); if (!book) return null; for (const vol of book.volumes || []) for (const chap of vol.chapters || []) for (const sec of chap.sections || []) if (sec.id === secId) return sec; return null; }
+function findChapOfSection(secId) { const book = findBook(currentBookId); if (!book) return null; for (const vol of book.volumes || []) for (const chap of vol.chapters || []) for (const sec of chap.sections || []) if (sec.id === secId) return chap; return null; }
+function getFirstSectionId(chapId) { const chap = findChapter(chapId); return (chap && chap.sections && chap.sections.length > 0) ? chap.sections[0].id : null; }
+function getChapterContent(chapId) { const chap = findChapter(chapId); return chap ? (chap.sections || []).map(s => s.content).join('\n\n') : ''; }
+
+// ========== 阅读器 ==========
+function startReading() {
+    const book = findBook(currentBookId); if (!book) return;
+    if (book.lastReadChapId) { currentChapId = book.lastReadChapId; currentPage = book.lastReadPage || 0; }
+    else { let firstChap = null; if (book.volumes && book.volumes.length > 0 && book.volumes[0].chapters && book.volumes[0].chapters.length > 0) firstChap = book.volumes[0].chapters[0]; currentChapId = firstChap ? firstChap.id : null; currentPage = 0; }
+    currentSectionId = currentChapId ? getFirstSectionId(currentChapId) : null;
+    closeBookDetail(); openReader();
+}
+function openReader() {
+    const book = findBook(currentBookId); if (!book) return;
+    document.getElementById('libraryPage').classList.add('hidden');
+    document.getElementById('editorPage').classList.remove('visible');
+    document.getElementById('readerPage').classList.add('visible');
+    document.getElementById('readerTopTitle').textContent = book.title;
+    closeReaderLeft(); closeReaderRight(); renderReaderToc(); renderPage(); showReaderTopbar();
+}
+function backToLibrary() {
+    const book = findBook(currentBookId);
+    if (book) { book.lastReadChapId = currentChapId; book.lastReadPage = currentPage; saveBooks(); }
+    document.getElementById('readerPage').classList.remove('visible');
+    document.getElementById('editorPage').classList.remove('visible');
+    document.getElementById('libraryPage').classList.remove('hidden');
+    renderBooks();
+}
+
+const THEMES = { light: { bg: '#ffffff', text: '#1a1a1a' }, warm: { bg: '#f0e8d8', text: '#3a3228' }, dark: { bg: '#1a1a20', text: '#e8e8e8' } };
+function applyTheme(theme) {
+    readerTheme = theme;
+    const t = THEMES[theme];
+    document.documentElement.style.setProperty('--reader-bg', t.bg);
+    document.documentElement.style.setProperty('--reader-text', t.text);
+    // 阅读器主题按钮
+    const btnMap = { light: 'themeLightBtn', warm: 'themeWarmBtn', dark: 'themeDarkBtn' };
+    Object.entries(btnMap).forEach(([key, id]) => { const el = document.getElementById(id); if (el) el.classList.toggle('active', key === theme); });
+    // 编辑器主题按钮
+    const edBtnMap = { light: 'editorThemeLightBtn', warm: 'editorThemeWarmBtn', dark: 'editorThemeDarkBtn' };
+    Object.entries(edBtnMap).forEach(([key, id]) => { const el = document.getElementById(id); if (el) el.classList.toggle('active', key === theme); });
+    // 编辑器内容区
+    const editor = document.getElementById('editorContent');
+    if (editor) { editor.style.background = t.bg; editor.style.color = t.text; }
+    // 阅读器内容区
+    const page = document.getElementById('pageContent');
+    if (page) { page.style.color = t.text; }
+    document.getElementById('readerContent').style.background = t.bg;
+}
+function setReaderTheme(theme) { applyTheme(theme); }
+function setEditorTheme(theme) { applyTheme(theme); }
+function setFontSize(size, btn) {
+    document.documentElement.style.setProperty('--reader-font-size', size + 'px');
+    document.querySelectorAll('.setting-group .sg-btn').forEach(b => { if (['小','中','大','特大'].includes(b.textContent)) b.classList.remove('active'); });
+    if (btn) btn.classList.add('active');
+}
+
+// ========== 分页 ==========
+const CHARS_PER_PAGE = 500;
+function splitContentToPages(content) { const paragraphs = content.split(/\n+/).filter(p => p.trim()); const pages = []; let cur = ''; for (const p of paragraphs) { if (cur.length + p.length + 2 > CHARS_PER_PAGE && cur.length > 0) { pages.push(cur.trim()); cur = p; } else { cur += (cur ? '\n\n' : '') + p; } } if (cur.trim()) pages.push(cur.trim()); if (pages.length === 0) pages.push(''); return pages; }
+function renderPage() {
+    const chap = findChapter(currentChapId); if (!chap) return;
+    const pages = splitContentToPages(getChapterContent(currentChapId));
+    if (currentPage >= pages.length) currentPage = pages.length - 1;
+    if (currentPage < 0) currentPage = 0;
+    const text = pages[currentPage] || '';
+    document.getElementById('pageContent').innerHTML = (currentPage === 0 ? `<div class="pg-chapter">${esc(chap.title)}</div>` : '') + text.replace(/\n/g, '<br>');
+    document.getElementById('pageIndicator').textContent = `${currentPage + 1} / ${pages.length}`;
+}
+function nextPage() { const pages = splitContentToPages(getChapterContent(currentChapId)); if (currentPage < pages.length - 1) { currentPage++; renderPage(); } else { const nc = getNextChapter(currentChapId); if (nc) { currentChapId = nc.id; currentPage = 0; renderReaderToc(); renderPage(); } } }
+function prevPage() { const pages = splitContentToPages(getChapterContent(currentChapId)); if (currentPage > 0) { currentPage--; renderPage(); } else { const pc = getPrevChapter(currentChapId); if (pc) { currentChapId = pc.id; currentPage = splitContentToPages(getChapterContent(pc.id)).length - 1; renderReaderToc(); renderPage(); } } }
+function getNextChapter(chapId) { const book = findBook(currentBookId); let found = false; for (const vol of book.volumes || []) for (const chap of vol.chapters || []) { if (found) return chap; if (chap.id === chapId) found = true; } return null; }
+function getPrevChapter(chapId) { const book = findBook(currentBookId); let prev = null; for (const vol of book.volumes || []) for (const chap of vol.chapters || []) { if (chap.id === chapId) return prev; prev = chap; } return null; }
+function handleReaderClick(event) { const rect = document.getElementById('readerContent').getBoundingClientRect(); const x = event.clientX - rect.left; const w = rect.width; if (x < w * 0.33) prevPage(); else if (x > w * 0.67) nextPage(); else toggleReaderTopbar(); }
+function toggleReaderTopbar() { document.getElementById('readerTopbar').classList.toggle('hidden'); }
+function showReaderTopbar() { document.getElementById('readerTopbar').classList.remove('hidden'); }
+
+// ========== 阅读侧栏 ==========
+function toggleReaderLeft() { const left = document.getElementById('readerLeft'); if (window.innerWidth <= 768) left.classList.toggle('open'); else left.style.display = left.style.display === 'none' ? 'flex' : 'none'; closeReaderRight(); }
+function closeReaderLeft() { const left = document.getElementById('readerLeft'); left.classList.remove('open'); if (window.innerWidth > 768) left.style.display = 'flex'; }
+function toggleReaderRight() { const right = document.getElementById('readerRight'); if (window.innerWidth <= 768) right.classList.toggle('open'); else right.style.display = right.style.display === 'none' ? 'flex' : 'none'; closeReaderLeft(); }
+function closeReaderRight() { const right = document.getElementById('readerRight'); right.classList.remove('open'); if (window.innerWidth > 768) right.style.display = 'flex'; }
+function renderReaderToc() {
+    const book = findBook(currentBookId); if (!book) return;
+    let html = '';
+    for (const vol of book.volumes || []) {
+        html += `<div style="font-size:11px;font-weight:600;color:#9b7dc9;margin:6px 0 2px;padding:4px 6px;">${esc(vol.title)}</div>`;
+        for (const chap of vol.chapters || []) html += `<div style="font-size:12px;color:${chap.id === currentChapId ? 'var(--gold-bright)' : 'var(--text-secondary)'};padding:4px 8px 4px 14px;cursor:pointer;border-radius:4px;" onclick="selectChapter('${chap.id}')">${esc(chap.title)}</div>`;
+    }
+    document.getElementById('readerToc').innerHTML = html;
+}
+function selectChapter(chapId) { currentChapId = chapId; currentPage = 0; renderReaderToc(); renderPage(); closeReaderLeft(); }
+
+// ========== 编辑器 ==========
+function enterEditor() {
+    closeBookDetail();
+    const book = findBook(currentBookId); if (!book) return;
+    document.getElementById('libraryPage').classList.add('hidden');
+    document.getElementById('readerPage').classList.remove('visible');
+    document.getElementById('editorPage').classList.add('visible');
+    document.getElementById('editorTopTitle').textContent = book.title;
+    let firstSecId = null;
+    if (book.volumes && book.volumes.length > 0 && book.volumes[0].chapters && book.volumes[0].chapters.length > 0 && book.volumes[0].chapters[0].sections && book.volumes[0].chapters[0].sections.length > 0) firstSecId = book.volumes[0].chapters[0].sections[0].id;
+    currentSectionId = firstSecId;
+    if (currentSectionId) currentChapId = findChapOfSection(currentSectionId).id;
+    closeEditorLeft(); renderEditorTree(); loadSectionToEditor(); applyTheme(readerTheme);
+}
+function backToLibraryFromEditor() { saveEditorContentSilent(); document.getElementById('editorPage').classList.remove('visible'); document.getElementById('libraryPage').classList.remove('hidden'); renderBooks(); }
+function enterReaderFromEditor() {
+    saveEditorContentSilent();
+    document.getElementById('editorPage').classList.remove('visible');
+    openReader();
+}
+function renderEditorTree() {
+    const book = findBook(currentBookId); if (!book) return;
+    let html = '';
+    for (const vol of book.volumes || []) {
+        html += `<div class="tree-vol"><div class="tree-vol-head"><span class="tv-title">${esc(vol.title)}</span><button class="tree-action" onclick="openNewChapModal('${vol.id}')" title="添加章">＋</button><button class="tree-action danger" onclick="deleteVol('${vol.id}')" title="删除卷">✕</button></div>`;
+        for (const chap of vol.chapters || []) {
+            html += `<div class="tree-chap"><div class="tree-chap-head ${chap.id === currentChapId ? 'active' : ''}" onclick="selectChapterInEditor('${chap.id}')"><span class="tc-title">${esc(chap.title)}</span><button class="tree-action" onclick="event.stopPropagation();openNewSectionModal('${chap.id}')" title="添加节">＋</button><button class="tree-action danger" onclick="event.stopPropagation();deleteChap('${chap.id}')" title="删除章">✕</button></div>`;
+            for (const sec of chap.sections || []) html += `<div class="tree-section"><div class="tree-section-head ${sec.id === currentSectionId ? 'active' : ''}" onclick="selectSectionInEditor('${sec.id}')"><span class="ts-title">${esc(sec.title)}</span><button class="tree-action danger" style="width:16px;height:16px;font-size:9px;" onclick="event.stopPropagation();deleteSection('${sec.id}')">✕</button></div></div>`;
+            html += `</div>`;
+        }
+        html += `</div>`;
+    }
+    html += `<div style="margin-top:8px;"><button class="btn" style="width:100%;font-size:10px;padding:5px;" onclick="openNewVolModal()">＋ 添加卷</button></div>`;
+    document.getElementById('editorTree').innerHTML = html;
+}
+function selectChapterInEditor(chapId) { currentChapId = chapId; const fs = getFirstSectionId(chapId); if (fs) { currentSectionId = fs; loadSectionToEditor(); } renderEditorTree(); }
+function selectSectionInEditor(secId) { currentSectionId = secId; currentChapId = findChapOfSection(secId).id; loadSectionToEditor(); renderEditorTree(); }
+function loadSectionToEditor() {
+    const sec = findSection(currentSectionId); const editor = document.getElementById('editorContent');
+    if (!sec) { editor.innerHTML = ''; return; }
+    editor.innerHTML = sec.content.replace(/\n/g, '<br>');
+    const t = THEMES[readerTheme]; editor.style.background = t.bg; editor.style.color = t.text;
+}
+function saveEditorContent() { const sec = findSection(currentSectionId); if (!sec) return; const editor = document.getElementById('editorContent'); sec.content = editor.innerHTML.replace(/<br\s*\/?>/gi, '\n').replace(/<div>/gi, '\n').replace(/<\/div>/gi, '').replace(/<p>/gi, '').replace(/<\/p>/gi, '\n'); saveBooks(); renderEditorTree(); }
+function saveEditorContentSilent() { const sec = findSection(currentSectionId); if (!sec) return; const editor = document.getElementById('editorContent'); sec.content = editor.innerHTML.replace(/<br\s*\/?>/gi, '\n').replace(/<div>/gi, '\n').replace(/<\/div>/gi, ''); saveBooks(); }
+function execEditorCmd(cmd, value) { document.execCommand(cmd, false, value || null); }
+function toggleEditorLeft() { const left = document.getElementById('editorLeft'); if (window.innerWidth <= 768) left.classList.toggle('open'); else left.style.display = left.style.display === 'none' ? 'flex' : 'none'; }
+function closeEditorLeft() { const left = document.getElementById('editorLeft'); left.classList.remove('open'); if (window.innerWidth > 768) left.style.display = 'flex'; }
+
+// ========== 编辑增删 ==========
+let newChapTargetVolId = null;
+let newSectionTargetChapId = null;
+function openNewVolModal() { document.getElementById('newVolTitle').value = ''; document.getElementById('newVolModal').classList.add('open'); }
+function closeNewVolModal() { document.getElementById('newVolModal').classList.remove('open'); }
+function createNewVol() {
+    const title = document.getElementById('newVolTitle').value.trim(); if (!title) return;
+    const book = findBook(currentBookId); if (!book) return;
+    if (!book.volumes) book.volumes = [];
+    book.volumes.push({ id: 'vol' + Date.now(), title, chapters: [{ id: 'chap' + Date.now(), title: '第一章', sections: [{ id: 'sec' + Date.now(), title: '第一节', content: '' }] }] });
+    saveBooks(); closeNewVolModal(); renderEditorTree();
+}
+function openNewChapModal(volId) { newChapTargetVolId = volId; document.getElementById('newChapTitle').value = ''; document.getElementById('newChapModal').classList.add('open'); }
+function closeNewChapModal() { document.getElementById('newChapModal').classList.remove('open'); }
+function createNewChap() {
+    const title = document.getElementById('newChapTitle').value.trim(); if (!title) return;
+    const vol = findVol(newChapTargetVolId); if (!vol) return;
+    vol.chapters.push({ id: 'chap' + Date.now(), title, sections: [{ id: 'sec' + Date.now(), title: '第一节', content: '' }] });
+    saveBooks(); closeNewChapModal(); renderEditorTree();
+}
+function openNewSectionModal(chapId) { newSectionTargetChapId = chapId; document.getElementById('newSectionTitle').value = ''; document.getElementById('newSectionModal').classList.add('open'); }
+function closeNewSectionModal() { document.getElementById('newSectionModal').classList.remove('open'); }
+function createNewSection() {
+    const title = document.getElementById('newSectionTitle').value.trim(); if (!title) return;
+    const chap = findChapter(newSectionTargetChapId); if (!chap) return;
+    if (!chap.sections) chap.sections = [];
+    chap.sections.push({ id: 'sec' + Date.now(), title, content: '' });
+    saveBooks(); closeNewSectionModal(); renderEditorTree();
+}
+function deleteVol(volId) { if (!confirm('确定删除此卷？')) return; const book = findBook(currentBookId); if (!book) return; book.volumes = (book.volumes || []).filter(v => v.id !== volId); saveBooks(); renderEditorTree(); }
+function deleteChap(chapId) { if (!confirm('确定删除此章？')) return; const book = findBook(currentBookId); if (!book) return; for (const vol of book.volumes || []) vol.chapters = (vol.chapters || []).filter(c => c.id !== chapId); saveBooks(); renderEditorTree(); }
+function deleteSection(secId) { if (!confirm('确定删除此节？')) return; const book = findBook(currentBookId); if (!book) return; for (const vol of book.volumes || []) for (const chap of vol.chapters || []) chap.sections = (chap.sections || []).filter(s => s.id !== secId); saveBooks(); renderEditorTree(); }
+
+// ========== 新建书本 ==========
+function openNewBookModal() { document.getElementById('newBookModal').classList.add('open'); document.getElementById('newBookTitle').value = ''; document.getElementById('newBookDesc').value = ''; }
+function closeNewBookModal() { document.getElementById('newBookModal').classList.remove('open'); }
+function createNewBook() {
+    const title = document.getElementById('newBookTitle').value.trim();
+    const category = document.getElementById('newBookCategory').value;
+    const desc = document.getElementById('newBookDesc').value.trim();
+    if (!title) return;
+    const colors = ['#8a6d3b','#3f7c9c','#5a7a4a','#6b4a7a','#9e3b34','#b5803c','#4a7a9c'];
+    const book = { id: 'book' + Date.now(), title, category, desc, coverColor: colors[Math.floor(Math.random() * colors.length)], coverImage: null, lastReadChapId: null, lastReadPage: 0, volumes: [{ id: 'vol' + Date.now(), title: '第一卷', chapters: [{ id: 'chap' + Date.now(), title: '第一章', sections: [{ id: 'sec' + Date.now(), title: '第一节', content: '' }] }] }] };
+    books.push(book); saveBooks(); closeNewBookModal(); renderBooks();
+}
+
+// ========== 初始化 ==========
+loadBooks();
+renderCategoryChips();
+renderBooks();
+applyTheme('warm');
+</script>
+</body>
+</html>

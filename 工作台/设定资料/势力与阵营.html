@@ -478,6 +478,8 @@
                 <ul class="nav-sub">
                     <li><a href="../功能模块/酒馆.html"><span class="nav-dot"></span>酒馆</a></li>
                     <li><a href="../功能模块/日历.html"><span class="nav-dot"></span>日历</a></li>
+                    <li><a href="../功能模块/书架.html"><span class="nav-dot"></span>书架</a></li>
+                    <li><a href="../功能模块/魔法解析器.html"><span class="nav-dot"></span>魔法解析器</a></li>
                 </ul>
             </li>
             <li>
@@ -526,7 +528,7 @@
             <div class="triple-layout">
                 <!-- 左侧：树形列表 -->
                 <div class="card">
-                    <div class="card-title">势力树</div>
+                    <div class="card-title" style="display:flex;align-items:center;justify-content:space-between;">势力树<button class="btn btn-sm" onclick="addRoot()" title="新增顶层势力">＋ 新增势力</button></div>
                     <ul class="tree-list" id="treeList"><div style="padding:10px 0;font-size:12px;color:var(--text-faint);">加载中…</div></ul>
                 </div>
 
@@ -538,7 +540,7 @@
 
                 <!-- 右侧：关系图 -->
                 <div class="card">
-                    <div class="card-title">关系网</div>
+                    <div class="card-title" style="display:flex;align-items:center;justify-content:space-between;">关系网<button class="btn btn-sm" onclick="editRels()" title="编辑势力间关系">✏️ 编辑关系</button></div>
                     <div class="graph-container" id="graphContainer"></div>
                     <div class="graph-hint">点击节点跳转 · 线色代表关系类型 · 虚线为渗透</div>
                 </div>
@@ -556,6 +558,8 @@
         <div class="mnav-sec">功能模块</div>
         <a href="../功能模块/酒馆.html"><span class="mnav-dot"></span>酒馆</a>
         <a href="../功能模块/日历.html"><span class="mnav-dot"></span>日历</a>
+        <a href="../功能模块/书架.html"><span class="mnav-dot"></span>书架</a>
+        <a href="../功能模块/魔法解析器.html"><span class="mnav-dot"></span>魔法解析器</a>
         <div class="mnav-sec">设定资料</div>
         <a href="势力与阵营.html" class="active"><span class="mnav-dot"></span>势力与阵营</a>
         <a href="历史事件.html"><span class="mnav-dot"></span>历史事件</a>
@@ -592,6 +596,24 @@
                 <button class="btn btn-sm" onclick="closeConfirm()">取消</button>
                 <button class="btn btn-sm" id="confirmOk" style="border-color:rgba(158,59,52,0.6);color:#c46b63;">删除</button>
             </div>
+        </div>
+    </div>
+
+    <!-- 关系编辑弹窗 -->
+    <div class="modal-overlay" id="relWrap" onclick="if(event.target===this)closeRels()">
+        <div class="modal" style="max-width:520px;">
+            <div class="modal-head">
+                <div class="modal-title">编辑势力关系</div>
+                <button class="modal-close" onclick="closeRels()">✕</button>
+            </div>
+            <div style="font-size:11px;color:var(--text-faint);margin-bottom:10px;letter-spacing:0.05em;">选择两个势力与关系类型；从 → 到。改动保存后关系网实时更新。</div>
+            <div id="relRows"></div>
+            <div style="margin-top:8px;"><button class="btn btn-sm" onclick="addRelRow('','','')">＋ 添加关系</button></div>
+            <div class="modal-btns">
+                <button class="btn btn-sm" onclick="closeRels()">取消</button>
+                <button class="btn btn-primary btn-sm" onclick="saveRels()">保存</button>
+            </div>
+            <div id="relTip" style="text-align:center;margin-top:8px;font-size:11px;color:var(--text-faint);"></div>
         </div>
     </div>
 
@@ -723,8 +745,9 @@ let charsData = { chars: [], avatars: {} };
 const GROUPS = { alliance: "alliance", church: "church", guild: "guild", sencity: "forest", meher: "meher" };
 const COLORS = { alliance: "#a88955", church: "#9e3b34", guild: "#3f5f7c", sencity: "#5f8f7c", meher: "#6b4a7a" };
 const ELEM_COLOR = { "土": "#8a6d3b", "火": "#c14b3a", "水": "#3f7c9c", "风": "#5f8f7c", "天": "#a8873a", "全": "#6b4a7a" };
-// 势力间关系（依据世界观设定）
-const RELATIONS = [
+const REL_TYPES = ['合作', '竞争', '渗透', '中立'];
+// 势力间关系（依据世界观设定）——存入数据文件可编辑；此处为兜底
+const FALLBACK_RELATIONS = [
     { from: "guild", to: "alliance", type: "合作" },
     { from: "church", to: "alliance", type: "合作" },
     { from: "church", to: "guild", type: "竞争" },
@@ -734,6 +757,7 @@ const RELATIONS = [
     { from: "church", to: "sencity", type: "中立" }
 ];
 const relationColors = { '合作': '#a88955', '竞争': '#9e3b34', '渗透': '#6b4a7a', '中立': '#5f8f7c' };
+let relations = [];
 
 function esc(s) { return String(s ?? "").replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
 
@@ -741,11 +765,14 @@ async function load() {
     try {
         const json = await fetch("../../forum/势力与阵营.data.json").then(r => r.json());
         roots = (json && json.overview && json.overview.length) ? json.overview : JSON.parse(JSON.stringify(FALLBACK_ROOTS));
+        relations = (json && json.relations && json.relations.length) ? json.relations : JSON.parse(JSON.stringify(FALLBACK_RELATIONS));
     } catch {
         roots = JSON.parse(JSON.stringify(FALLBACK_ROOTS));
+        relations = JSON.parse(JSON.stringify(FALLBACK_RELATIONS));
     }
     // 无 Spherse 环境：应用浏览器本地编辑的数据
     try { const local = SMQ.getLocal(DATA, 'overview'); if (local && local.length) roots = local; } catch (e) {}
+    try { const lr = SMQ.getLocal(DATA, 'relations'); if (lr && lr.length) relations = lr; } catch (e) {}
     try { charsData = await fetch("../../forum/角色档案库.data.json").then(r => r.json()); }
     catch { charsData = { chars: [], avatars: {} }; }
     selectedId = null;
@@ -887,7 +914,7 @@ function renderGraph() {
     const container = document.getElementById('graphContainer');
     const nodes = roots;
     const nodeIds = new Set(nodes.map(n => n.id));
-    const validRelations = RELATIONS.filter(r => nodeIds.has(r.from) && nodeIds.has(r.to));
+    const validRelations = relations.filter(r => nodeIds.has(r.from) && nodeIds.has(r.to));
     const relatedIds = new Set();
     if (selectedId) {
         relatedIds.add(selectedId);
@@ -985,6 +1012,19 @@ function addChild(id) {
     });
 }
 
+function addRoot() {
+    openEditor("新增顶层势力", [
+        { key: "name", label: "名称", value: "" },
+        { key: "desc", label: "描述", value: "", type: "textarea", rows: 3 },
+        { key: "tier", label: "分级（L0 / L1 / L2，留空则无）", value: "" }
+    ], out => {
+        if (!out.name) { document.getElementById("editorTip").textContent = "名称不能为空"; return; }
+        roots.push({ id: "n" + Date.now(), name: out.name, desc: out.desc, tier: out.tier || undefined });
+        selectedId = roots[roots.length - 1].id;
+        saveRoot();
+    });
+}
+
 // ========== 删除节点 ==========
 function findParent(arr, id) {
     for (const n of arr) {
@@ -1029,6 +1069,48 @@ async function saveRoot() {
     }
 }
 
+// ========== 关系网编辑 ==========
+function relOptions(sel) {
+    return roots.map(r => `<option value="${r.id}" ${r.id === sel ? "selected" : ""}>${esc(r.name)}</option>`).join("");
+}
+function addRelRow(from, to, type) {
+    const rows = document.getElementById("relRows");
+    const div = document.createElement("div");
+    div.className = "rel-edit-row";
+    div.style.cssText = "display:flex;gap:6px;align-items:center;margin-bottom:6px;flex-wrap:wrap;";
+    div.innerHTML =
+        '<select class="rel-from" style="flex:1;min-width:110px;padding:7px 8px;background:rgba(0,0,0,0.35);border:1px solid rgba(201,169,106,0.25);border-radius:var(--radius);color:var(--text-primary);font-size:12px;outline:none;">' + relOptions(from) + '</select>' +
+        '<span style="color:var(--gold-dim);">→</span>' +
+        '<select class="rel-to" style="flex:1;min-width:110px;padding:7px 8px;background:rgba(0,0,0,0.35);border:1px solid rgba(201,169,106,0.25);border-radius:var(--radius);color:var(--text-primary);font-size:12px;outline:none;">' + relOptions(to) + '</select>' +
+        '<select class="rel-type" style="width:86px;padding:7px 8px;background:rgba(0,0,0,0.35);border:1px solid rgba(201,169,106,0.25);border-radius:var(--radius);color:var(--text-primary);font-size:12px;outline:none;">' + REL_TYPES.map(t => `<option ${t === type ? "selected" : ""}>${t}</option>`).join('') + '</select>' +
+        '<button type="button" style="background:none;border:1px solid rgba(158,59,52,0.5);border-radius:4px;color:#c46b63;font-size:11px;cursor:pointer;padding:4px 8px;" onclick="this.parentElement.remove()">✕</button>';
+    rows.appendChild(div);
+}
+function editRels() {
+    document.getElementById("relRows").innerHTML = "";
+    if (relations.length) relations.forEach(r => addRelRow(r.from, r.to, r.type));
+    else addRelRow("", "", "合作");
+    document.getElementById("relTip").textContent = "";
+    document.getElementById("relWrap").classList.add("open");
+}
+function closeRels() { document.getElementById("relWrap").classList.remove("open"); }
+async function saveRels() {
+    const rows = [];
+    document.querySelectorAll("#relRows .rel-edit-row").forEach(row => {
+        const from = row.querySelector(".rel-from").value;
+        const to = row.querySelector(".rel-to").value;
+        const type = row.querySelector(".rel-type").value;
+        if (from && to && from !== to) rows.push({ from, to, type });
+    });
+    relations = rows;
+    try {
+        const res = await SMQ.save(DATA, "relations", relations);
+        closeRels(); renderGraph();
+        if (res.mode === 'local') SMQ.toast('关系已保存到浏览器本地（可用顶栏「导出数据」同步到电脑）');
+        else SMQ.toast('关系已保存');
+    } catch { document.getElementById("relTip").textContent = "保存失败，请重试"; }
+}
+
 // ========== 数据更新监听 ==========
 if (window.spherse && spherse.events) {
     spherse.events.on("file:update", { path: "../../forum/势力与阵营.data.json" }, load);
@@ -1036,7 +1118,7 @@ if (window.spherse && spherse.events) {
 
 // ========== 启动 ==========
 load();
-SMQ.registerPageExport(DATA, '势力与阵营.data.json', () => ({ overview: roots }));
+SMQ.registerPageExport(DATA, '势力与阵营.data.json', () => ({ overview: roots, relations }));
 </script>
 </body>
 </html>

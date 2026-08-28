@@ -10,6 +10,7 @@
 window.SMQ = (function () {
     var KEY = 'smq_standalone_v1';
     var pageExport = null; // { file, filename, get } 由页面注册，用于「导出本页」
+    var dataFiles = [];    // 已知数据文件清单，用于「导出全部」
 
     function isNative() {
         return !!(window.spherse && window.spherse.data && window.spherse.data.set);
@@ -23,16 +24,21 @@ window.SMQ = (function () {
         try { localStorage.setItem(KEY, JSON.stringify(all)); return true; } catch (e) { return false; }
     }
 
-    /* 保存数据：file 为数据文件路径（如 'forum/角色档案库.data.json'），key 为其中字段 */
+    /* 保存数据：file 为数据文件路径（如 'forum/角色档案库.data.json'），key 为其中字段
+     * 双写策略：
+     *  - 有 Spherse：尝试 data.set 写真实文件（受限时会被静默忽略，不影响）；
+     *  - 同时始终写入浏览器 localStorage —— 页面加载时 localStorage 优先覆盖，
+     *    保证「重进页面数据仍在」（Spherse 与纯网页行为一致）。
+     */
     async function save(file, key, value) {
-        if (isNative()) {
-            await spherse.data.set({ file: file, key: key, value: value });
-            return { mode: 'native' };
-        }
         var all = loadAll();
         if (!all[file] || typeof all[file] !== 'object') all[file] = {};
         all[file][key] = value;
         saveAll(all);
+        if (isNative()) {
+            try { await spherse.data.set({ file: file, key: key, value: value }); } catch (e) {}
+            return { mode: 'native' };
+        }
         return { mode: 'local' };
     }
 
@@ -43,14 +49,37 @@ window.SMQ = (function () {
         return f ? f[key] : undefined;
     }
 
-    /* 导出全部本地数据为 JSON 文件 */
-    function exportAll() {
+    /* 注册数据文件清单：base 为当前页面到 forum/ 目录的相对路径前缀，names 为数据文件名列表 */
+    function registerDataFiles(base, names) {
+        dataFiles = (names || []).map(function (n) {
+            return { name: n, path: base + n };
+        });
+    }
+
+    /* 导出全部数据为 JSON 文件（合并 forum 主数据 + 本地编辑，按文件名还原，覆盖全部页面） */
+    async function exportAll() {
+        var files = {};
+        // 1) 拉取已注册数据文件的当前内容，并用本地编辑覆盖
+        for (var i = 0; i < dataFiles.length; i++) {
+            var f = dataFiles[i];
+            var obj = null;
+            try { obj = await fetch(f.path).then(function (r) { return r.json(); }); } catch (e) {}
+            if (obj && typeof obj === 'object') {
+                var local = (loadAll())[f.name] || {};
+                Object.keys(local).forEach(function (k) { obj[k] = local[k]; });
+                files[f.name] = obj;
+            }
+        }
+        // 2) 本地编辑中未在清单里的文件也一并导出
         var all = loadAll();
+        Object.keys(all).forEach(function (name) {
+            if (!files[name]) files[name] = all[name];
+        });
         var payload = {
             app: '沙漠之歌工作台',
-            note: '将 files 内的内容按文件名放回项目 forum/ 目录即可同步到电脑',
+            note: '将 files 内的内容按文件名放回项目 forum/ 目录即可同步到电脑（已含全部页面数据）',
             exportedAt: new Date().toISOString(),
-            files: all
+            files: files
         };
         downloadObject('沙漠之歌-数据导出-' + new Date().toISOString().slice(0, 10) + '.json', payload);
     }
@@ -125,9 +154,9 @@ window.SMQ = (function () {
         exp.style.cssText = 'background:none;border:1px solid var(--line,rgba(201,169,106,.3));color:var(--gold-mid,#a88955);border-radius:4px;padding:4px 10px;font-size:11px;cursor:pointer;letter-spacing:.08em;font-family:inherit;transition:all .3s;';
         exp.addEventListener('mouseenter', function () { exp.style.color = 'var(--gold-bright,#e8d5a4)'; exp.style.borderColor = 'var(--gold,#c9a96a)'; });
         exp.addEventListener('mouseleave', function () { exp.style.color = 'var(--gold-mid,#a88955)'; exp.style.borderColor = 'var(--line,rgba(201,169,106,.3))'; });
-        exp.addEventListener('click', function () {
-            SMQ.exportAll();
-            SMQ.toast('已导出 JSON 文件');
+        exp.addEventListener('click', async function () {
+            await SMQ.exportAll();
+            SMQ.toast('已导出全部页面数据');
         });
 
         var imp = document.createElement('button');
@@ -177,6 +206,7 @@ window.SMQ = (function () {
         isNative: isNative,
         save: save,
         getLocal: getLocal,
+        registerDataFiles: registerDataFiles,
         exportAll: exportAll,
         importAll: importAll,
         registerPageExport: registerPageExport,

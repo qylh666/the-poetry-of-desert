@@ -781,6 +781,8 @@
                 <ul class="nav-sub">
                     <li><a href="../功能模块/酒馆.html"><span class="nav-dot"></span>酒馆</a></li>
                     <li><a href="../功能模块/日历.html"><span class="nav-dot"></span>日历</a></li>
+                    <li><a href="../功能模块/书架.html"><span class="nav-dot"></span>书架</a></li>
+                    <li><a href="../功能模块/魔法解析器.html"><span class="nav-dot"></span>魔法解析器</a></li>
                 </ul>
             </li>
             <li>
@@ -835,7 +837,7 @@
 
             <!-- 总览：纪元气泡 -->
             <div id="view-overview">
-                <div class="section-title">纪元</div>
+                <div class="section-title" style="display:flex;align-items:center;justify-content:space-between;">纪元<button class="btn btn-sm" onclick="addEra()" title="新增纪元">＋ 新增纪元</button></div>
                 <div class="bubble-wrap" id="eraBubbles"><div class="empty">加载中…</div></div>
             </div>
 
@@ -869,6 +871,8 @@
         <div class="mnav-sec">功能模块</div>
         <a href="../功能模块/酒馆.html"><span class="mnav-dot"></span>酒馆</a>
         <a href="../功能模块/日历.html"><span class="mnav-dot"></span>日历</a>
+        <a href="../功能模块/书架.html"><span class="mnav-dot"></span>书架</a>
+        <a href="../功能模块/魔法解析器.html"><span class="mnav-dot"></span>魔法解析器</a>
         <div class="mnav-sec">设定资料</div>
         <a href="势力与阵营.html"><span class="mnav-dot"></span>势力与阵营</a>
         <a href="历史事件.html" class="active"><span class="mnav-dot"></span>历史事件</a>
@@ -1033,10 +1037,15 @@ function render() {
     document.getElementById('crumb').innerHTML = `<button onclick="enter(null)">纪元总览</button><span class="sep">›</span><span class="cur">${esc(era.name)}</span>`;
 
     document.getElementById('eraHead').innerHTML = `
-        <div class="card-title">
-            ${esc(era.name)}
-            <span class="tag" style="border-color:${esc(era.color)}66;color:${esc(era.color)};">${esc(era.period)}</span>
-            ${era.now ? '<span class="tier-chip">现在</span>' : ''}
+        <div class="card-title" style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px;">
+            <span>${esc(era.name)}
+                <span class="tag" style="border-color:${esc(era.color || '#c9a96a')}66;color:${esc(era.color || '#c9a96a')};">${esc(era.period)}</span>
+                ${era.now ? '<span class="tier-chip">现在</span>' : ''}
+            </span>
+            <span style="display:flex;gap:8px;">
+                <button class="btn btn-sm" onclick="editEra()">✏️ 编辑纪元</button>
+                <button class="btn btn-sm" style="border-color:rgba(158,59,52,0.6);color:#c46b63;" onclick="deleteEra()">🗑️ 删除纪元</button>
+            </span>
         </div>
         <p class="desc">${esc(era.desc || '')}</p>
         <div class="stat-row">
@@ -1096,6 +1105,42 @@ function addEvent() {
         era.events.push({ time: out.time || '—', title: out.title, text: out.text || '—', tag: out.tag || '' });
         saveEras();
     });
+}
+
+// ========== 纪元管理（新增 / 编辑 / 删除） ==========
+function addEra() {
+    openEditor('新增纪元', [
+        { key: 'name', label: '纪元名称', value: '' },
+        { key: 'period', label: '时期（如：星陨 1501 ～ 1999）', value: '' },
+        { key: 'desc', label: '描述', value: '', type: 'textarea', rows: 2 },
+        { key: 'color', label: '主题色（如 #8c2f2f）', value: '#8c2f2f' }
+    ], out => {
+        if (!out.name) { document.getElementById('editorTip').textContent = '名称不能为空'; return; }
+        eras.push({ id: 'era' + Date.now(), name: out.name, period: out.period || '', desc: out.desc || '', color: out.color || '#8c2f2f', events: [] });
+        saveEras();
+    });
+}
+function editEra() {
+    const era = eras.find(x => x.id === current);
+    if (!era) return;
+    openEditor('编辑纪元 · ' + era.name, [
+        { key: 'name', label: '纪元名称', value: era.name },
+        { key: 'period', label: '时期', value: era.period || '' },
+        { key: 'desc', label: '描述', value: era.desc || '', type: 'textarea', rows: 2 },
+        { key: 'color', label: '主题色（如 #8c2f2f）', value: era.color || '#8c2f2f' }
+    ], out => {
+        if (!out.name) { document.getElementById('editorTip').textContent = '名称不能为空'; return; }
+        Object.assign(era, { name: out.name, period: out.period || '', desc: out.desc || '', color: out.color || '#8c2f2f' });
+        saveEras();
+    });
+}
+function deleteEra() {
+    const era = eras.find(x => x.id === current);
+    if (!era) return;
+    if (!confirm('确定删除纪元「' + era.name + '」？其中 ' + (era.events || []).length + ' 个事件将一并删除。')) return;
+    eras = eras.filter(x => x.id !== current);
+    current = null;
+    saveEras();
 }
 
 // ========== 编辑弹窗 ==========

@@ -428,6 +428,32 @@
         .mini-cal .mc-chip.custom { border-color: rgba(63,95,124,0.7); color: #7ba3c4; }
         .mini-cal .mc-chip.custom .mc-tag { color: #3f5f7c; }
         .mini-cal .mc-none { font-size: 12px; color: var(--text-faint); }
+        .mini-cal .mc-next {
+            margin-top: 10px;
+            padding-top: 8px;
+            border-top: 1px dashed rgba(201,169,106,0.22);
+            font-size: 11px;
+            color: var(--text-secondary);
+            letter-spacing: 0.05em;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            min-width: 0;
+        }
+        .mini-cal .mc-next .mn-symbol { color: var(--gold); font-size: 8px; flex-shrink: 0; }
+        .mini-cal .mc-next b { color: var(--gold-bright); font-weight: 600; }
+        .mini-cal .mc-prev {
+            margin-top: 5px;
+            font-size: 11px;
+            color: var(--text-secondary);
+            letter-spacing: 0.05em;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            min-width: 0;
+        }
+        .mini-cal .mc-prev .mn-symbol { color: var(--gold-dim); font-size: 8px; flex-shrink: 0; }
+        .mini-cal .mc-prev b { color: var(--text-primary); font-weight: 600; }
         .mini-cal .mc-link {
             margin-left: auto;
             align-self: flex-end;
@@ -476,6 +502,48 @@
         .mf-sub { font-size: 8px; color: var(--text-faint); letter-spacing: 0.25em; text-transform: uppercase; margin-top: 2px; }
         .mf-status { font-size: 12px; color: var(--text-secondary); letter-spacing: 0.04em; }
         .mf-status b { color: var(--gold-bright); font-family: var(--font-display); font-size: 15px; }
+
+        /* ========== 色卡抽取（与今日人品同款卡片） ========== */
+        .mini-palette {
+            flex: 1;
+            position: relative;
+            background: var(--surface);
+            border: 1px solid rgba(201,169,106,0.2);
+            outline: 1px solid rgba(201,169,106,0.06);
+            outline-offset: 4px;
+            border-radius: var(--radius);
+            padding: 16px 20px;
+            cursor: pointer;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            gap: 10px;
+            min-width: 0;
+            transition: var(--transition);
+        }
+        .mini-palette:hover { background: var(--surface-hover); transform: translateY(-2px); box-shadow: 0 6px 24px rgba(0,0,0,0.35); }
+        .mp-swatch {
+            width: 30px; height: 30px;
+            border-radius: 50%;
+            border: 1px solid var(--line);
+            background: conic-gradient(#eacd76, #4b5cc4, #f47983, #48c0a3, #eacd76);
+            box-shadow: 0 0 10px rgba(201,169,106,0.25);
+            flex-shrink: 0;
+            display: flex; align-items: center; justify-content: center;
+            color: rgba(255,255,255,0.95);
+            font-size: 12px;
+            text-shadow: 0 1px 2px rgba(0,0,0,0.4);
+        }
+        .pal-controls { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; justify-content: center; margin-bottom: 14px; }
+        .pal-controls .count-label { font-size: 10px; color: var(--text-faint); letter-spacing: 0.12em; }
+        .pal-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(120px, 1fr)); gap: 10px; }
+        .pal-card { background: var(--surface); border: 1px solid rgba(201,169,106,0.2); border-radius: var(--radius); overflow: hidden; cursor: pointer; transition: var(--transition); }
+        .pal-card:hover { transform: translateY(-2px); border-color: var(--gold); box-shadow: 0 4px 14px rgba(0,0,0,0.4), 0 0 10px rgba(201,169,106,0.2); }
+        .pal-block { height: 64px; display: flex; align-items: center; justify-content: center; font-size: 9px; letter-spacing: 0.06em; text-transform: uppercase; }
+        .pal-info { padding: 6px 8px; }
+        .pal-name { font-size: 11px; font-weight: 600; color: var(--text-primary); }
+        .pal-hex { font-family: 'JetBrains Mono', monospace; font-size: 9px; color: var(--text-faint); letter-spacing: 0.04em; }
+        .pal-empty { text-align: center; color: var(--text-faint); font-size: 12px; padding: 20px 0; }
 
         /* 今日人品悬浮窗 */
         .fortune-modal {
@@ -566,7 +634,10 @@
         }
         /* 今日人品亮色适配 */
         body.light .mini-fortune,
-        body.light .fortune-box { background: var(--surface); border-color: var(--line); outline: 1px solid var(--line); outline-offset: 3px; box-shadow: 0 2px 12px rgba(30,64,175,0.08); }
+        body.light .fortune-box,
+        body.light .mini-palette { background: var(--surface); border-color: var(--line); outline: 1px solid var(--line); outline-offset: 3px; box-shadow: 0 2px 12px rgba(30,64,175,0.08); }
+        body.light .pal-card { border-color: var(--line); }
+        body.light .pal-card:hover { border-color: var(--gold); }
         body.light .fb-bubble { background: var(--bg); border-color: var(--line); }
         body.light .fb-bubble::before { background: var(--bg); border-left-color: var(--line); border-bottom-color: var(--line); }
         body.light .fb-avatar { border-color: var(--gold); }
@@ -1204,6 +1275,8 @@
 
     <!-- ========== 无 Spherse 环境降级层（localStorage 编辑 + 导出/导入） ========== -->
     <script src="../forum/standalone.js"></script>
+    <!-- ========== 色卡数据（中日传统色） ========== -->
+    <script src="../forum/palette.data.js"></script>
 
     <!-- ========== 边框装饰符号（所有卡片共用） ========== -->
     <svg width="0" height="0" style="position:absolute;" aria-hidden="true">
@@ -1254,6 +1327,8 @@
                 <ul class="nav-sub">
                     <li><a href="功能模块/酒馆.html"><span class="nav-dot"></span>酒馆</a></li>
                     <li><a href="功能模块/日历.html"><span class="nav-dot"></span>日历</a></li>
+                    <li><a href="功能模块/书架.html"><span class="nav-dot"></span>书架</a></li>
+                    <li><a href="功能模块/魔法解析器.html"><span class="nav-dot"></span>魔法解析器</a></li>
                 </ul>
             </li>
             <li>
@@ -1315,19 +1390,33 @@
                 <div class="mc-events">
                     <div class="mc-title">今日备注</div>
                     <div class="mc-list" id="mcList"><span class="mc-none">加载中…</span></div>
+                    <div class="mc-next" id="mcNext"></div>
+                    <div class="mc-prev" id="mcPrev"></div>
                 </div>
                 <a class="mc-link" href="功能模块/日历.html">查看完整星历 →</a>
             </div>
 
-            <div class="mini-fortune" onclick="openFortune()" title="点击测试今日人品">
-                <div class="mf-head">
-                    <div class="mf-seal">❖</div>
-                    <div>
-                        <div class="mf-title">今日人品</div>
-                        <div class="mf-sub">Daily Fortune · 胡音的评价</div>
+            <div style="display:flex;flex-direction:column;gap:20px;flex:1;min-width:0;">
+                <div class="mini-fortune" onclick="openFortune()" title="点击测试今日人品">
+                    <div class="mf-head">
+                        <div class="mf-seal">❖</div>
+                        <div>
+                            <div class="mf-title">今日人品</div>
+                            <div class="mf-sub">Daily Fortune · 胡音的评价</div>
+                        </div>
+                    </div>
+                    <div class="mf-status" id="mfStatus"></div>
+                </div>
+
+                <div class="mini-palette" onclick="openPalette()" title="点击抽取色卡">
+                    <div class="mf-head">
+                        <div class="mp-swatch">✦</div>
+                        <div>
+                            <div class="mf-title">色卡抽取</div>
+                            <div class="mf-sub">Color Card Draw</div>
+                        </div>
                     </div>
                 </div>
-                <div class="mf-status" id="mfStatus">点击信封，测试今日人品</div>
             </div>
         </div>
 
@@ -1395,6 +1484,48 @@
                 </div>
                 <div class="card-footer">
                     <span class="card-footer-text">星陨 2000 a.s.</span>
+                    <span class="card-arrow">→</span>
+                </div>
+            </div>
+            </a>
+
+            <!-- 卡片 3：书架 -->
+            <a href="功能模块/书架.html" style="display:block;text-decoration:none;color:inherit;">
+            <div class="frame-card">
+                <div class="frame-overlay">
+                    <svg viewBox="0 0 300 200" preserveAspectRatio="none"><use href="#frameOrnament"/></svg>
+                </div>
+                <div class="card-number">MODULE III</div>
+                <div class="card-title">书架</div>
+                <div class="card-title-en">Bookshelf</div>
+                <div class="card-desc">设定集与外传典藏。电子书阅读器 + 编辑器，卷章节层级，随时翻阅与书写。</div>
+                <div class="card-meta">
+                    <span class="meta-chip active">已上线</span>
+                    <span class="meta-chip">典藏</span>
+                </div>
+                <div class="card-footer">
+                    <span class="card-footer-text">设定集 · 外传</span>
+                    <span class="card-arrow">→</span>
+                </div>
+            </div>
+            </a>
+
+            <!-- 卡片 4：魔法解析器 -->
+            <a href="功能模块/魔法解析器.html" style="display:block;text-decoration:none;color:inherit;">
+            <div class="frame-card">
+                <div class="frame-overlay">
+                    <svg viewBox="0 0 300 200" preserveAspectRatio="none"><use href="#frameOrnament"/></svg>
+                </div>
+                <div class="card-number">MODULE IV</div>
+                <div class="card-title">魔法解析器</div>
+                <div class="card-title-en">Magic Parser</div>
+                <div class="card-desc">描述效果，解析魔法式与咏唱词。接入 Spherse Agent，依据五大元素与空流规则生成完整解析。</div>
+                <div class="card-meta">
+                    <span class="meta-chip active">已上线</span>
+                    <span class="meta-chip">Agent</span>
+                </div>
+                <div class="card-footer">
+                    <span class="card-footer-text">接入魔法生成器 Agent</span>
                     <span class="card-arrow">→</span>
                 </div>
             </div>
@@ -1523,6 +1654,8 @@
         <div class="mnav-sec">功能模块</div>
         <a href="功能模块/酒馆.html"><span class="mnav-dot"></span>酒馆</a>
         <a href="功能模块/日历.html"><span class="mnav-dot"></span>日历</a>
+        <a href="功能模块/书架.html"><span class="mnav-dot"></span>书架</a>
+        <a href="功能模块/魔法解析器.html"><span class="mnav-dot"></span>魔法解析器</a>
         <div class="mnav-sec">设定资料</div>
         <a href="设定资料/势力与阵营.html"><span class="mnav-dot"></span>势力与阵营</a>
         <a href="设定资料/历史事件.html"><span class="mnav-dot"></span>历史事件</a>
@@ -1564,6 +1697,28 @@
             <div class="fb-btn-row">
                 <button class="fb-btn" id="fbRelight" onclick="fbRelight()">✉ 重新点燃</button>
             </div>
+        </div>
+    </div>
+
+    <!-- ========== 色卡抽取悬浮窗 ========== -->
+    <div class="fortune-modal" id="paletteModal" onclick="if(event.target===this)closePalette()">
+        <div class="fortune-box" style="max-width:600px;">
+            <button class="fortune-close" onclick="closePalette()" title="关闭">✕</button>
+            <div class="fb-head">
+                <h3>色卡抽取</h3>
+                <div class="fb-date" id="palDate"></div>
+            </div>
+            <div class="pal-controls">
+                <span class="count-label">抽取数量</span>
+                <button class="btn btn-sm" data-count="1" onclick="setPalCount(1)">1</button>
+                <button class="btn btn-sm" data-count="3" onclick="setPalCount(3)">3</button>
+                <button class="btn btn-sm active" data-count="5" onclick="setPalCount(5)">5</button>
+                <button class="btn btn-sm" data-count="10" onclick="setPalCount(10)">10</button>
+                <button class="btn btn-primary btn-sm" onclick="drawPalette()">抽取</button>
+                <button class="btn btn-sm" onclick="copyPalAll()">复制全部色号</button>
+            </div>
+            <div class="pal-grid" id="palGrid"></div>
+            <div class="pal-empty" id="palEmpty" style="display:none;">点击「抽取」开始</div>
         </div>
     </div>
 
@@ -1626,6 +1781,12 @@
             }
         })();
 
+        // 注册全部数据文件：顶栏「导出数据」将打包所有页面的完整数据（forum 主数据 + 本地编辑）
+        SMQ.registerDataFiles('../forum/', [
+            '角色档案库.data.json', '势力与阵营.data.json', '历史事件.data.json',
+            '术语库.data.json', '日历.data.json', '酒馆.data.json', '地理总览.data.json'
+        ]);
+
         // ========== 小日历（今日日期 + 生日/节日备注） ==========
         function esc(s) { return String(s ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
 
@@ -1647,12 +1808,15 @@
         async function loadMiniCal() {
             const now = new Date();
             const month = now.getMonth(), day = now.getDate();
+            const today = new Date(now.getFullYear(), month, day);
             document.getElementById('mcDay').textContent = day;
             document.getElementById('mcMonth').textContent = '星陨 2000 年 · ' + (month + 1) + '月';
             document.getElementById('mcWeek').textContent = '星期' + MC_WEEK[now.getDay()];
 
             const chips = [];
+            const allEvents = []; // 全部节日/生日/事件，用于计算下一个特殊日子
             MC_FESTIVALS.forEach(f => {
+                allEvents.push({ month: f.month, day: f.day, name: f.name });
                 if (f.month === month && f.day === day) chips.push({ type: 'festival', label: '节日', name: f.name });
             });
 
@@ -1660,6 +1824,7 @@
                 const j = await fetch('../forum/日历.data.json').then(r => r.json());
                 const custom = SMQ.getLocal('forum/日历.data.json', 'custom') || ((j && j.custom) || []);
                 custom.forEach(c => {
+                    if (c.month !== undefined && c.day !== undefined) allEvents.push({ month: c.month, day: c.day, name: c.name });
                     if (c.month === month && c.day === day) chips.push({
                         type: c.type === 'festival' ? 'festival' : c.type === 'birthday' ? 'birthday' : 'custom',
                         label: c.type === 'festival' ? '节日' : c.type === 'birthday' ? '生日' : '事件',
@@ -1672,6 +1837,7 @@
                 const j = await fetch('../forum/角色档案库.data.json').then(r => r.json());
                 const chars = SMQ.getLocal('forum/角色档案库.data.json', 'chars') || ((j && j.chars) || []);
                 chars.map(parseMCBirthday).filter(Boolean).forEach(b => {
+                    allEvents.push({ month: b.month, day: b.day, name: b.name + ' 的生日（' + (b.month + 1) + '月' + b.day + '日）' });
                     if (b.month === month && b.day === day) chips.push({ type: 'birthday', label: '生日', name: b.name + ' 的生日' });
                 });
             } catch (e) {}
@@ -1679,6 +1845,38 @@
             document.getElementById('mcList').innerHTML = chips.length
                 ? chips.map(c => `<span class="mc-chip ${c.type}"><span class="mc-tag">${c.label}</span>${esc(c.name)}</span>`).join('')
                 : '<span class="mc-none">今日无特殊事件</span>';
+
+            // 距离最近的特殊日子还有几天（跨年自动顺延）
+            let nextEvt = null, nextDays = Infinity;
+            allEvents.forEach(e => {
+                let target = new Date(now.getFullYear(), e.month, e.day);
+                if (target < today) target = new Date(now.getFullYear() + 1, e.month, e.day);
+                const diff = Math.round((target - today) / 86400000);
+                if (diff < nextDays) { nextDays = diff; nextEvt = e; }
+            });
+            const mcNext = document.getElementById('mcNext');
+            if (mcNext) {
+                mcNext.innerHTML = nextEvt
+                    ? (nextDays === 0
+                        ? '<span class="mn-symbol">❖</span>今日是 <b>' + esc(nextEvt.name) + '</b>'
+                        : '<span class="mn-symbol">❖</span>距 <b>' + esc(nextEvt.name) + '</b> 还有 <b>' + nextDays + '</b> 天')
+                    : '';
+            }
+
+            // 距离上次特殊日子已过去几天（跨年自动回退）
+            let prevEvt = null, prevDays = Infinity;
+            allEvents.forEach(e => {
+                let target = new Date(now.getFullYear(), e.month, e.day);
+                if (target > today) target = new Date(now.getFullYear() - 1, e.month, e.day);
+                const diff = Math.round((today - target) / 86400000);
+                if (diff > 0 && diff < prevDays) { prevDays = diff; prevEvt = e; }
+            });
+            const mcPrev = document.getElementById('mcPrev');
+            if (mcPrev) {
+                mcPrev.innerHTML = prevEvt
+                    ? '<span class="mn-symbol">❖</span>距上次 <b>' + esc(prevEvt.name) + '</b> 已过 <b>' + prevDays + '</b> 天'
+                    : '';
+            }
         }
         loadMiniCal();
 
@@ -1747,6 +1945,77 @@
             document.getElementById('fbRelight').disabled = true;
         }
 
+        // ========== 色卡抽取 ==========
+        let palCount = 5;
+        let palCards = [];
+
+        function openPalette() {
+            document.getElementById('paletteModal').classList.add('open');
+            document.getElementById('palDate').textContent = document.getElementById('mcMonth').textContent + ' · ' + document.getElementById('mcWeek').textContent;
+            drawPalette();
+        }
+        function closePalette() { document.getElementById('paletteModal').classList.remove('open'); }
+
+        function setPalCount(n) {
+            palCount = n;
+            document.querySelectorAll('#paletteModal [data-count]').forEach(b => b.classList.toggle('active', parseInt(b.dataset.count) === n));
+            drawPalette();
+        }
+
+        // 颜色库去重（名称+色号 完全相同的只留一个）
+        function uniquePalette() {
+            const seen = new Set(), out = [];
+            (window.SMQ_PALETTE || []).forEach(s => {
+                const i = String(s).lastIndexOf('#');
+                if (i < 1) return;
+                const name = String(s).slice(0, i), hex = String(s).slice(i);
+                const k = name + hex;
+                if (!seen.has(k)) { seen.add(k); out.push({ name, hex }); }
+            });
+            return out;
+        }
+
+        function drawPalette() {
+            const lib = uniquePalette();
+            const shuffled = [...lib].sort(() => Math.random() - 0.5);
+            palCards = shuffled.slice(0, Math.min(palCount, shuffled.length));
+            document.getElementById('palGrid').innerHTML = palCards.map(c => {
+                const tc = palContrast(c.hex);
+                return `<div class="pal-card" onclick="palCopy('${c.hex}')" title="点击复制色号">
+                    <div class="pal-block" style="background:${c.hex};color:${tc};">${c.hex}</div>
+                    <div class="pal-info"><div class="pal-name">${esc(c.name)}</div><div class="pal-hex">${c.hex}</div></div>
+                </div>`;
+            }).join('');
+            document.getElementById('palEmpty').style.display = 'none';
+        }
+
+        function palContrast(hex) {
+            const r = parseInt(hex.slice(1, 3), 16), g = parseInt(hex.slice(3, 5), 16), b = parseInt(hex.slice(5, 7), 16);
+            return (r * 299 + g * 587 + b * 114) / 1000 > 160 ? '#1a1512' : '#ffffff';
+        }
+        function palCopy(hex) { palClipboard(hex); }
+        function copyPalAll() {
+            if (!palCards.length) return;
+            palClipboard(palCards.map(c => c.name + ' ' + c.hex).join('\n'));
+        }
+        function palClipboard(text) {
+            if (navigator.clipboard && navigator.clipboard.writeText) {
+                navigator.clipboard.writeText(text).catch(() => palFallback(text));
+            } else {
+                palFallback(text);
+            }
+        }
+        function palFallback(text) {
+            const ta = document.createElement('textarea');
+            ta.value = text;
+            ta.style.position = 'fixed';
+            ta.style.opacity = '0';
+            document.body.appendChild(ta);
+            ta.select();
+            document.execCommand('copy');
+            document.body.removeChild(ta);
+        }
+
         // 胡音头像（从角色档案库读取，有裁剪头像则显示图片，否则元素色圆形 + 首字）
         (async function loadFpAvatar() {
             const av = document.getElementById('fbAvatar');
@@ -1778,7 +2047,21 @@
         const todoCount = document.getElementById('todoCount');
         let todos = [];
 
+        // 待办持久化到 localStorage（网页/桌面端刷新不丢）
+        const TODO_KEY = 'smq_todos';
+        function saveTodos() {
+            try { localStorage.setItem(TODO_KEY, JSON.stringify(todos)); } catch (e) {}
+        }
+        function loadTodos() {
+            try {
+                const t = JSON.parse(localStorage.getItem(TODO_KEY) || '[]');
+                if (Array.isArray(t)) todos = t;
+            } catch (e) {}
+        }
+        loadTodos();
+
         function renderTodos() {
+            saveTodos(); // 每次渲染即持久化（勾选/删除/添加都自动保存）
             todoList.innerHTML = '';
             todos.forEach((todo, index) => {
                 const li = document.createElement('li');
@@ -1828,6 +2111,7 @@
             if (text) {
                 todos.push({ text, done: false });
                 todoInput.value = '';
+                saveTodos();
                 renderTodos();
             }
         }
@@ -1839,13 +2123,16 @@
             }
         });
 
-        // 初始示例待办
-        todos = [
-            { text: '整理凯旋日庆典的创作灵感', done: false },
-            { text: '更新角色头像与关系网', done: true },
-            { text: '补充设定资料内容', done: false },
-            { text: '完成日历自定义事件登记', done: true }
-        ];
+        // 初始示例待办（仅首次无存档时）
+        if (todos.length === 0) {
+            todos = [
+                { text: '整理凯旋日庆典的创作灵感', done: false },
+                { text: '更新角色头像与关系网', done: true },
+                { text: '补充设定资料内容', done: false },
+                { text: '完成日历自定义事件登记', done: true }
+            ];
+            saveTodos();
+        }
         renderTodos();
     </script>
 </body>

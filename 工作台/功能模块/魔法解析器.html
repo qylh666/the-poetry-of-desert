@@ -1,0 +1,930 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>魔法解析器 · 沙漠之歌工作台</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,600;0,700;1,400&family=Inter:wght@300;400;500;600&family=JetBrains+Mono:wght@300;400;500&family=Noto+Serif+SC:wght@400;600&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg: #0f1116;
+            --bg-elevated: #14171e;
+            --surface: #181b21;
+            --surface-hover: #1e222a;
+            --gold: #c9a96a;
+            --gold-bright: #e8d5a4;
+            --gold-mid: #a88955;
+            --gold-dim: #6e5a3a;
+            --purple: #6b4a7a;
+            --purple-bright: #9b7dc9;
+            --text-primary: #ede4d4;
+            --text-secondary: #a8a091;
+            --text-faint: #6f6a5e;
+            --font-display: 'Cormorant Garamond', 'Noto Serif SC', serif;
+            --font-body: 'Inter', 'Noto Sans SC', sans-serif;
+            --font-mono: 'JetBrains Mono', monospace;
+            --radius: 2px;
+            --transition: 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body { background: var(--bg); color: var(--text-primary); font-family: var(--font-body); min-height: 100vh; display: flex; position: relative; overflow-x: hidden;
+            background-image: radial-gradient(circle at 50% 0%, rgba(201,169,106,0.08) 0%, transparent 50%), radial-gradient(circle at 15% 85%, rgba(107,74,122,0.1) 0%, transparent 45%); }
+        body::before { content: ''; position: fixed; top: 0; left: 0; right: 0; bottom: 0;
+            background-image: repeating-linear-gradient(0deg, transparent, transparent 7px, rgba(201,169,106,0.015) 7px, rgba(201,169,106,0.015) 8px); pointer-events: none; z-index: 0; }
+
+        /* ========== 侧边栏 ========== */
+        .sidebar { width: 210px; min-height: 100vh; height: 100vh; overflow-y: auto; background: rgba(20,23,30,0.97); border-right: 2px solid transparent; border-image: linear-gradient(180deg, transparent 0%, rgba(201,169,106,0.5) 20%, rgba(201,169,106,0.5) 80%, transparent 100%) 1; position: sticky; top: 0; left: 0; z-index: 10; display: flex; flex-direction: column; flex-shrink: 0; backdrop-filter: blur(20px); }
+        .sidebar-brand { text-align: center; padding: 24px 18px 18px; position: relative; margin-bottom: 6px; }
+        .sidebar-brand::after { content: ''; position: absolute; bottom: 0; left: 50%; transform: translateX(-50%); width: 65%; height: 1px; background: linear-gradient(90deg, transparent, var(--gold-dim), var(--gold), var(--gold-dim), transparent); }
+        .sidebar-brand h1 { font-family: var(--font-display); font-size: 22px; font-weight: 700; color: var(--text-primary); letter-spacing: 0.08em; text-shadow: 0 0 30px rgba(201,169,106,0.4); }
+        .sidebar-brand span { font-size: 9px; color: var(--gold-dim); letter-spacing: 0.5em; text-transform: uppercase; display: block; margin-top: 5px; }
+        .sidebar-section { font-size: 10px; color: var(--gold-mid); letter-spacing: 0.28em; text-transform: uppercase; padding: 16px 22px 8px; display: flex; align-items: center; gap: 8px; }
+        .sidebar-section::after { content: ''; flex: 1; height: 1px; background: linear-gradient(90deg, rgba(201,169,106,0.4), transparent); }
+        .sidebar-nav { list-style: none; padding: 0; }
+        .sidebar-nav li { margin: 1px 0; }
+        .sidebar-nav a { display: flex; align-items: center; gap: 10px; padding: 9px 22px; color: var(--text-secondary); font-size: 13px; text-decoration: none; letter-spacing: 0.04em; border-left: 2px solid transparent; transition: var(--transition); }
+        .sidebar-nav a:hover { color: var(--text-primary); background: rgba(201,169,106,0.04); }
+        .sidebar-nav a.active { color: var(--gold-bright); border-left-color: var(--gold); background: rgba(201,169,106,0.06); }
+        .sidebar-nav .nav-num { font-family: var(--font-display); font-size: 11px; color: var(--gold-dim); width: 16px; text-align: center; flex-shrink: 0; }
+        .sidebar-nav a.nav-toggle { cursor: pointer; user-select: none; }
+        .sidebar-nav a.nav-toggle.open { color: var(--gold-mid); }
+        .sidebar-nav .nav-arrow { margin-left: auto; font-size: 9px; color: var(--gold-dim); transition: transform var(--transition); flex-shrink: 0; }
+        .sidebar-nav a.nav-toggle.open .nav-arrow { transform: rotate(90deg); }
+        .nav-sub { list-style: none; padding: 0; display: none; }
+        .nav-sub.open { display: block; }
+        .nav-sub a { padding: 7px 22px 7px 46px; font-size: 12px; font-weight: 300; color: var(--text-faint); letter-spacing: 0.05em; }
+        .nav-sub a:hover { color: var(--text-primary); background: rgba(201,169,106,0.04); }
+        .nav-sub a.active { color: var(--gold-bright); border-left-color: var(--gold); background: rgba(201,169,106,0.06); }
+        .nav-sub .nav-dot { width: 4px; height: 4px; background: var(--gold-dim); transform: rotate(45deg); flex-shrink: 0; transition: var(--transition); }
+        .nav-sub a.active .nav-dot { background: var(--gold); box-shadow: 0 0 6px rgba(201,169,106,0.7); }
+        .sidebar-footer { margin-top: auto; padding: 14px 22px 18px; font-size: 10px; color: var(--text-faint); letter-spacing: 0.15em; text-align: center; border-top: 1px solid rgba(201,169,106,0.2); position: relative; }
+        .sidebar-footer::before { content: '❖'; position: absolute; top: -7px; left: 50%; transform: translateX(-50%); color: var(--gold-dim); font-size: 9px; background: var(--bg-elevated); padding: 0 8px; }
+        .theme-toggle { margin: 12px 16px 6px; padding: 7px 12px; display: flex; align-items: center; gap: 8px; border: 1px solid rgba(201,169,106,0.3); border-radius: var(--radius); color: var(--text-secondary); cursor: pointer; transition: var(--transition); font-size: 12px; flex-shrink: 0; background: var(--surface); }
+        .theme-toggle:hover { background: var(--surface-hover); color: var(--gold); border-color: var(--gold); }
+        .sidebar.collapsed .theme-toggle { display: none; }
+        .sidebar { transition: width 0.3s cubic-bezier(0.4, 0, 0.2, 1); }
+        .sidebar.collapsed { width: 56px; }
+        .sidebar.collapsed .sidebar-brand h1, .sidebar.collapsed .sidebar-brand span, .sidebar.collapsed .sidebar-section, .sidebar.collapsed .sidebar-nav, .sidebar.collapsed .sidebar-footer { display: none; }
+        .sidebar.collapsed .sidebar-brand { padding: 24px 0 18px; }
+        .sidebar.collapsed .sidebar-brand::before { content: '沙'; font-family: var(--font-display); font-size: 22px; font-weight: 700; color: var(--gold-bright); display: block; text-align: center; text-shadow: 0 0 20px rgba(201,169,106,0.4); }
+        .sb-toggle { position: absolute; right: 8px; top: 50%; transform: translateY(-50%); width: 20px; height: 20px; border-radius: 4px; background: transparent; border: 1px solid rgba(201,169,106,0.35); color: var(--gold-mid); font-size: 9px; cursor: pointer; display: flex; align-items: center; justify-content: center; transition: var(--transition); font-family: var(--font-body); z-index: 2; }
+        .sb-toggle:hover { color: var(--gold-bright); border-color: var(--gold); background: rgba(201,169,106,0.1); }
+        .sidebar.collapsed .sb-toggle { right: 17px; }
+        .sb-brand-v { display: none; writing-mode: vertical-rl; font-family: var(--font-display); font-size: 12px; letter-spacing: 0.4em; line-height: 1.4; color: var(--gold-bright); text-shadow: 0 0 16px rgba(201,169,106,0.35); }
+        .sidebar.collapsed .sb-brand-v { display: block; order: 1; }
+        .sidebar.collapsed .sidebar-brand::before { content: none; }
+        .sidebar.collapsed .sidebar-brand { padding: 14px 0; display: flex; flex-direction: column; align-items: center; gap: 12px; }
+        .sidebar.collapsed .sb-toggle { position: static; transform: none; order: 0; }
+        .sidebar-brand span { font-size: 7px; letter-spacing: 0.22em; text-transform: uppercase; margin-top: 6px; }
+
+        /* ========== 主区域 ========== */
+        .main { flex: 1; position: relative; z-index: 5; padding: 28px 36px 50px; min-width: 0; }
+        .topbar { display: flex; align-items: center; justify-content: space-between; padding-bottom: 16px; margin-bottom: 22px; position: relative; }
+        .topbar::after { content: ''; position: absolute; bottom: 0; left: 0; right: 0; height: 2px; background: linear-gradient(90deg, rgba(201,169,106,0.9) 0%, rgba(201,169,106,0.5) 20%, rgba(201,169,106,0.15) 50%, rgba(201,169,106,0.5) 80%, rgba(201,169,106,0.9) 100%); }
+        .topbar::before { content: '❖'; position: absolute; bottom: -8px; left: 50%; transform: translateX(-50%); color: var(--gold); font-size: 11px; text-shadow: 0 0 15px rgba(201,169,106,0.8); background: var(--bg); padding: 0 10px; z-index: 2; }
+        .breadcrumb { display: flex; align-items: center; gap: 10px; font-size: 12px; color: var(--text-faint); letter-spacing: 0.08em; }
+        .breadcrumb .separator { color: var(--gold-dim); font-size: 9px; }
+        .breadcrumb .current { color: var(--gold); }
+        .breadcrumb a { color: var(--gold-mid); text-decoration: none; border-bottom: 1px dashed rgba(201,169,106,0.4); transition: var(--transition); }
+        .breadcrumb a:hover { color: var(--gold-bright); border-bottom-color: var(--gold); }
+        .topbar-status { display: flex; align-items: center; gap: 12px; font-size: 11px; color: var(--text-faint); letter-spacing: 0.1em; }
+        .status-dot { width: 6px; height: 6px; border-radius: 50%; background: var(--gold); box-shadow: 0 0 12px rgba(201,169,106,0.8); animation: pulse 2s infinite; }
+        @keyframes pulse { 0%, 100% { opacity: 1; box-shadow: 0 0 12px rgba(201,169,106,0.8); } 50% { opacity: 0.4; box-shadow: 0 0 4px rgba(201,169,106,0.3); } }
+
+        /* ========== 移动端导航 ========== */
+        .mnav-btn { display: none; width: 30px; height: 30px; border-radius: 6px; background: var(--surface); border: 1px solid rgba(201,169,106,0.3); color: var(--gold-mid); font-size: 14px; cursor: pointer; align-items: center; justify-content: center; transition: var(--transition); flex-shrink: 0; font-family: var(--font-body); }
+        .mnav-btn:hover { color: var(--gold-bright); border-color: var(--gold); }
+        .mnav-backdrop { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.5); z-index: 199; }
+        .mnav { display: none; position: fixed; top: 0; left: 0; bottom: 0; width: 240px; background: var(--bg-elevated); border-right: 1px solid rgba(201,169,106,0.25); z-index: 200; padding: 20px 0 24px; overflow-y: auto; box-shadow: 4px 0 30px rgba(0,0,0,0.5); }
+        .mnav-toggle:checked ~ .mnav { display: block; }
+        .mnav-toggle:checked ~ .mnav-backdrop { display: block; }
+        .mnav .mnav-close { position: absolute; top: 12px; right: 12px; width: 26px; height: 26px; border-radius: 4px; background: none; border: 1px solid rgba(201,169,106,0.3); color: var(--text-faint); cursor: pointer; font-size: 12px; display: flex; align-items: center; justify-content: center; }
+        .mnav .mnav-brand { font-family: var(--font-display); font-size: 18px; font-weight: 700; color: var(--gold-bright); text-align: center; letter-spacing: 0.08em; padding: 6px 16px 14px; }
+        .mnav .mnav-sec { font-size: 10px; color: var(--gold-mid); letter-spacing: 0.28em; text-transform: uppercase; padding: 14px 18px 6px; }
+        .mnav a { display: flex; align-items: center; gap: 8px; padding: 9px 18px; color: var(--text-secondary); font-size: 13px; text-decoration: none; letter-spacing: 0.04em; border-left: 2px solid transparent; transition: var(--transition); }
+        .mnav a:hover { color: var(--text-primary); background: rgba(201,169,106,0.05); }
+        .mnav a.active { color: var(--gold-bright); border-left-color: var(--gold); background: rgba(201,169,106,0.06); }
+        .mnav a .mnav-dot { width: 4px; height: 4px; background: var(--gold-dim); transform: rotate(45deg); flex-shrink: 0; }
+        @media (max-width: 768px) { .mnav-btn { display: flex; } }
+
+        /* ========== 页面内容 ========== */
+        .page { max-width: 820px; margin: 0 auto; position: relative; z-index: 1; }
+        .header { text-align: center; margin-bottom: 18px; position: relative; padding-bottom: 14px; }
+        .header::after { content: ''; position: absolute; bottom: 0; left: 50%; transform: translateX(-50%); width: 60%; height: 1px; background: linear-gradient(90deg, transparent, var(--gold-dim), var(--gold), var(--gold-dim), transparent); }
+        .header h1 { font-family: var(--font-display); font-size: 26px; font-weight: 700; letter-spacing: 0.06em; color: var(--gold-bright); text-shadow: 0 0 30px rgba(201,169,106,0.3); }
+        .header .sub { font-size: 9px; color: var(--text-faint); letter-spacing: 0.3em; text-transform: uppercase; margin-top: 4px; }
+
+        .card { background: var(--surface); border: 1px solid rgba(201,169,106,0.2); outline: 1px solid rgba(201,169,106,0.06); outline-offset: 4px; border-radius: var(--radius); padding: 18px 20px; margin-bottom: 14px; box-shadow: 0 4px 24px rgba(0,0,0,0.4); }
+
+        /* 输入视图 */
+        #inputView { display: block; }
+        #inputView.hidden { display: none; }
+        .input-row { display: flex; gap: 8px; align-items: stretch; }
+        .magic-input { flex: 1; padding: 12px 16px; background: rgba(0,0,0,0.35); border: 1px solid rgba(201,169,106,0.25); border-radius: var(--radius); color: var(--text-primary); font-family: var(--font-body); font-size: 14px; outline: none; transition: var(--transition); resize: vertical; min-height: 60px; line-height: 1.7; }
+        .magic-input:focus { border-color: rgba(201,169,106,0.6); box-shadow: 0 0 15px rgba(201,169,106,0.1); }
+        .magic-input::placeholder { color: var(--text-faint); }
+        .param-row { display: flex; gap: 12px; margin-top: 10px; flex-wrap: wrap; align-items: center; }
+        .param-group { display: flex; align-items: center; gap: 5px; }
+        .param-group .pg-label { font-size: 10px; color: var(--gold-mid); letter-spacing: 0.08em; text-transform: uppercase; }
+        .param-group select, .param-group input { padding: 6px 10px; background: rgba(0,0,0,0.35); border: 1px solid rgba(201,169,106,0.25); border-radius: var(--radius); color: var(--text-primary); font-family: var(--font-body); font-size: 12px; outline: none; cursor: pointer; }
+        .btn { padding: 8px 16px; background: transparent; border: 1px solid rgba(201,169,106,0.4); border-radius: var(--radius); color: var(--gold); font-family: var(--font-body); font-size: 12px; cursor: pointer; letter-spacing: 0.06em; transition: var(--transition); white-space: nowrap; }
+        .btn:hover { background: var(--surface-hover); border-color: var(--gold-bright); box-shadow: 0 0 12px rgba(201,169,106,0.15); }
+        .btn-primary { background: linear-gradient(135deg, var(--gold-mid), var(--gold)); border-color: var(--gold-bright); color: #1a1512; font-weight: 700; font-size: 14px; padding: 10px 24px; }
+        .btn-primary:hover { box-shadow: 0 0 25px rgba(201,169,106,0.4); }
+        .btn-primary:disabled { opacity: 0.4; cursor: not-allowed; box-shadow: none; transform: none; }
+
+        .element-intro { margin-top: 14px; padding-top: 14px; border-top: 1px solid rgba(201,169,106,0.15); }
+        .element-intro .ei-title, .style-intro .ei-title { font-size: 10px; color: var(--gold-mid); letter-spacing: 0.15em; text-transform: uppercase; margin-bottom: 8px; }
+        .element-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(100px, 1fr)); gap: 6px; }
+        .element-tag { padding: 5px 8px; font-size: 10px; text-align: center; border-radius: 4px; background: rgba(0,0,0,0.25); border: 1px solid rgba(201,169,106,0.15); cursor: default; transition: var(--transition); }
+        .element-tag:hover { border-color: rgba(201,169,106,0.5); background: rgba(201,169,106,0.05); }
+        .element-tag .et-symbol { font-size: 14px; display: block; margin-bottom: 1px; }
+        .element-tag .et-name { color: var(--text-secondary); font-size: 11px; display: block; margin-bottom: 1px; }
+        .element-tag .et-desc { color: var(--text-faint); font-size: 8px; display: block; line-height: 1.3; }
+        .style-intro { margin-top: 10px; }
+        .style-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-top: 8px; }
+        @media (max-width: 500px) { .style-grid { grid-template-columns: 1fr; } }
+        .style-card { padding: 10px 12px; border-radius: var(--radius); background: rgba(0,0,0,0.2); border: 1px solid rgba(201,169,106,0.15); }
+        .style-card.traditional { border-left: 3px solid var(--gold); }
+        .style-card.simple { border-left: 3px solid var(--purple-bright); }
+        .style-card .sc-name { font-size: 12px; font-weight: 600; margin-bottom: 3px; }
+        .style-card.traditional .sc-name { color: var(--gold); }
+        .style-card.simple .sc-name { color: var(--purple-bright); }
+        .style-card .sc-desc { font-size: 10px; color: var(--text-faint); line-height: 1.5; }
+        .style-card .sc-example { font-size: 10px; color: var(--text-secondary); font-style: italic; margin-top: 4px; }
+
+        .history-section { margin-top: 12px; padding-top: 12px; border-top: 1px solid rgba(201,169,106,0.15); }
+        .history-section .hs-title { font-size: 10px; color: var(--gold-mid); letter-spacing: 0.15em; text-transform: uppercase; margin-bottom: 8px; }
+        .history-item { padding: 8px 12px; background: rgba(0,0,0,0.25); border: 1px solid rgba(107,74,122,0.25); border-radius: var(--radius); cursor: pointer; transition: var(--transition); margin-bottom: 6px; }
+        .history-item:hover { border-color: var(--purple-bright); background: rgba(107,74,122,0.08); }
+        .history-item .hi-formula { font-family: var(--font-mono); font-size: 11px; color: var(--gold-bright); line-height: 1.6; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+        .history-item .hi-time { font-size: 9px; color: var(--text-faint); margin-top: 2px; }
+        .history-empty { font-size: 11px; color: var(--text-faint); text-align: center; padding: 8px 0; }
+
+        /* 解析视图 */
+        #resultView { display: none; }
+        #resultView.visible { display: block; }
+        .result-header { display: flex; align-items: center; gap: 8px; margin-bottom: 12px; }
+        .result-header .rh-back { font-size: 16px; cursor: pointer; padding: 4px 10px; border-radius: 4px; color: var(--text-secondary); transition: var(--transition); border: 1px solid rgba(201,169,106,0.3); background: var(--surface); display: flex; align-items: center; gap: 4px; }
+        .result-header .rh-back:hover { color: var(--gold); border-color: var(--gold); background: var(--surface-hover); }
+        .result-header .rh-title { font-family: var(--font-display); font-size: 17px; font-weight: 700; color: var(--gold-bright); letter-spacing: 0.05em; }
+
+        .thinking-box { display: none; padding: 14px 16px; }
+        .thinking-box.visible { display: block; animation: fadeIn 0.3s ease; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: translateY(0); } }
+        .thinking-stage { font-size: 12px; color: var(--text-secondary); margin-bottom: 8px; }
+        .progress-track { width: 100%; height: 4px; background: rgba(201,169,106,0.12); border-radius: 2px; overflow: hidden; }
+        .progress-fill { height: 100%; background: linear-gradient(90deg, var(--gold-mid), var(--gold), var(--purple-bright)); border-radius: 2px; width: 0%; transition: width 0.15s ease; }
+        .progress-steps { display: flex; gap: 4px; margin-top: 8px; flex-wrap: wrap; }
+        .step-dot { font-size: 9px; padding: 2px 8px; border-radius: 10px; background: rgba(201,169,106,0.06); border: 1px solid rgba(201,169,106,0.2); color: var(--text-faint); letter-spacing: 0.05em; transition: var(--transition); }
+        .step-dot.active { background: rgba(107,74,122,0.15); border-color: var(--purple-bright); color: var(--purple-bright); }
+        .step-dot.done { background: rgba(201,169,106,0.1); border-color: var(--gold); color: var(--gold); }
+
+        .result-content { display: none; }
+        .result-content.visible { display: block; animation: fadeIn 0.4s ease; }
+        .result-section { margin-bottom: 14px; }
+        .result-section .rs-title { font-size: 10px; color: var(--gold-mid); letter-spacing: 0.15em; text-transform: uppercase; margin-bottom: 6px; display: flex; align-items: center; gap: 6px; }
+        .result-section .rs-title::after { content: ''; flex: 1; height: 1px; background: linear-gradient(90deg, rgba(201,169,106,0.3), transparent); }
+        .formula-block { font-family: var(--font-mono); font-size: 13px; line-height: 1.8; padding: 12px 16px; background: rgba(0,0,0,0.4); border: 1px solid rgba(107,74,122,0.35); border-radius: var(--radius); color: var(--gold-bright); overflow-x: auto; white-space: pre-wrap; word-break: break-all; }
+        .formula-block .fb-highlight { color: var(--purple-bright); }
+        .param-table { width: 100%; border-collapse: collapse; font-size: 12px; }
+        .param-table th { font-family: var(--font-display); font-size: 11px; color: var(--gold); text-align: left; padding: 5px 8px; border-bottom: 1px solid rgba(201,169,106,0.3); letter-spacing: 0.06em; }
+        .param-table td { padding: 5px 8px; border-bottom: 1px solid rgba(201,169,106,0.1); color: var(--text-secondary); }
+        .param-table td:first-child { color: var(--gold-bright); font-family: var(--font-mono); font-size: 11px; }
+        .chant-block { font-family: var(--font-display); font-size: 14px; line-height: 1.9; padding: 12px 16px; background: rgba(0,0,0,0.3); border-left: 3px solid var(--gold); border-radius: 0 var(--radius) var(--radius) 0; color: var(--text-primary); font-style: italic; }
+        .chant-block.simple { border-left: 3px solid var(--purple-bright); font-style: normal; font-family: var(--font-mono); font-size: 13px; }
+        .difficulty-row { display: flex; gap: 8px; flex-wrap: wrap; }
+        .diff-chip { padding: 4px 12px; font-size: 11px; border-radius: 14px; letter-spacing: 0.05em; border: 1px solid rgba(201,169,106,0.35); background: rgba(201,169,106,0.05); color: var(--text-secondary); }
+        .diff-chip.warning { border-color: rgba(158,59,52,0.5); color: #c46b63; background: rgba(158,59,52,0.08); }
+        .diff-chip.safe { border-color: rgba(90,122,74,0.5); color: #8fc47a; background: rgba(90,122,74,0.08); }
+        /* Agent 全文结果 */
+        .agent-full { font-size: 13px; line-height: 1.9; color: var(--text-secondary); white-space: pre-wrap; word-break: break-word; }
+        .agent-full b, .agent-full strong { color: var(--gold-bright); }
+
+        .history-modal { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.75); z-index: 100; align-items: center; justify-content: center; padding: 20px; }
+        .history-modal.open { display: flex; }
+        .history-detail { background: var(--surface); border: 1px solid rgba(201,169,106,0.4); border-radius: var(--radius); padding: 20px; width: 100%; max-width: 600px; max-height: 80vh; overflow-y: auto; box-shadow: 0 12px 50px rgba(0,0,0,0.6); }
+        .history-detail .hd-head { display: flex; align-items: center; justify-content: space-between; margin-bottom: 12px; }
+        .history-detail .hd-title { font-family: var(--font-display); font-size: 16px; font-weight: 700; color: var(--gold-bright); }
+        .history-detail .hd-close { font-size: 16px; cursor: pointer; padding: 2px 6px; border-radius: 4px; color: var(--text-faint); background: none; border: none; transition: var(--transition); }
+        .history-detail .hd-close:hover { color: var(--text-primary); background: var(--surface-hover); }
+
+        /* 亮色主题 */
+        body.light { --bg: #f5f8fc; --bg-elevated: #ffffff; --surface: #ffffff; --surface-hover: #f0f4fa; --gold: #1e40af; --gold-bright: #2563eb; --gold-mid: #3b82f6; --gold-dim: #93b4f5; --text-primary: #1a2538; --text-secondary: #4a5870; --text-faint: #8a95a8; }
+        body.light { background-image: radial-gradient(circle at 50% 0%, rgba(30,64,175,0.06) 0%, transparent 45%), radial-gradient(circle at 50% 110%, rgba(37,99,235,0.04) 0%, transparent 40%); }
+        body.light::before { background-image: repeating-linear-gradient(0deg, transparent, transparent 7px, rgba(30,64,175,0.015) 7px, rgba(30,64,175,0.015) 8px); }
+        body.light .sidebar { background: var(--bg-elevated); border-image: linear-gradient(180deg, transparent 0%, rgba(30,64,175,0.5) 20%, rgba(30,64,175,0.5) 80%, transparent 100%) 1; }
+        body.light .card, body.light .history-detail { background: var(--surface); border-color: rgba(30,64,175,0.2); }
+        body.light .magic-input, body.light .param-group select, body.light .param-group input { background: var(--bg); color: var(--text-primary); border-color: rgba(30,64,175,0.2); }
+        body.light .btn { border-color: rgba(30,64,175,0.25); color: var(--gold); }
+        body.light .btn-primary { color: #ffffff; }
+        body.light .mnav { background: var(--bg-elevated); border-color: rgba(30,64,175,0.2); }
+        body.light .topbar::after { background: linear-gradient(90deg, var(--gold) 0%, rgba(30,64,175,0.5) 20%, rgba(30,64,175,0.15) 50%, rgba(30,64,175,0.5) 80%, var(--gold) 100%); }
+        body.light .element-tag, body.light .style-card, body.light .history-item, body.light .formula-block { background: var(--surface-hover); border-color: rgba(30,64,175,0.2); }
+        body.light .formula-block { color: var(--gold); }
+        body.light .chant-block { background: var(--surface-hover); border-left-color: var(--gold); color: var(--text-primary); }
+        body.light .chant-block.simple { border-left-color: var(--gold); }
+        body.light .param-table td { color: var(--text-secondary); }
+        body.light .param-table td:first-child { color: var(--gold); }
+        body.light .history-modal { background: rgba(30,40,70,0.55); }
+        body.light .agent-full { color: var(--text-secondary); }
+        body.light .agent-full b { color: var(--gold); }
+
+        @media (max-width: 768px) {
+            .sidebar { display: none; }
+            .main { padding: 20px 16px; }
+            .topbar-status { display: none; }
+        }
+        ::-webkit-scrollbar { width: 8px; height: 8px; }
+        ::-webkit-scrollbar-track { background: transparent; }
+        ::-webkit-scrollbar-thumb { background: var(--gold-dim); border-radius: 4px; }
+        ::-webkit-scrollbar-thumb:hover { background: var(--gold-mid); }
+        * { scrollbar-width: thin; scrollbar-color: var(--gold-dim) transparent; }
+    </style>
+</head>
+<body>
+
+    <script src="../../forum/standalone.js"></script>
+
+    <!-- ========== 侧边栏 ========== -->
+    <aside class="sidebar">
+        <div class="sidebar-brand">
+            <h1>沙漠之歌</h1>
+            <span>The Poetry of Desert</span>
+            <div class="sb-brand-v">沙漠之歌·导航栏</div>
+            <button class="sb-toggle" onclick="toggleSidebar()" title="折叠/展开侧边栏">❮</button>
+        </div>
+        <div class="sidebar-section">导航</div>
+        <ul class="sidebar-nav">
+            <li><a href="../开始页.html"><span class="nav-num">I</span>欢迎</a></li>
+            <li>
+                <a href="#" class="nav-toggle open" onclick="toggleNav(event, this)"><span class="nav-num">II</span>功能模块<span class="nav-arrow">▸</span></a>
+                <ul class="nav-sub open">
+                    <li><a href="酒馆.html"><span class="nav-dot"></span>酒馆</a></li>
+                    <li><a href="日历.html"><span class="nav-dot"></span>日历</a></li>
+                    <li><a href="书架.html"><span class="nav-dot"></span>书架</a></li>
+                    <li><a href="魔法解析器.html" class="active"><span class="nav-dot"></span>魔法解析器</a></li>
+                </ul>
+            </li>
+            <li>
+                <a href="#" class="nav-toggle" onclick="toggleNav(event, this)"><span class="nav-num">III</span>设定资料<span class="nav-arrow">▸</span></a>
+                <ul class="nav-sub">
+                    <li><a href="../设定资料/势力与阵营.html"><span class="nav-dot"></span>势力与阵营</a></li>
+                    <li><a href="../设定资料/历史事件.html"><span class="nav-dot"></span>历史事件</a></li>
+                    <li><a href="../设定资料/地理总览.html"><span class="nav-dot"></span>地理总览</a></li>
+                    <li><a href="../设定资料/术语库.html"><span class="nav-dot"></span>术语库</a></li>
+                    <li><a href="../设定资料/角色档案库.html"><span class="nav-dot"></span>角色档案库</a></li>
+                </ul>
+            </li>
+        </ul>
+        <div class="sidebar-footer">v 0.1.0 · 魔法解析器</div>
+        <div class="theme-toggle" onclick="toggleTheme()" title="切换亮色 / 暗色主题"><span class="tt-icon">🌙</span><span class="tt-text">暗色</span></div>
+    </aside>
+
+    <!-- ========== 主区域 ========== -->
+    <main class="main">
+        <div class="topbar">
+            <div style="display:flex;align-items:center;gap:10px;min-width:0;">
+                <label for="mnavToggle" class="mnav-btn" title="导航">☰</label>
+                <div class="breadcrumb">
+                    <a href="../开始页.html">工作台</a> <span class="separator">❖</span> 功能模块 <span class="separator">❖</span> <span class="current">魔法解析器</span>
+                </div>
+            </div>
+            <div class="topbar-status">
+                <span class="status-dot"></span><span>系统正常</span>
+                <span style="color:var(--gold-dim);">|</span><span>星陨 2000 a.s.</span>
+                <span class="data-tools"></span>
+            </div>
+        </div>
+
+        <div class="page">
+            <!-- ========== 输入视图 ========== -->
+            <div id="inputView">
+                <div class="header">
+                    <h1>魔法解析器</h1>
+                    <div class="sub">Magic Parser · 接入 Spherse Agent</div>
+                </div>
+                <div class="card">
+                    <div class="input-row">
+                        <textarea class="magic-input" id="magicInput" placeholder="描述你需要的魔法效果，例如：我想点燃一根火把，火焰要能持续很久..." rows="3"></textarea>
+                    </div>
+                    <div class="param-row">
+                        <div class="param-group">
+                            <span class="pg-label">元素</span>
+                            <select id="elementSelect">
+                                <option value="any">自动判断</option>
+                                <option value="fire">火</option>
+                                <option value="water">水</option>
+                                <option value="wind">风</option>
+                                <option value="earth">土</option>
+                                <option value="aether">天</option>
+                            </select>
+                        </div>
+                        <div class="param-group">
+                            <span class="pg-label">强度</span>
+                            <select id="powerInput">
+                                <option value="auto">自动判断</option>
+                                <option value="1">1</option><option value="2">2</option><option value="3">3</option><option value="4">4</option>
+                                <option value="5">5</option><option value="6">6</option><option value="7">7</option><option value="8">8</option>
+                                <option value="9">9</option><option value="10">10</option><option value="11">11</option><option value="12+">12+</option>
+                            </select>
+                        </div>
+                        <div class="param-group">
+                            <span class="pg-label">咒语风格</span>
+                            <select id="styleSelect">
+                                <option value="traditional">传统（教会派）</option>
+                                <option value="simple">简易（学院派）</option>
+                            </select>
+                        </div>
+                        <div style="flex:1;"></div>
+                        <button class="btn btn-primary" id="parseBtn" onclick="parseMagic()">解析魔法</button>
+                    </div>
+                    <div class="param-row" style="margin-top:10px;">
+                        <span class="pg-label">DeepSeek API Key</span>
+                        <input type="password" id="apiKey" placeholder="在 platform.deepseek.com 注册获取 API Key（手机号即可）" style="flex:1;min-width:200px;padding:6px 10px;background:rgba(0,0,0,0.35);border:1px solid rgba(201,169,106,0.25);border-radius:var(--radius);color:var(--text-primary);font-family:var(--font-body);font-size:12px;outline:none;">
+                        <button class="btn" onclick="saveApiKey()">保存 Key</button>
+                        <span style="font-size:10px;color:var(--text-faint);">未填时使用本地示例</span>
+                    </div>
+                    <div class="element-intro">
+                        <div class="ei-title">五大元素</div>
+                        <div class="element-grid" id="elementGrid"></div>
+                    </div>
+                    <div class="style-intro">
+                        <div class="ei-title">咒语派系</div>
+                        <div class="style-grid">
+                            <div class="style-card traditional">
+                                <div class="sc-name">传统 · 教会派</div>
+                                <div class="sc-desc">向神祈祷，完整七段结构。咒语悠长但稳定，深受教会与地方魔法师喜爱。</div>
+                                <div class="sc-example">"以此物为媒介。伟大的创世神洛丽玛丝啊..."</div>
+                            </div>
+                            <div class="style-card simple">
+                                <div class="sc-name">简易 · 学院派</div>
+                                <div class="sc-desc">极简指令，直接下达参数。魔法式更复杂，但施法更快更精确。</div>
+                                <div class="sc-example">"火，3尤尺，焰苗。"</div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="history-section" id="historySection">
+                        <div class="hs-title">上一次解析</div>
+                        <div id="historyList"></div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- ========== 解析视图 ========== -->
+            <div id="resultView">
+                <div class="header" style="margin-bottom:14px;"><h1 style="font-size:20px;">魔法解析器</h1></div>
+                <div class="result-header">
+                    <button class="rh-back" onclick="backToInput()">← 返回</button>
+                    <span class="rh-title">魔法解析</span>
+                </div>
+                <div class="card thinking-box" id="thinkingBox">
+                    <div class="thinking-stage" id="thinkingStageText">正在解析需求...</div>
+                    <div class="progress-track"><div class="progress-fill" id="progressFill"></div></div>
+                    <div class="progress-steps" id="progressSteps">
+                        <span class="step-dot" data-step="0">解析需求</span>
+                        <span class="step-dot" data-step="1">匹配元素</span>
+                        <span class="step-dot" data-step="2">构建魔法式</span>
+                        <span class="step-dot" data-step="3">生成咒语</span>
+                        <span class="step-dot" data-step="4">校验规则</span>
+                    </div>
+                </div>
+                <div class="result-content" id="resultContent">
+                    <div class="card">
+                        <!-- Agent 全文 -->
+                        <div class="result-section" id="agentSection" style="display:none;">
+                            <div class="rs-title">解析全文</div>
+                            <div class="agent-full" id="agentFull"></div>
+                        </div>
+                        <!-- 本地结构化（降级） -->
+                        <div id="localSection">
+                            <div class="result-section">
+                                <div class="rs-title">魔法式</div>
+                                <div class="formula-block" id="resultFormula"></div>
+                            </div>
+                            <div class="result-section">
+                                <div class="rs-title">参数解读</div>
+                                <table class="param-table" id="resultParams">
+                                    <thead><tr><th>参数</th><th>含义</th><th>数值</th></tr></thead>
+                                    <tbody></tbody>
+                                </table>
+                            </div>
+                            <div class="result-section">
+                                <div class="rs-title">咒语</div>
+                                <div class="chant-block" id="resultChant"></div>
+                            </div>
+                            <div class="result-section">
+                                <div class="rs-title">难度评估</div>
+                                <div class="difficulty-row" id="resultDifficulty"></div>
+                            </div>
+                            <div class="result-section">
+                                <div class="rs-title">风险提示</div>
+                                <div class="difficulty-row" id="resultRisk"></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <!-- ========== 移动端导航抽屉 ========== -->
+    <input type="checkbox" id="mnavToggle" class="mnav-toggle" hidden>
+    <label for="mnavToggle" class="mnav-backdrop"></label>
+    <div class="mnav">
+        <label for="mnavToggle" class="mnav-close">✕</label>
+        <div class="mnav-brand">沙漠之歌</div>
+        <a href="../开始页.html"><span class="mnav-dot"></span>欢迎</a>
+        <div class="mnav-sec">功能模块</div>
+        <a href="酒馆.html"><span class="mnav-dot"></span>酒馆</a>
+        <a href="日历.html"><span class="mnav-dot"></span>日历</a>
+        <a href="书架.html"><span class="mnav-dot"></span>书架</a>
+        <a href="魔法解析器.html" class="active"><span class="mnav-dot"></span>魔法解析器</a>
+        <div class="mnav-sec">设定资料</div>
+        <a href="../设定资料/势力与阵营.html"><span class="mnav-dot"></span>势力与阵营</a>
+        <a href="../设定资料/历史事件.html"><span class="mnav-dot"></span>历史事件</a>
+        <a href="../设定资料/地理总览.html"><span class="mnav-dot"></span>地理总览</a>
+        <a href="../设定资料/术语库.html"><span class="mnav-dot"></span>术语库</a>
+        <a href="../设定资料/角色档案库.html"><span class="mnav-dot"></span>角色档案库</a>
+    </div>
+
+    <!-- 历史弹窗 -->
+    <div class="history-modal" id="historyModal">
+        <div class="history-detail" id="historyDetail"></div>
+    </div>
+
+<script>
+// ========== 侧边栏 / 主题 ==========
+function toggleNav(event, el) { if (event) event.preventDefault(); el.classList.toggle('open'); const sub = el.nextElementSibling; if (sub) sub.classList.toggle('open'); }
+function toggleSidebar() {
+    const sb = document.querySelector('.sidebar');
+    const collapsed = sb.classList.toggle('collapsed');
+    const btn = document.querySelector('.sb-toggle');
+    if (btn) btn.textContent = collapsed ? '❯' : '❮';
+    try { localStorage.setItem('smq_sidebar_collapsed', collapsed ? '1' : '0'); } catch (e) {}
+}
+(function initSidebar() {
+    const sb = document.querySelector('.sidebar'); const btn = document.querySelector('.sb-toggle');
+    if (!sb || !btn) return;
+    try { if (localStorage.getItem('smq_sidebar_collapsed') === '1') { sb.classList.add('collapsed'); btn.textContent = '❯'; } } catch (e) {}
+})();
+function applyTheme(light) {
+    document.body.classList.toggle('light', light);
+    document.querySelectorAll('.theme-toggle').forEach(b => {
+        const ic = b.querySelector('.tt-icon'), tx = b.querySelector('.tt-text');
+        if (ic) ic.textContent = light ? '☀' : '🌙';
+        if (tx) tx.textContent = light ? '亮色' : '暗色';
+    });
+}
+function toggleTheme() {
+    const light = !document.body.classList.contains('light');
+    applyTheme(light);
+    try { localStorage.setItem('smq_theme', light ? 'light' : 'dark'); } catch (e) {}
+}
+(function initTheme() {
+    function systemLight() { return !!(window.matchMedia && matchMedia('(prefers-color-scheme: light)').matches); }
+    let saved = null;
+    try { saved = localStorage.getItem('smq_theme'); } catch (e) {}
+    applyTheme(saved === 'light' || (saved !== 'dark' && systemLight()));
+    if (window.matchMedia && matchMedia.addEventListener) {
+        matchMedia('(prefers-color-scheme: light)').addEventListener('change', (e) => {
+            let s = null; try { s = localStorage.getItem('smq_theme'); } catch (err) {}
+            if (s !== 'light' && s !== 'dark') applyTheme(e.matches);
+        });
+    }
+})();
+
+// ========== 数据 ==========
+const STORAGE_KEY = 'magic_history';
+let historyList = [];
+function loadHistory() { try { const raw = localStorage.getItem(STORAGE_KEY); if (raw) historyList = JSON.parse(raw); } catch (e) { historyList = []; } }
+function saveHistory() { try { localStorage.setItem(STORAGE_KEY, JSON.stringify(historyList)); } catch (e) {} }
+function esc(s) { return String(s ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
+
+// ========== 直连 DeepSeek API（OpenAI 兼容，国内直连） ==========
+const DS_ENDPOINT = 'https://api.deepseek.com/chat/completions';
+const DS_MODEL = 'deepseek-chat';
+const DS_SYSTEM = '你是《沙漠之歌》原创奇幻世界观的设定专家，精通魔法语法。必须严格遵守用户消息中的【魔法式语法规范】与【咒语流派格式】，禁止凭空编造、禁止用中文写魔法式参数。\n'
+    + '【五大元素与用途】土=聚合/坚固/防御/地形；火=释放/攻击/光热/灼烧；水=引导/形态/治愈/冰冻；风=传导/移动/感知/传音（隔空取物、搬运、飞行、提速多用风）；天=干涉/解析/优化/对抗（只作用于魔法式本身，不直接改变物质，对纯物理几乎无效）。\n'
+    + '【硬规则】魔法≠魔法式（魔法=魔法式+咒语），咒语可省略但省略后魔法式更复杂；人类空流纯度上限13.6%、亚人21.2%，超限必须风险警告；魔法式公式不得出现中文、参数必须拉丁语缩写、效果名必须拉丁语。\n'
+    + '【要求】先根据用户需求判断正确元素，再生成；difficulty 与 risk 的 type 只能填 "safe" 或 "warning"；未指定流派默认教会派；严格按用户消息中的语法规范和咒语流派格式输出。';
+
+function getApiKey() { try { return localStorage.getItem('ds_api_key') || ''; } catch (e) { return ''; } }
+function saveApiKey() {
+    const v = document.getElementById('apiKey').value.trim();
+    try { localStorage.setItem('ds_api_key', v); } catch (e) {}
+    if (window.SMQ) SMQ.toast(v ? 'DeepSeek API Key 已保存' : '已清除 API Key');
+}
+
+async function callDeepSeek(prompt) {
+    const key = getApiKey();
+    if (!key) return { ok: false, reply: '未配置 DeepSeek API Key' };
+    try {
+        const res = await fetch(DS_ENDPOINT, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + key },
+            body: JSON.stringify({
+                model: DS_MODEL,
+                messages: [
+                    { role: 'system', content: DS_SYSTEM },
+                    { role: 'user', content: prompt }
+                ],
+                temperature: 0.8
+            })
+        });
+        if (!res.ok) {
+            let msg = 'HTTP ' + res.status;
+            try { const t = await res.json(); if (t.error) msg = (t.error.message || msg); } catch (e) {}
+            return { ok: false, reply: msg };
+        }
+        const j = await res.json();
+        const reply = j && j.choices && j.choices[0] && j.choices[0].message && j.choices[0].message.content;
+        return reply ? { ok: true, reply } : { ok: false, reply: 'API 返回为空' };
+    } catch (e) {
+        return { ok: false, reply: (e && e.message) || '网络错误' };
+    }
+}
+
+// ========== 元素介绍 ==========
+const ELEMENT_INTROS = [
+    { symbol: '△', name: '火', desc: '释放与光热' },
+    { symbol: '▽', name: '水', desc: '引导与形态' },
+    { symbol: '△̶', name: '风', desc: '传导与感知' },
+    { symbol: '▽̶', name: '土', desc: '聚合与坚固' },
+    { symbol: '⊕', name: '天', desc: '干涉与解析' }
+];
+function renderElementIntro() {
+    document.getElementById('elementGrid').innerHTML = ELEMENT_INTROS.map(e =>
+        `<div class="element-tag"><span class="et-symbol">${e.symbol}</span><span class="et-name">${e.name}</span><span class="et-desc">${e.desc}</span></div>`
+    ).join('');
+}
+
+// ========== 历史 ==========
+function renderHistory() {
+    const container = document.getElementById('historyList');
+    if (!historyList.length) { container.innerHTML = '<div class="history-empty">暂无历史解析记录</div>'; return; }
+    const last = historyList[0];
+    container.innerHTML = `
+        <div class="history-item" onclick="openHistoryDetail(0)">
+            <div class="hi-formula">${esc(last.formula || last.reply || '')}</div>
+            <div class="hi-time">${esc(last.time)}${last.source ? ' · ' + esc(last.source) : ''}</div>
+        </div>`;
+}
+function openHistoryDetail(index) {
+    const item = historyList[index]; if (!item) return;
+    const modal = document.getElementById('historyModal');
+    const detail = document.getElementById('historyDetail');
+    if (item.source === 'agent') {
+        detail.innerHTML = `<div class="hd-head"><span class="hd-title">解析全文（Agent）</span><button class="hd-close" onclick="closeHistoryDetail()">✕</button></div>
+            <div class="agent-full">${esc(item.reply).replace(/\*\*(.+?)\*\*/g, '<b>$1</b>').replace(/\n/g, '<br>')}</div>`;
+    } else {
+        const paramsRows = item.params.map(p => `<tr><td>${esc(p.key)}</td><td>${esc(p.meaning)}</td><td>${esc(p.value)}</td></tr>`).join('');
+        const difficultyChips = item.difficulty.map(d => `<span class="diff-chip ${d.type}">${esc(d.text)}</span>`).join('');
+        const riskChips = item.risk.map(r => `<span class="diff-chip ${r.type}">${esc(r.text)}</span>`).join('');
+        detail.innerHTML = `<div class="hd-head"><span class="hd-title">上次解析结果</span><button class="hd-close" onclick="closeHistoryDetail()">✕</button></div>
+            <div class="result-section"><div class="rs-title">魔法式</div><div class="formula-block">${esc(item.formula)}</div></div>
+            <div class="result-section"><div class="rs-title">参数解读</div><table class="param-table"><thead><tr><th>参数</th><th>含义</th><th>数值</th></tr></thead><tbody>${paramsRows}</tbody></table></div>
+            <div class="result-section"><div class="rs-title">咒语</div><div class="chant-block">${item.chant.replace(/\n/g, '<br>')}</div></div>
+            <div class="result-section"><div class="rs-title">难度评估</div><div class="difficulty-row">${difficultyChips}</div></div>
+            <div class="result-section"><div class="rs-title">风险提示</div><div class="difficulty-row">${riskChips}</div></div>`;
+    }
+    modal.classList.add('open');
+}
+function closeHistoryDetail() { document.getElementById('historyModal').classList.remove('open'); }
+
+// ========== 本地示例（降级兜底，含普通/附魔两套） ==========
+function generateSampleResult(input, element, power, style) {
+    if (input.includes('附魔')) return generateEnchantResult(style);
+    const elementMap = {
+        fire: { symbol: '△', operator: 'Δ', name: '火' },
+        water: { symbol: '▽', operator: '∇', name: '水' },
+        wind: { symbol: '△̶', operator: '∫', name: '风' },
+        earth: { symbol: '▽̶', operator: 'Σ', name: '土' },
+        aether: { symbol: '⊕', operator: '∂', name: '天' }
+    };
+    let elemKey = element === 'any' ? 'fire' : element;
+    const elem = elementMap[elemKey];
+    let actualPower, displayPower;
+    if (power === 'auto') { actualPower = 3; displayPower = '3'; }
+    else if (power === '12+') { actualPower = 12; displayPower = '12+'; }
+    else { actualPower = power; displayPower = String(power); }
+    const purity = (actualPower * 1.7 + 3.8).toFixed(1);
+    const formula = `↓ ${elem.symbol}${displayPower} ${elem.operator}(pur:${purity}% · form:sphaera · vol:2un³ · spat:5pe · therm:ignis+400gr · temp:1sp · pot:${displayPower} · mut:celeris · iter:linea · celer:rapidus · dir:ante) → sphaera_ignis ↑`;
+    let chant = '';
+    if (style === 'traditional') {
+        chant = '以此物为媒介。伟大的创世神洛丽玛丝啊！\n我将赞颂您的神名，祈求世界的力量。\n我于草木茂盛之地，\n将使用这属于' + elem.name + '之元素的神之赐福，\n在此地5尤尺内燃起焰苗！\n感谢您的慈悲。';
+    } else {
+        chant = elem.name + '，5尤尺，焰苗。';
+    }
+    const isOverLimit = actualPower > 11 || power === '12+';
+    return {
+        formula,
+        params: [
+            { key: 'pur', meaning: '空流纯度', value: purity + '%' },
+            { key: 'form', meaning: '形态', value: '球体' },
+            { key: 'vol', meaning: '体积', value: '2立方尤寸' },
+            { key: 'spat', meaning: '距离', value: '前方5尤尺' },
+            { key: 'temp', meaning: '持续时间', value: '1呼吸' },
+            { key: 'pot', meaning: '威力', value: displayPower + '级' },
+            { key: 'iter', meaning: '轨迹', value: '直线' },
+            { key: 'dir', meaning: '方向', value: '向前' }
+        ],
+        chant,
+        difficulty: [
+            { text: '强度 ' + displayPower + ' 级', type: isOverLimit ? 'warning' : 'safe' },
+            { text: isOverLimit ? '参数过多，超出常规评级' : '参数数量正常', type: isOverLimit ? 'warning' : 'safe' }
+        ],
+        risk: isOverLimit
+            ? [{ text: '警告：强度超越常规评级上限（11级），实际威力未知', type: 'warning' }]
+            : [{ text: '无特别风险', type: 'safe' }]
+    };
+}
+function generateEnchantResult(style) {
+    const formula = [
+        '① 基底固化（土元素）：↓ ▽̶₃ Σ(pur:7.4% · form:lamina · vol:0.5un³ · spat:contactus · temp:permanens · stab:alta · res:ignis) → firmitas_ferri ↑',
+        '② 元素注入（火元素）：↓ △₂ Δ(pur:5.6% · form:vinculum · target:firmitas_ferri · ener:activa · pot:II · temp:permanens · stab:alta) → infusio_ignis ↑',
+        '③ 触发链接（天元素）：↓ ⊕₁ ∂(pur:3.8% · form:conditio · anal:Δ · target:infusio_ignis · nod:actio · ref:activatio · syn:90% · temp:permanens) → nexus_activationis ↑'
+    ].join('\n');
+    let chant = '';
+    if (style === 'traditional') {
+        chant = '以此铁剑为媒介。伟大的创世神洛丽玛丝啊！\n我祈求火之灼痕与土之坚韧，\n在此剑身铭刻三重魔法式，\n凡此剑所击之处，\n必燃起短暂灼烧，直至三呼吸后消散。\n感谢您的慈悲。';
+    } else {
+        chant = '铁剑，承火之痕，击则灼敌，三息乃止。';
+    }
+    return {
+        formula,
+        params: [
+            { key: '① pur', meaning: '[基底固化] 空流纯度', value: '7.4%' },
+            { key: '① form', meaning: '[基底固化] 形态', value: '薄层（lamina）' },
+            { key: '① res', meaning: '[基底固化] 抗性', value: '抗火（防止剑身过热）' },
+            { key: '② pur', meaning: '[元素注入] 空流纯度', value: '5.6%' },
+            { key: '② ener', meaning: '[元素注入] 能量方式', value: '主动触发（activa）' },
+            { key: '② pot', meaning: '[元素注入] 威力', value: 'II级（短暂灼烧）' },
+            { key: '③ anal', meaning: '[触发链接] 解析目标', value: '火元素（Δ）' },
+            { key: '③ ref', meaning: '[触发链接] 重构方式', value: '激活（activatio）' },
+            { key: '③ syn', meaning: '[触发链接] 同步率', value: '90%' }
+        ],
+        chant,
+        difficulty: [
+            { text: '复合魔法式（3个核心魔法式）', type: 'warning' },
+            { text: '需要同时掌握土、火、天三系基础', type: 'warning' },
+            { text: '强度等效：基底3级 + 注入2级 + 链接1级', type: 'safe' }
+        ],
+        risk: [
+            { text: '三个魔法式需精确同步，否则附魔失效或元素冲突', type: 'warning' },
+            { text: '天元素链接若解析失败，可能导致火焰无法触发', type: 'warning' }
+        ]
+    };
+}
+
+// ========== 解析流程 ==========
+const THINKING_STEPS = ['正在解析需求...', '正在匹配元素...', '正在构建魔法式...', '正在生成咒语...', '正在校验规则...'];
+let thinkingTimer = null;
+
+function buildPrompt(input, element, power, style) {
+    const elemName = { any: '自动', fire: '火', water: '水', wind: '风', earth: '土', aether: '天' }[element] || element;
+    const styleName = style === 'traditional' ? '教会派（传统）' : '学院派（简易）';
+    const isComplex = /附魔|魔法阵|复合|连锁|多重|组合/.test(input);
+    const lines = [
+        '请依据《沙漠之歌》世界观为这个魔法请求生成完整解析：',
+        '需求描述：' + input,
+        '指定元素：' + elemName,
+        '指定强度：' + (power === 'auto' ? '自动' : power + '级'),
+        '咒语流派：' + styleName,
+        '',
+        '【魔法式语法规范】',
+        '基本格式：↓ [元素符号][强度下标] 运算符(参数块) → [效果拉丁语] ↑',
+        '符号：↓=起手、↑=闭合、→=指向（塑形成什么）、·=参数分隔、:=参数赋值',
+        '元素符号/运算符：火 △/Δ、水 ▽/∇、风 △̶/∫、土 ▽̶/Σ、天 ⊕/∂',
+        '强度用下标数字写在元素符号后：₀₁₂₃₄₅₆₇₈₉₁₀₁₁（如 △₃、⊕₄）',
+        '参数键（拉丁语缩写）：pur=空流纯度、form=形态、vol=体积、spat=距离/间隔、therm=温度、temp=持续时间、pot=威力、mut=变化率、iter=轨迹、res=抗性、stab=稳定性、ener=能量方式、compl=结构、cent=中心、aquis=获取方式、dir=方向、perim=范围边界、celer=速度、syn=与咒语同步率',
+        '单位：un=尤寸(约2.5cm)、pe=尤尺(约30cm)、sp=呼吸(约3-5秒)、gr=度；威力等级用罗马数字 I-XI',
+        '纯度公式：3.8% + (强度-1)×1.8%，四舍五入保留一位小数；人类上限13.6%、亚人上限21.2%，超限必须风险警告',
+        '参数数量按强度：1-2级5-8个、3-4级9-12个、5-6级13-16个、7-8级17-20个、9-10级20-24个、11级25+个；低阶必用 pur/form/vol/spat/temp，3-6级加 therm/pot/mut/iter/celer/dir，7级以上加 res/stab/ener/compl/cent/aquis/perim/syn',
+        '效果拉丁语：简单效果用单词（flamma=火焰、aqua=水、ventus=风、sphaera=球、acies=刃、murus=墙、velum=幕、silentium=沉默、purificatio=净化）；复合用下划线连接（如 incendium_inextinguibile）；形态+效果（如 acies_venti=风刃）',
+        '魔法式公式内不得出现中文。',
+        '',
+        '【单式与复合魔法】',
+        '简单魔法（一个效果）：只需要 1 个魔法式 + 1 个咒语。',
+        isComplex
+            ? '本需求属于复合魔法（附魔/魔法阵/多重效果/连锁）。复合魔法必须用【多个魔法式】组合实现，每个魔法式独立完整、用换行分隔并标注序号 ① ② ③…，例如附魔 = 基底固化（土）+ 元素注入（火）+ 触发链接（天）三式；魔法阵则由许多魔法式按阵图排列组成。复合魔法的【咒语只需要一个】——使用时咏唱一次统一激活全部魔法式（或按用户指定）。params 参数解读逐式列出，key 用 "①pur" "②form" 这样的序号前缀。difficulty/risk 可多项。'
+            : '',
+        '',
+        '【咒语流派格式】',
+        style === 'simple'
+            ? '学院派：极简指令 "[元素中文]，[范围]，[形态中文]。" 例："火，3尤尺，焰苗。"'
+            : '教会派：✚前缀后缀，七段祈祷式："[媒介声明]。[呼唤神名]！[赞颂]。[自报位置]，[说明请求]，[范围与效果]。感谢您的慈悲。" 例："以此物为媒介。伟大的创世神洛丽玛丝啊！我将赞颂您的神名，祈求世界的力量。我于草木茂盛之地，将使用这属于水之元素的神之赐福，在此地小范围内降下露水！感谢您的慈悲。"',
+        '（天元素魔法式必须包含 anal(解析目标)/target(目标元素拉丁名 ignis/aqua/ventus/terra/aether)/nod(锁定节点)/del(删除) 或 ref(重构)/syn(同步率) 等解析参数，且不直接改变物质）',
+        '',
+        '请严格按以下 JSON 格式输出，只输出 JSON，不要任何其他文字、不要 markdown 代码块：',
+        '{"formula":"魔法式（简单=单行；复合=多行①②③，用\\n分隔）","params":[{"key":"参数名","meaning":"含义","value":"数值"}],"chant":"咒语（复合魔法也只需一个，严格按流派格式）","chantStyle":"traditional或simple","difficulty":[{"text":"难度描述","type":"safe或warning"}],"risk":[{"text":"风险描述","type":"safe或warning"}]}'
+    ];
+    // 示例：按是否复合选择
+    if (isComplex) {
+        lines.push('输出示例（给武器附魔=复合魔法，三式一咒，学院派）：{"formula":"① ↓ ▽̶₃ Σ(pur:7.4% · form:lamina · vol:0.5un³ · spat:contactus · temp:permanens · stab:alta · res:ignis) → firmitas_ferri ↑\\n② ↓ △₂ Δ(pur:5.6% · form:vinculum · target:firmitas_ferri · ener:activa · pot:II · temp:permanens · stab:alta) → infusio_ignis ↑\\n③ ↓ ⊕₁ ∂(pur:3.8% · form:conditio · anal:Δ · target:infusio_ignis · nod:actio · ref:activatio · syn:90% · temp:permanens) → nexus_activationis ↑","params":[{"key":"① pur","meaning":"[基底固化] 空流纯度","value":"7.4%"},{"key":"② pot","meaning":"[元素注入] 威力","value":"II级"},{"key":"③ anal","meaning":"[触发链接] 解析目标","value":"火元素(Δ)"}],"chant":"铁剑，承火之痕，击则灼敌，三息乃止。","chantStyle":"simple","difficulty":[{"text":"复合魔法式（3个核心魔法式）","type":"warning"},{"text":"需要土、火、天三系基础","type":"warning"}],"risk":[{"text":"三式需精确同步，否则附魔失效或元素冲突","type":"warning"}]}');
+    } else {
+        lines.push('输出示例（隔空取物=简单魔法，风元素，学院派）：{"formula":"↓ △̶₃ ∫(pur:7.4% · form:manus · vol:0.5un³ · spat:5pe · temp:2sp · pot:III · iter:curvus · celer:rapidus · dir:ante) → manus_venti ↑","params":[{"key":"form","meaning":"形态","value":"无形之手"},{"key":"spat","meaning":"距离","value":"5尤尺内"},{"key":"pot","meaning":"威力","value":"III级"}],"chant":"风，5尤尺，飘来。","chantStyle":"simple","difficulty":[{"text":"强度3级，参数9个，适合中级魔法师","type":"safe"}],"risk":[{"text":"无特别风险","type":"safe"}]}');
+    }
+    return lines.join('\n');
+}
+
+async function parseMagic() {
+    const input = document.getElementById('magicInput').value.trim();
+    if (!input) { document.getElementById('magicInput').focus(); return; }
+
+    document.getElementById('inputView').classList.add('hidden');
+    document.getElementById('resultView').classList.add('visible');
+    document.getElementById('resultContent').classList.remove('visible');
+    document.getElementById('thinkingBox').classList.add('visible');
+    document.getElementById('progressFill').style.width = '0%';
+    document.getElementById('thinkingStageText').textContent = THINKING_STEPS[0];
+    document.querySelectorAll('.step-dot').forEach(s => s.classList.remove('active', 'done'));
+
+    const element = document.getElementById('elementSelect').value;
+    const powerRaw = document.getElementById('powerInput').value;
+    const power = powerRaw === 'auto' ? 'auto' : (powerRaw === '12+' ? '12+' : parseInt(powerRaw));
+    const style = document.getElementById('styleSelect').value;
+
+    // 思考动画：约 2.6s 正常走完
+    await new Promise(resolve => {
+        let progress = 0, stepIndex = 0;
+        (function tick() {
+            progress += 3 + Math.random() * 5;
+            if (progress > 100) progress = 100;
+            document.getElementById('progressFill').style.width = progress + '%';
+            const newStep = Math.floor(progress / 20);
+            if (newStep > stepIndex && newStep < THINKING_STEPS.length) {
+                stepIndex = newStep;
+                document.getElementById('thinkingStageText').textContent = THINKING_STEPS[stepIndex];
+                document.querySelectorAll('.step-dot').forEach((s, i) => {
+                    if (i < stepIndex) s.classList.add('done');
+                    else if (i === stepIndex) s.classList.add('active');
+                    else s.classList.remove('active', 'done');
+                });
+            }
+            if (progress >= 100) resolve(); else setTimeout(tick, 60);
+        })();
+    });
+
+    document.querySelectorAll('.step-dot').forEach(s => s.classList.add('done'));
+    document.getElementById('progressFill').style.width = '100%';
+
+    // 直连 DeepSeek API（已配置 Key 时）；否则回退本地示例
+    let reply = null, apiFail = '';
+    const key = getApiKey();
+    if (key) {
+        document.getElementById('thinkingStageText').textContent = '正在请求 DeepSeek API…';
+        const res = await callDeepSeek(buildPrompt(input, element, power, style));
+        if (res.ok) reply = res.reply;
+        else apiFail = res.reply;
+    }
+    document.getElementById('thinkingStageText').textContent = '解析完成';
+
+    setTimeout(() => {
+        document.getElementById('thinkingBox').classList.remove('visible');
+        document.getElementById('resultContent').classList.add('visible');
+        if (reply) {
+            renderApiResult(reply, input, element, power, style);
+        } else {
+            showLocalResult(input, element, power, style);
+            if (window.SMQ) {
+                SMQ.toast(!key ? '未配置 DeepSeek API Key，已用本地示例（语义较简单）' : 'DeepSeek API 调用失败：' + apiFail + '（已回退本地示例）');
+            }
+        }
+    }, 400);
+}
+
+// 尝试从模型回复中解析 JSON
+function tryParseJson(reply) {
+    const text = String(reply || '').trim().replace(/^```(?:json)?\s*/i, '').replace(/```\s*$/, '').trim();
+    try {
+        const m = text.match(/\{[\s\S]*\}/);
+        const obj = JSON.parse(m ? m[0] : text);
+        if (obj && obj.formula) return obj;
+    } catch (e) {}
+    return null;
+}
+
+// 渲染模型回复：能解析 JSON 则套模板结构化展示，否则全文展示
+function renderApiResult(reply, input, element, power, style) {
+    const obj = tryParseJson(reply);
+    if (!obj) {
+        // 全文兜底
+        document.getElementById('agentSection').style.display = 'block';
+        document.getElementById('localSection').style.display = 'none';
+        document.getElementById('agentFull').innerHTML = esc(reply).replace(/\*\*(.+?)\*\*/g, '<b>$1</b>').replace(/\n/g, '<br>');
+        historyList.unshift({ reply, time: new Date().toLocaleString('zh-CN', { hour12: false }), source: 'agent' });
+        if (historyList.length > 5) historyList.pop();
+        saveHistory();
+        saveLastResult({ source: 'agent', reply });
+        return;
+    }
+    document.getElementById('agentSection').style.display = 'none';
+    document.getElementById('localSection').style.display = 'block';
+    const highlighted = (obj.formula || '').replace(/(pur|form|vol|spat|therm|temp|pot|mut|iter|celer|dir|anal|target|nod|del|ref|syn|ener|res|stab)/g, '<span class="fb-highlight">$1</span>');
+    document.getElementById('resultFormula').innerHTML = highlighted || '<span class="empty-hint">—</span>';
+    document.querySelector('#resultParams tbody').innerHTML = (obj.params || []).map(p => `<tr><td>${esc(p.key)}</td><td>${esc(p.meaning)}</td><td>${esc(p.value)}</td></tr>`).join('') || '<tr><td colspan="3">—</td></tr>';
+    const chantEl = document.getElementById('resultChant');
+    chantEl.className = 'chant-block' + (obj.chantStyle === 'simple' ? ' simple' : '');
+    chantEl.innerHTML = esc(obj.chant || '').replace(/\n/g, '<br>');
+    document.getElementById('resultDifficulty').innerHTML = (obj.difficulty || []).map(d => `<span class="diff-chip ${d.type === 'warning' ? 'warning' : 'safe'}">${esc(d.text)}</span>`).join('') || '<span class="empty-hint">—</span>';
+    document.getElementById('resultRisk').innerHTML = (obj.risk || []).map(r => `<span class="diff-chip ${r.type === 'warning' ? 'warning' : 'safe'}">${esc(r.text)}</span>`).join('') || '<span class="empty-hint">—</span>';
+    historyList.unshift({ source: 'api', formula: obj.formula, params: obj.params, chant: obj.chant, chantStyle: obj.chantStyle, difficulty: obj.difficulty, risk: obj.risk, time: new Date().toLocaleString('zh-CN', { hour12: false }) });
+    if (historyList.length > 5) historyList.pop();
+    saveHistory();
+    saveLastResult({ source: 'api', formula: obj.formula, params: obj.params, chant: obj.chant, chantStyle: obj.chantStyle, difficulty: obj.difficulty, risk: obj.risk });
+}
+
+function showAgentResult(reply, input, element, power, style) {
+    document.getElementById('agentSection').style.display = 'block';
+    document.getElementById('localSection').style.display = 'none';
+    document.getElementById('agentFull').innerHTML = esc(reply).replace(/\*\*(.+?)\*\*/g, '<b>$1</b>').replace(/\n/g, '<br>');
+    historyList.unshift({ reply, time: new Date().toLocaleString('zh-CN', { hour12: false }), source: 'agent' });
+    if (historyList.length > 5) historyList.pop();
+    saveHistory();
+    saveLastResult({ source: 'agent', reply });
+}
+
+function showLocalResult(input, element, power, style) {
+    document.getElementById('agentSection').style.display = 'none';
+    document.getElementById('localSection').style.display = 'block';
+    const result = generateSampleResult(input, element, power, style);
+    const styleName = style === 'traditional' ? '传统' : '简易';
+    const elementName = element === 'any' ? '自动' : (element === 'fire' ? '火' : element === 'water' ? '水' : element === 'wind' ? '风' : element === 'earth' ? '土' : '天');
+    const highlighted = result.formula.replace(/(pur|form|vol|spat|therm|temp|pot|mut|iter|celer|dir|anal|target|nod|del|ref|syn|ener|res|stab)/g, '<span class="fb-highlight">$1</span>');
+    document.getElementById('resultFormula').innerHTML = highlighted;
+    document.querySelector('#resultParams tbody').innerHTML = result.params.map(p => `<tr><td>${esc(p.key)}</td><td>${esc(p.meaning)}</td><td>${esc(p.value)}</td></tr>`).join('');
+    const chantEl = document.getElementById('resultChant');
+    chantEl.className = 'chant-block' + (style === 'simple' ? ' simple' : '');
+    chantEl.innerHTML = result.chant.replace(/\n/g, '<br>');
+    document.getElementById('resultDifficulty').innerHTML = result.difficulty.map(d => `<span class="diff-chip ${d.type}">${esc(d.text)}</span>`).join('');
+    document.getElementById('resultRisk').innerHTML = result.risk.map(r => `<span class="diff-chip ${r.type}">${esc(r.text)}</span>`).join('');
+    let powerLabel = power === 'auto' ? '自动判断' : (power === '12+' ? '12+级' : power + '级');
+    historyList.unshift({ formula: result.formula, params: result.params, chant: result.chant, difficulty: result.difficulty, risk: result.risk, styleName, elementName, power, powerLabel, time: new Date().toLocaleString('zh-CN', { hour12: false }), source: '本地' });
+    if (historyList.length > 5) historyList.pop();
+    saveHistory();
+    saveLastResult({ source: 'local', formula: result.formula, params: result.params, chant: result.chant, difficulty: result.difficulty, risk: result.risk, style });
+}
+
+function backToInput() {
+    document.getElementById('resultView').classList.remove('visible');
+    document.getElementById('inputView').classList.remove('hidden');
+    renderHistory();
+}
+
+// ========== 记住上次解析结果：切换页面后自动恢复 ==========
+function saveLastResult(obj) { try { localStorage.setItem('magic_last_result', JSON.stringify(obj)); } catch (e) {} }
+function restoreLastResult() {
+    let last = null;
+    try { last = JSON.parse(localStorage.getItem('magic_last_result') || 'null'); } catch (e) {}
+    if (!last) return;
+    document.getElementById('inputView').classList.add('hidden');
+    document.getElementById('resultView').classList.add('visible');
+    document.getElementById('resultContent').classList.add('visible');
+    document.getElementById('thinkingBox').classList.remove('visible');
+    if (last.source === 'agent') {
+        document.getElementById('agentSection').style.display = 'block';
+        document.getElementById('localSection').style.display = 'none';
+        document.getElementById('agentFull').innerHTML = esc(last.reply).replace(/\*\*(.+?)\*\*/g, '<b>$1</b>').replace(/\n/g, '<br>');
+    } else if (last.source === 'api') {
+        document.getElementById('agentSection').style.display = 'none';
+        document.getElementById('localSection').style.display = 'block';
+        const r = last;
+        const highlighted = (r.formula || '').replace(/(pur|form|vol|spat|therm|temp|pot|mut|iter|celer|dir|anal|target|nod|del|ref|syn|ener|res|stab)/g, '<span class="fb-highlight">$1</span>');
+        document.getElementById('resultFormula').innerHTML = highlighted || '<span class="empty-hint">—</span>';
+        document.querySelector('#resultParams tbody').innerHTML = (r.params || []).map(p => `<tr><td>${esc(p.key)}</td><td>${esc(p.meaning)}</td><td>${esc(p.value)}</td></tr>`).join('') || '<tr><td colspan="3">—</td></tr>';
+        const chantEl = document.getElementById('resultChant');
+        chantEl.className = 'chant-block' + (r.chantStyle === 'simple' ? ' simple' : '');
+        chantEl.innerHTML = esc(r.chant || '').replace(/\n/g, '<br>');
+        document.getElementById('resultDifficulty').innerHTML = (r.difficulty || []).map(d => `<span class="diff-chip ${d.type === 'warning' ? 'warning' : 'safe'}">${esc(d.text)}</span>`).join('') || '<span class="empty-hint">—</span>';
+        document.getElementById('resultRisk').innerHTML = (r.risk || []).map(rr => `<span class="diff-chip ${rr.type === 'warning' ? 'warning' : 'safe'}">${esc(rr.text)}</span>`).join('') || '<span class="empty-hint">—</span>';
+    } else {
+        document.getElementById('agentSection').style.display = 'none';
+        document.getElementById('localSection').style.display = 'block';
+        const r = last;
+        const highlighted = r.formula.replace(/(pur|form|vol|spat|therm|temp|pot|mut|iter|celer|dir|anal|target|nod|del|ref|syn|ener|res|stab)/g, '<span class="fb-highlight">$1</span>');
+        document.getElementById('resultFormula').innerHTML = highlighted;
+        document.querySelector('#resultParams tbody').innerHTML = r.params.map(p => `<tr><td>${esc(p.key)}</td><td>${esc(p.meaning)}</td><td>${esc(p.value)}</td></tr>`).join('');
+        const chantEl = document.getElementById('resultChant');
+        chantEl.className = 'chant-block' + (r.style === 'simple' ? ' simple' : '');
+        chantEl.innerHTML = r.chant.replace(/\n/g, '<br>');
+        document.getElementById('resultDifficulty').innerHTML = r.difficulty.map(d => `<span class="diff-chip ${d.type}">${esc(d.text)}</span>`).join('');
+        document.getElementById('resultRisk').innerHTML = r.risk.map(rr => `<span class="diff-chip ${rr.type}">${esc(rr.text)}</span>`).join('');
+    }
+}
+
+// ========== 快捷键 ==========
+document.getElementById('magicInput').addEventListener('keydown', function(e) {
+    if (e.key === 'Enter' && (e.ctrlKey || e.metaKey)) { e.preventDefault(); parseMagic(); }
+});
+
+// ========== 初始化 ==========
+loadHistory();
+renderElementIntro();
+renderHistory();
+restoreLastResult();
+document.getElementById('apiKey').value = getApiKey();
+</script>
+</body>
+</html>
