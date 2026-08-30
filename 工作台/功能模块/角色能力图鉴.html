@@ -1,0 +1,1229 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>角色能力图鉴 · 沙漠之歌工作台</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,600;0,700;1,400&family=Inter:wght@300;400;500;600&family=Noto+Serif+SC:wght@400;600&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg: #0e1116;
+            --bg-elevated: #14171e;
+            --surface: #171b24;
+            --surface-hover: #1e232e;
+            --gold: #c9a96a;
+            --gold-bright: #e8d5a4;
+            --gold-mid: #a88955;
+            --gold-dim: #6e5a3a;
+            --red: #9e3b34;
+            --purple: #6b4a7a;
+            --text-primary: #ede4d4;
+            --text-secondary: #a8a091;
+            --text-faint: #6f6a5e;
+            --font-display: 'Cormorant Garamond', 'Noto Serif SC', serif;
+            --font-body: 'Inter', 'Noto Sans SC', sans-serif;
+            --radius: 4px;
+            --transition: 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            --grid-line: rgba(201,169,106,0.16);
+            --axis-line: rgba(201,169,106,0.24);
+        }
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body {
+            background: var(--bg);
+            color: var(--text-primary);
+            font-family: var(--font-body);
+            min-height: 100vh;
+            display: flex;
+            position: relative;
+            overflow-x: hidden;
+            background-image: radial-gradient(circle at 20% 110%, rgba(158,59,52,0.06) 0%, transparent 50%), radial-gradient(circle at 80% -10%, rgba(201,169,106,0.07) 0%, transparent 40%);
+        }
+        body::before {
+            content: '';
+            position: fixed; top: 0; left: 0; right: 0; bottom: 0;
+            background-image: repeating-linear-gradient(0deg, transparent, transparent 7px, rgba(201,169,106,0.015) 7px, rgba(201,169,106,0.015) 8px);
+            pointer-events: none; z-index: 0;
+        }
+        .sidebar {
+            width: 210px; min-height: 100vh; height: 100vh; overflow-y: auto;
+            background: rgba(20, 23, 30, 0.97);
+            border-right: 2px solid transparent;
+            border-image: linear-gradient(180deg, transparent 0%, rgba(201,169,106,0.5) 20%, rgba(201,169,106,0.5) 80%, transparent 100%) 1;
+            position: sticky; top: 0; left: 0; z-index: 10;
+            display: flex; flex-direction: column; flex-shrink: 0;
+            backdrop-filter: blur(20px);
+        }
+        .sidebar-brand { text-align: center; padding: 24px 18px 18px; position: relative; margin-bottom: 6px; }
+        .sidebar-brand::after { content: ''; position: absolute; bottom: 0; left: 50%; transform: translateX(-50%); width: 65%; height: 1px; background: linear-gradient(90deg, transparent, var(--gold-dim), var(--gold), var(--gold-dim), transparent); }
+        .sidebar-brand h1 { font-family: var(--font-display); font-size: 22px; font-weight: 700; color: var(--text-primary); letter-spacing: 0.08em; text-shadow: 0 0 30px rgba(201,169,106,0.4); }
+        .sidebar-brand span { font-size: 9px; color: var(--gold-dim); letter-spacing: 0.5em; text-transform: uppercase; display: block; margin-top: 5px; }
+        .sidebar-section { font-size: 10px; color: var(--gold-mid); letter-spacing: 0.28em; text-transform: uppercase; padding: 16px 22px 8px; display: flex; align-items: center; gap: 8px; }
+        .sidebar-section::after { content: ''; flex: 1; height: 1px; background: linear-gradient(90deg, rgba(201,169,106,0.4), transparent); }
+        .sidebar-nav { list-style: none; padding: 0; }
+        .sidebar-nav li { margin: 1px 0; }
+        .sidebar-nav a { display: flex; align-items: center; gap: 10px; padding: 9px 22px; color: var(--text-secondary); font-size: 13px; text-decoration: none; letter-spacing: 0.04em; border-left: 2px solid transparent; transition: var(--transition); }
+        .sidebar-nav a:hover { color: var(--text-primary); background: rgba(201,169,106,0.04); }
+        .sidebar-nav a.active { color: var(--gold-bright); border-left-color: var(--gold); background: rgba(201,169,106,0.06); }
+        .sidebar-nav .nav-num { font-family: var(--font-display); font-size: 11px; color: var(--gold-dim); width: 16px; text-align: center; flex-shrink: 0; }
+        .sidebar-nav a.nav-toggle { cursor: pointer; user-select: none; }
+        .sidebar-nav a.nav-toggle.open { color: var(--gold-mid); }
+        .sidebar-nav .nav-arrow { margin-left: auto; font-size: 9px; color: var(--gold-dim); transition: transform var(--transition); flex-shrink: 0; }
+        .sidebar-nav a.nav-toggle.open .nav-arrow { transform: rotate(90deg); }
+        .nav-sub { list-style: none; padding: 0; display: none; }
+        .nav-sub.open { display: block; }
+        .nav-sub a { padding: 7px 22px 7px 46px; font-size: 12px; font-weight: 300; color: var(--text-faint); letter-spacing: 0.05em; }
+        .nav-sub a:hover { color: var(--text-primary); background: rgba(201,169,106,0.04); }
+        .nav-sub a.active { color: var(--gold-bright); border-left-color: var(--gold); background: rgba(201,169,106,0.06); }
+        .nav-sub .nav-dot { width: 4px; height: 4px; background: var(--gold-dim); transform: rotate(45deg); flex-shrink: 0; transition: var(--transition); }
+        .nav-sub a.active .nav-dot { background: var(--gold); box-shadow: 0 0 6px rgba(201,169,106,0.7); }
+        .sidebar-footer { margin-top: auto; padding: 14px 22px 18px; font-size: 10px; color: var(--text-faint); letter-spacing: 0.15em; text-align: center; border-top: 1px solid rgba(201,169,106,0.2); position: relative; }
+        .sidebar-footer::before { content: '❖'; position: absolute; top: -7px; left: 50%; transform: translateX(-50%); color: var(--gold-dim); font-size: 9px; background: var(--bg-elevated); padding: 0 8px; }
+        .theme-toggle { margin: 12px 16px 6px; padding: 7px 12px; display: flex; align-items: center; gap: 8px; border: 1px solid rgba(201,169,106,0.3); border-radius: var(--radius); color: var(--text-secondary); cursor: pointer; transition: var(--transition); font-size: 12px; flex-shrink: 0; background: var(--surface); }
+        .theme-toggle:hover { background: var(--surface-hover); color: var(--gold); border-color: var(--gold); }
+        .sidebar.collapsed .theme-toggle { display: none; }
+        .sidebar { transition: width 0.3s cubic-bezier(0.4, 0, 0.2, 1); }
+        .sidebar.collapsed { width: 56px; }
+        .sidebar.collapsed .sidebar-brand h1, .sidebar.collapsed .sidebar-brand span, .sidebar.collapsed .sidebar-section, .sidebar.collapsed .sidebar-nav, .sidebar.collapsed .sidebar-footer { display: none; }
+        .sidebar.collapsed .sidebar-brand { padding: 24px 0 18px; }
+        .sidebar.collapsed .sidebar-brand::before { content: '沙'; font-family: var(--font-display); font-size: 22px; font-weight: 700; color: var(--gold-bright); display: block; text-align: center; text-shadow: 0 0 20px rgba(201,169,106,0.4); }
+        .sb-toggle { position: absolute; right: 8px; top: 50%; transform: translateY(-50%); width: 20px; height: 20px; border-radius: 4px; background: transparent; border: 1px solid rgba(201,169,106,0.35); color: var(--gold-mid); font-size: 9px; cursor: pointer; display: flex; align-items: center; justify-content: center; transition: var(--transition); font-family: var(--font-body); z-index: 2; }
+        .sb-toggle:hover { color: var(--gold-bright); border-color: var(--gold); background: rgba(201,169,106,0.1); }
+        .sidebar.collapsed .sb-toggle { right: 17px; }
+        .sb-brand-v { display: none; writing-mode: vertical-rl; font-family: var(--font-display); font-size: 12px; letter-spacing: 0.4em; line-height: 1.4; color: var(--gold-bright); text-shadow: 0 0 16px rgba(201,169,106,0.35); }
+        .sidebar.collapsed .sb-brand-v { display: block; order: 1; }
+        .sidebar.collapsed .sidebar-brand::before { content: none; }
+        .sidebar.collapsed .sidebar-brand { padding: 14px 0; display: flex; flex-direction: column; align-items: center; gap: 12px; }
+        .sidebar.collapsed .sb-toggle { position: static; transform: none; order: 0; }
+        .sidebar-brand span { font-size: 7px; letter-spacing: 0.22em; text-transform: uppercase; margin-top: 6px; }
+
+        .main { flex: 1; position: relative; z-index: 5; padding: 28px 36px 50px; min-width: 0; }
+        .topbar { display: flex; align-items: center; justify-content: space-between; padding-bottom: 16px; margin-bottom: 22px; position: relative; }
+        .topbar::after { content: ''; position: absolute; bottom: 0; left: 0; right: 0; height: 2px; background: linear-gradient(90deg, rgba(201,169,106,0.9) 0%, rgba(201,169,106,0.5) 20%, rgba(201,169,106,0.15) 50%, rgba(201,169,106,0.5) 80%, rgba(201,169,106,0.9) 100%); }
+        .topbar::before { content: '❖'; position: absolute; bottom: -8px; left: 50%; transform: translateX(-50%); color: var(--gold); font-size: 11px; text-shadow: 0 0 15px rgba(201,169,106,0.8); background: var(--bg); padding: 0 10px; z-index: 2; }
+        .breadcrumb { display: flex; align-items: center; gap: 10px; font-size: 12px; color: var(--text-faint); letter-spacing: 0.08em; }
+        .breadcrumb .separator { color: var(--gold-dim); font-size: 9px; }
+        .breadcrumb .current { color: var(--gold); }
+        .breadcrumb a { color: var(--gold-mid); text-decoration: none; border-bottom: 1px dashed rgba(201,169,106,0.4); transition: var(--transition); }
+        .breadcrumb a:hover { color: var(--gold-bright); border-bottom-color: var(--gold); }
+        .topbar-status { display: flex; align-items: center; gap: 12px; font-size: 11px; color: var(--text-faint); letter-spacing: 0.1em; }
+        .status-dot { width: 6px; height: 6px; border-radius: 50%; background: var(--gold); box-shadow: 0 0 12px rgba(201,169,106,0.8); animation: pulse 2s infinite; }
+        @keyframes pulse { 0%, 100% { opacity: 1; box-shadow: 0 0 12px rgba(201,169,106,0.8); } 50% { opacity: 0.4; box-shadow: 0 0 4px rgba(201,169,106,0.3); } }
+        .mnav-btn { display: none; width: 30px; height: 30px; border-radius: 6px; background: var(--surface); border: 1px solid rgba(201,169,106,0.3); color: var(--gold-mid); font-size: 14px; cursor: pointer; align-items: center; justify-content: center; transition: var(--transition); flex-shrink: 0; font-family: var(--font-body); }
+        .mnav-btn:hover { color: var(--gold-bright); border-color: var(--gold); }
+        .mnav-backdrop { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.5); z-index: 199; }
+        .mnav { display: none; position: fixed; top: 0; left: 0; bottom: 0; width: 240px; background: var(--bg-elevated); border-right: 1px solid rgba(201,169,106,0.25); z-index: 200; padding: 20px 0 24px; overflow-y: auto; box-shadow: 4px 0 30px rgba(0,0,0,0.5); }
+        .mnav-toggle:checked ~ .mnav { display: block; }
+        .mnav-toggle:checked ~ .mnav-backdrop { display: block; }
+        .mnav .mnav-close { position: absolute; top: 12px; right: 12px; width: 26px; height: 26px; border-radius: 4px; background: none; border: 1px solid rgba(201,169,106,0.3); color: var(--text-faint); cursor: pointer; font-size: 12px; display: flex; align-items: center; justify-content: center; }
+        .mnav .mnav-brand { font-family: var(--font-display); font-size: 18px; font-weight: 700; color: var(--gold-bright); text-align: center; letter-spacing: 0.08em; padding: 6px 16px 14px; }
+        .mnav .mnav-sec { font-size: 10px; color: var(--gold-mid); letter-spacing: 0.28em; text-transform: uppercase; padding: 14px 18px 6px; }
+        .mnav a { display: flex; align-items: center; gap: 8px; padding: 9px 18px; color: var(--text-secondary); font-size: 13px; text-decoration: none; letter-spacing: 0.04em; border-left: 2px solid transparent; transition: var(--transition); }
+        .mnav a:hover { color: var(--text-primary); background: rgba(201,169,106,0.05); }
+        .mnav a.active { color: var(--gold-bright); border-left-color: var(--gold); background: rgba(201,169,106,0.06); }
+        .mnav a .mnav-dot { width: 4px; height: 4px; background: var(--gold-dim); transform: rotate(45deg); flex-shrink: 0; }
+        @media (max-width: 768px) { .mnav-btn { display: flex; } .sidebar { display: none; } .main { padding: 20px 16px; } .topbar-status { display: none; } }
+
+        .page { max-width: 1100px; margin: 0 auto; position: relative; z-index: 1; }
+        .view { display: none; }
+        .view.active { display: block; animation: fadeIn 0.35s ease; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
+        .header { text-align: center; padding-bottom: 16px; margin-bottom: 22px; position: relative; }
+        .header::after { content: ''; position: absolute; bottom: 0; left: 50%; transform: translateX(-50%); width: 60%; height: 1px; background: linear-gradient(90deg, transparent, var(--gold-dim), var(--gold), var(--gold-dim), transparent); }
+        .header h1 { font-family: var(--font-display); font-size: 28px; font-weight: 700; letter-spacing: 0.06em; text-shadow: 0 0 30px rgba(201,169,106,0.3); }
+        .header .sub { font-size: 10px; color: var(--text-faint); letter-spacing: 0.25em; text-transform: uppercase; margin-top: 4px; }
+
+        .toolbar { display: flex; gap: 8px; margin-bottom: 16px; flex-wrap: wrap; align-items: center; }
+        .filter-bar { display: flex; gap: 8px; margin-bottom: 10px; align-items: center; }
+        .search-input {
+            flex: 1; min-width: 180px;
+            padding: 9px 14px;
+            background: rgba(0,0,0,0.35);
+            border: 1px solid rgba(201,169,106,0.25);
+            border-radius: var(--radius);
+            color: var(--text-primary);
+            font-family: var(--font-body);
+            font-size: 12px;
+            outline: none;
+            transition: var(--transition);
+        }
+        .search-input:focus { border-color: rgba(201,169,106,0.6); box-shadow: 0 0 15px rgba(201,169,106,0.1); }
+        .chips { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 14px; }
+        .chip {
+            padding: 5px 12px;
+            font-size: 11px;
+            border: 1px solid rgba(201,169,106,0.25);
+            border-radius: 999px;
+            color: var(--text-secondary);
+            cursor: pointer;
+            transition: var(--transition);
+            letter-spacing: 0.04em;
+            background: transparent;
+            font-family: var(--font-body);
+        }
+        .chip:hover { border-color: rgba(201,169,106,0.6); color: var(--gold); }
+        .chip.on { background: rgba(201,169,106,0.15); border-color: rgba(201,169,106,0.7); color: var(--gold-bright); }
+        body.light .search-input { background: var(--bg); color: var(--text-primary); border-color: rgba(30,64,175,0.2); }
+        body.light .chip { border-color: rgba(30,64,175,0.25); color: var(--text-secondary); }
+        body.light .chip:hover { border-color: var(--gold); color: var(--gold); }
+        body.light .chip.on { background: rgba(30,64,175,0.12); border-color: var(--gold); color: var(--gold); }
+        .btn { padding: 6px 12px; background: transparent; border: 1px solid rgba(201,169,106,0.4); border-radius: var(--radius); color: var(--gold); font-family: var(--font-body); font-size: 10px; cursor: pointer; letter-spacing: 0.06em; transition: var(--transition); white-space: nowrap; text-decoration: none; display: inline-flex; align-items: center; gap: 4px; }
+        .btn:hover { background: rgba(201,169,106,0.1); border-color: rgba(201,169,106,0.7); }
+        .btn-sm { padding: 5px 10px; font-size: 9px; }
+        .btn-on { background: rgba(201,169,106,0.12); border-color: rgba(201,169,106,0.7); color: var(--gold-bright); }
+        .btn-danger { border-color: rgba(158,59,52,0.6); color: #c46b63; }
+        .btn-danger:hover { background: rgba(158,59,52,0.1); }
+
+        .char-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 14px; }
+        .char-card {
+            background: var(--surface); border: 1px solid rgba(201,169,106,0.2);
+            outline: 1px solid rgba(201,169,106,0.06); outline-offset: 4px;
+            border-radius: var(--radius); padding: 16px 12px; cursor: pointer;
+            transition: var(--transition); text-align: center;
+            display: flex; flex-direction: column; align-items: center; gap: 8px;
+        }
+        .char-card:hover { background: var(--surface-hover); transform: translateY(-3px); border-color: rgba(201,169,106,0.5); }
+        .cc-avatar { width: 60px; height: 60px; border-radius: 50%; border: 2px solid rgba(201,169,106,0.5); display: flex; align-items: center; justify-content: center; font-family: var(--font-display); font-size: 24px; font-weight: 700; color: #fff; overflow: hidden; background-size: cover; background-position: center; }
+        .cc-name { font-family: var(--font-display); font-size: 16px; font-weight: 700; color: var(--text-primary); }
+        .cc-identity { font-size: 10px; color: var(--text-secondary); }
+        .cc-meta { display: flex; gap: 5px; flex-wrap: wrap; justify-content: center; }
+        .cc-tag { padding: 2px 8px; font-size: 8px; letter-spacing: 0.1em; border: 1px solid rgba(201,169,106,0.3); border-radius: 999px; color: var(--text-faint); text-transform: uppercase; }
+        .cc-empty { color: var(--text-faint); font-size: 10px; }
+
+        .detail-layout { display: flex; gap: 18px; min-height: 600px; }
+        .detail-sidebar { width: 130px; flex-shrink: 0; display: flex; flex-direction: column; gap: 6px; max-height: 650px; overflow-y: auto; }
+        .ds-title { font-size: 9px; color: var(--gold-mid); letter-spacing: 0.2em; text-transform: uppercase; margin-bottom: 4px; }
+        .ds-item { display: flex; align-items: center; gap: 8px; padding: 8px 10px; background: rgba(0,0,0,0.2); border: 1px solid rgba(201,169,106,0.12); border-radius: 6px; cursor: pointer; transition: var(--transition); font-size: 11px; color: var(--text-secondary); letter-spacing: 0.04em; }
+        .ds-item:hover { border-color: rgba(201,169,106,0.4); background: rgba(201,169,106,0.04); }
+        .ds-item.active { border-color: var(--gold); background: rgba(201,169,106,0.08); color: var(--gold-bright); font-weight: 600; }
+        .ds-avatar { width: 24px; height: 24px; border-radius: 50%; border: 1.5px solid rgba(201,169,106,0.4); display: flex; align-items: center; justify-content: center; font-size: 10px; font-weight: 700; color: #fff; flex-shrink: 0; overflow: hidden; background-size: cover; background-position: center; }
+
+        .detail-main { flex: 1; min-width: 0; background: var(--surface); border: 1px solid rgba(201,169,106,0.2); outline: 1px solid rgba(201,169,106,0.06); outline-offset: 4px; border-radius: var(--radius); padding: 18px 20px; }
+        .dm-split { display: flex; gap: 18px; align-items: flex-start; }
+        .dm-left { flex: 1; min-width: 0; }
+        .dm-left .dm-controls { display: flex; flex-direction: column; gap: 6px; margin-bottom: 10px; }
+        .dm-left .dm-control-row { display: flex; align-items: center; gap: 6px; flex-wrap: wrap; }
+        .dm-left .dm-control-label { font-size: 9px; color: var(--text-faint); letter-spacing: 0.12em; text-transform: uppercase; flex-shrink: 0; }
+        .dm-left .dm-chips { display: flex; gap: 4px; flex-wrap: wrap; }
+        .dm-left .dm-chip { padding: 4px 10px; font-size: 9px; letter-spacing: 0.08em; border: 1px solid rgba(201,169,106,0.25); border-radius: 999px; cursor: pointer; color: var(--text-secondary); transition: var(--transition); background: transparent; font-family: var(--font-body); }
+        .dm-left .dm-chip:hover { border-color: var(--gold-mid); color: var(--text-primary); }
+        .dm-left .dm-chip.on { border-color: var(--gold); background: rgba(201,169,106,0.1); color: var(--gold-bright); }
+
+        .radar-svg-wrap { max-width: 380px; margin: 0 auto; }
+        .radar-svg-wrap svg { width: 100%; height: auto; display: block; }
+        .radar-legend { margin-top: 8px; display: flex; flex-direction: column; gap: 4px; max-width: 380px; margin-left: auto; margin-right: auto; }
+        .radar-stat-item { display: flex; align-items: center; gap: 6px; padding: 4px 6px; background: rgba(0,0,0,0.18); border: 1px solid rgba(201,169,106,0.08); border-radius: 4px; font-size: 9px; }
+        .rsi-name { width: 52px; flex-shrink: 0; color: var(--text-secondary); letter-spacing: 0.05em; }
+        .rsi-bar { flex: 1; height: 4px; background: rgba(201,169,106,0.1); border-radius: 2px; overflow: hidden; }
+        .rsi-bar i { display: block; height: 100%; border-radius: 2px; width: 0%; transition: width 0.8s cubic-bezier(0.4, 0, 0.2, 1); }
+        .rsi-value { width: 30px; text-align: right; font-weight: 600; color: var(--text-primary); flex-shrink: 0; font-size: 9px; }
+
+        .edit-slider-row { display: flex; align-items: center; gap: 6px; padding: 5px 6px; background: rgba(0,0,0,0.18); border: 1px solid rgba(201,169,106,0.12); border-radius: 4px; font-size: 9px; }
+        .edit-slider-row input[type="range"] { flex: 1; accent-color: var(--gold); height: 4px; cursor: pointer; }
+        .edit-slider-row .esr-num { width: 45px; padding: 3px 6px; background: rgba(0,0,0,0.4); border: 1px solid rgba(201,169,106,0.3); border-radius: 3px; color: var(--gold-bright); font-size: 10px; text-align: center; outline: none; font-family: var(--font-body); -moz-appearance: textfield; appearance: textfield; }
+        .edit-slider-row .esr-num::-webkit-inner-spin-button, .edit-slider-row .esr-num::-webkit-outer-spin-button { -webkit-appearance: none; margin: 0; }
+        .edit-slider-row .esr-num:focus { border-color: var(--gold); }
+        .edit-slider-row .esr-name { width: 52px; flex-shrink: 0; color: var(--text-secondary); letter-spacing: 0.05em; }
+
+        .dm-right { flex: 1; min-width: 180px; max-width: 210px; display: flex; flex-direction: column; gap: 10px; }
+        .dm-portrait {
+            width: 100%; aspect-ratio: 9 / 16; border-radius: 6px;
+            border: 1px solid rgba(201,169,106,0.35);
+            display: flex; align-items: center; justify-content: center;
+            font-size: 40px; font-weight: 700; color: rgba(255,255,255,0.6);
+            position: relative; overflow: hidden; flex-shrink: 0;
+            cursor: pointer; background-size: cover; background-position: center top;
+        }
+        .dm-portrait .portrait-placeholder { display: flex; flex-direction: column; align-items: center; gap: 4px; color: rgba(255,255,255,0.5); font-size: 9px; letter-spacing: 0.1em; text-transform: uppercase; }
+        .dm-portrait .portrait-hint { position: absolute; bottom: 0; left: 0; right: 0; padding: 4px; font-size: 8px; text-align: center; background: rgba(0,0,0,0.55); color: rgba(255,255,255,0.75); letter-spacing: 0.1em; opacity: 0; transition: opacity 0.3s; }
+        .dm-portrait:hover .portrait-hint { opacity: 1; }
+
+        /* ========== 立绘裁剪 ========== */
+        .crop-stage {
+            position: relative;
+            width: 100%;
+            height: 340px;
+            background: rgba(0,0,0,0.45);
+            border: 1px solid rgba(201,169,106,0.25);
+            border-radius: var(--radius);
+            overflow: hidden;
+            cursor: grab;
+            touch-action: none;
+            user-select: none;
+        }
+        .crop-stage.dragging { cursor: grabbing; }
+        .crop-stage img {
+            position: absolute;
+            left: 0; top: 0;
+            transform-origin: 0 0;
+            user-select: none;
+            -webkit-user-drag: none;
+            pointer-events: none;
+            display: none;
+        }
+        .crop-stage img.ready { display: block; }
+        .crop-stage .crop-overlay {
+            position: absolute;
+            inset: 0;
+            background: radial-gradient(ellipse at center, transparent 0%, transparent 32%, rgba(0,0,0,0.62) 52%);
+            pointer-events: none;
+        }
+        .crop-stage .crop-box {
+            position: absolute;
+            left: 50%; top: 50%;
+            width: 220px; height: 391px; /* 9:16 */
+            transform: translate(-50%, -50%);
+            border: 1px dashed rgba(201,169,106,0.85);
+            pointer-events: none;
+            box-shadow: 0 0 0 1px rgba(0,0,0,0.35);
+        }
+        .crop-stage .crop-box .cb-label {
+            position: absolute;
+            top: -22px; left: 0; right: 0;
+            text-align: center;
+            font-size: 8px;
+            letter-spacing: 0.2em;
+            color: rgba(255,255,255,0.55);
+        }
+        .crop-controls { display: flex; align-items: center; gap: 8px; margin-top: 10px; justify-content: center; flex-wrap: wrap; }
+        .crop-controls .crop-label { font-size: 10px; color: var(--gold-mid); letter-spacing: 0.15em; text-transform: uppercase; }
+        .crop-controls input[type="range"] { flex: 1; max-width: 200px; accent-color: var(--gold); }
+        .crop-tip { text-align: center; font-size: 11px; color: var(--text-faint); margin-top: 8px; }
+        body.light .crop-stage { background: var(--surface-hover); border-color: var(--line); }
+        body.light .crop-stage .crop-box { border-color: var(--gold); }
+        .dm-info { text-align: left; padding: 2px 2px 0; }
+        .dm-name { font-family: var(--font-display); font-size: 20px; font-weight: 700; color: var(--gold-bright); letter-spacing: 0.06em; margin-bottom: 4px; }
+        .dm-identity { font-size: 11px; color: var(--text-secondary); letter-spacing: 0.05em; margin-bottom: 6px; line-height: 1.5; }
+        .dm-tags { display: flex; gap: 4px; flex-wrap: wrap; margin-bottom: 8px; }
+        .dm-tag { padding: 2px 8px; font-size: 8px; letter-spacing: 0.08em; border: 1px solid rgba(201,169,106,0.3); border-radius: 999px; color: var(--text-secondary); }
+        .dm-actions { display: flex; gap: 6px; flex-wrap: wrap; margin-top: 2px; }
+        .dm-theme-row { display: flex; align-items: center; gap: 8px; margin-top: 8px; padding-top: 8px; border-top: 1px solid rgba(201,169,106,0.15); }
+        .dm-theme-label { font-size: 9px; color: var(--text-faint); letter-spacing: 0.1em; text-transform: uppercase; }
+        .dm-theme-colors { display: flex; gap: 5px; }
+        .dtc { width: 20px; height: 20px; border-radius: 50%; cursor: pointer; border: 2px solid transparent; transition: var(--transition); flex-shrink: 0; }
+        .dtc:hover { transform: scale(1.15); }
+        .dtc.selected { border-color: var(--gold-bright); box-shadow: 0 0 8px rgba(201,169,106,0.4); }
+
+        .compare-row { display: flex; align-items: center; gap: 8px; margin-bottom: 8px; flex-wrap: wrap; }
+        .cr-label { font-size: 9px; color: var(--text-faint); letter-spacing: 0.12em; text-transform: uppercase; }
+        .compare-row select { padding: 5px 8px; background: rgba(0,0,0,0.35); border: 1px solid rgba(201,169,106,0.25); border-radius: var(--radius); color: var(--text-primary); font-family: var(--font-body); font-size: 10px; outline: none; cursor: pointer; }
+
+        .dim-manager { display: none; margin-bottom: 10px; padding: 10px 12px; background: rgba(0,0,0,0.3); border: 1px solid rgba(201,169,106,0.3); border-radius: 6px; }
+        .dim-manager.open { display: block; }
+        .dm-section-label { font-size: 9px; color: var(--gold-mid); letter-spacing: 0.15em; text-transform: uppercase; margin-bottom: 6px; }
+        .dm-dim-list { display: flex; flex-direction: column; gap: 4px; margin-bottom: 8px; }
+        .dm-dim-row { display: flex; align-items: center; gap: 8px; padding: 6px 10px; background: rgba(0,0,0,0.25); border: 1px solid rgba(201,169,106,0.15); border-radius: 4px; font-size: 10px; }
+        .dm-dim-row .ddr-name { flex: 1; color: var(--text-primary); cursor: text; user-select: none; padding: 3px 4px; border-radius: 3px; transition: background 0.15s; }
+        .dm-dim-row .ddr-name:hover { background: rgba(201,169,106,0.08); }
+        .dm-dim-row .ddr-count { font-size: 8px; color: var(--text-faint); flex-shrink: 0; }
+        .dm-dim-row .ddr-del { background: none; border: 1px solid rgba(158,59,52,0.5); border-radius: 3px; color: #c46b63; font-size: 8px; padding: 2px 5px; cursor: pointer; flex-shrink: 0; }
+        .dm-dim-row .ddr-del:hover { background: rgba(158,59,52,0.15); }
+        .dm-add-row { display: flex; gap: 6px; margin-bottom: 8px; }
+        .dm-add-row input { flex: 1; padding: 5px 8px; background: rgba(0,0,0,0.35); border: 1px solid rgba(201,169,106,0.25); border-radius: 3px; color: var(--text-primary); font-size: 10px; outline: none; font-family: var(--font-body); }
+        .dm-add-row input:focus { border-color: rgba(201,169,106,0.6); }
+        .dm-axis-list { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 6px; }
+        .dm-axis-chip { display: inline-flex; align-items: center; gap: 6px; padding: 5px 12px; font-size: 9px; border: 1px solid rgba(201,169,106,0.25); border-radius: 999px; color: var(--text-secondary); background: rgba(0,0,0,0.2); }
+        .dm-axis-chip .dac-name { cursor: text; user-select: none; padding: 1px 3px; border-radius: 2px; transition: background 0.15s; }
+        .dm-axis-chip .dac-name:hover { background: rgba(201,169,106,0.1); }
+        .dm-axis-chip .dac-del { background: none; border: none; color: var(--text-faint); cursor: pointer; font-size: 10px; padding: 2px 5px; border-radius: 3px; transition: var(--transition); }
+        .dm-axis-chip .dac-del:hover { color: #c46b63; background: rgba(158,59,52,0.12); }
+
+        .radar-animate { transform-box: view-box; transform-origin: 50% 50%; animation: radarExpand 0.6s cubic-bezier(0.4, 0, 0.2, 1); }
+        @keyframes radarExpand { from { transform: scale(0); opacity: 0; } to { transform: scale(1); opacity: 1; } }
+        .radar-dots-fade { animation: dotsFadeIn 0.4s ease 0.6s backwards; }
+        @keyframes dotsFadeIn { from { opacity: 0; } to { opacity: 1; } }
+        .inline-edit-input { flex: 1; padding: 2px 4px; background: rgba(0,0,0,0.5); border: 1px solid var(--gold); border-radius: 3px; color: var(--text-primary); font-size: 10px; font-family: var(--font-body); outline: none; letter-spacing: 0.04em; min-width: 40px; }
+
+        /* 导入弹窗 */
+        .modal-overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.75); z-index: 50; align-items: flex-start; justify-content: center; padding: 30px 20px; overflow-y: auto; }
+        .modal-overlay.open { display: flex; }
+        .modal { background: var(--surface); border: 1px solid rgba(201,169,106,0.4); border-radius: 4px; padding: 20px; width: 100%; max-width: 520px; position: relative; box-shadow: 0 0 50px rgba(0,0,0,0.8); }
+        .modal-head { display: flex; align-items: center; justify-content: space-between; margin-bottom: 12px; }
+        .modal-title { font-family: var(--font-display); font-size: 18px; font-weight: 700; color: var(--gold-bright); }
+        .modal-close { background: none; border: none; color: var(--text-faint); font-size: 16px; cursor: pointer; }
+        .modal-close:hover { color: var(--text-primary); }
+        .imp-list { max-height: 320px; overflow-y: auto; margin-bottom: 12px; }
+        .imp-item { display: flex; align-items: center; gap: 8px; padding: 6px 8px; border-radius: 4px; font-size: 12px; color: var(--text-secondary); }
+        .imp-item:hover { background: var(--surface-hover); }
+        .imp-item input { accent-color: var(--gold); }
+        .imp-item .imp-dot { width: 18px; height: 18px; border-radius: 50%; flex-shrink: 0; display: flex; align-items: center; justify-content: center; font-size: 9px; color: #fff; }
+        .imp-item .imp-new { font-size: 9px; color: var(--gold-mid); border: 1px solid rgba(201,169,106,0.4); border-radius: 999px; padding: 0 6px; }
+        .imp-item .imp-exists { font-size: 9px; color: var(--text-faint); }
+        .modal-btns { display: flex; gap: 8px; justify-content: flex-end; }
+
+        @media (max-width: 768px) {
+            .detail-layout { flex-direction: column; }
+            .detail-sidebar { width: 100%; flex-direction: row; overflow-x: auto; }
+            .ds-item { flex-shrink: 0; }
+            .dm-split { flex-direction: column; }
+            .dm-right { max-width: none; }
+        }
+        /* ========== 主题滚动条 ========== */
+        ::-webkit-scrollbar { width: 8px; height: 8px; }
+        ::-webkit-scrollbar-track { background: transparent; }
+        ::-webkit-scrollbar-thumb { background: var(--gold-dim); border-radius: 4px; }
+        ::-webkit-scrollbar-thumb:hover { background: var(--gold-mid); }
+        * { scrollbar-width: thin; scrollbar-color: var(--gold-dim) transparent; }
+        /* ========== 亮色主题 ========== */
+        body.light {
+            --bg: #f5f8fc; --bg-elevated: #ffffff; --surface: #ffffff; --surface-hover: #f0f4fa;
+            --gold: #1e40af; --gold-bright: #2563eb; --gold-mid: #3b82f6; --gold-dim: #93b4f5;
+            --red: #c0392b; --purple: #5a6fa8; --text-primary: #1a2538; --text-secondary: #4a5870; --text-faint: #8a95a8;
+            --radius: 6px;
+            --grid-line: rgba(30,64,175,0.38);
+            --axis-line: rgba(30,64,175,0.5);
+        }
+        body.light { background-image: radial-gradient(circle at 50% 0%, rgba(30,64,175,0.06) 0%, transparent 45%), radial-gradient(circle at 50% 110%, rgba(37,99,235,0.04) 0%, transparent 40%); }
+        body.light .sidebar { background: var(--bg-elevated); border-image: linear-gradient(180deg, transparent 0%, rgba(30,64,175,0.5) 20%, rgba(30,64,175,0.5) 80%, transparent 100%) 1; }
+        body.light .char-card, body.light .detail-main, body.light .modal, body.light .dm-dim-row, body.light .dm-axis-chip, body.light .ds-item, body.light .radar-stat-item, body.light .edit-slider-row { background: var(--surface); border-color: rgba(30,64,175,0.2); }
+        body.light .cc-avatar, body.light .ds-avatar { border-color: rgba(30,64,175,0.4); }
+        body.light .mnav { background: var(--bg-elevated); border-color: rgba(30,64,175,0.2); }
+        body.light .btn, body.light .dm-chip { border-color: rgba(30,64,175,0.25); color: var(--gold); }
+        body.light .btn:hover, body.light .dm-chip:hover { background: var(--surface-hover); border-color: var(--gold); }
+        body.light .topbar::after { background: linear-gradient(90deg, var(--gold) 0%, rgba(30,64,175,0.5) 20%, rgba(30,64,175,0.15) 50%, rgba(30,64,175,0.5) 80%, var(--gold) 100%); }
+        body.light .dm-portrait { border-color: rgba(30,64,175,0.35); }
+        body.light .modal-close { color: var(--text-faint); }
+        body.light .dm-add-row input, body.light .compare-row select { background: var(--bg); border-color: rgba(30,64,175,0.2); color: var(--text-primary); }
+        body.light .mnav-btn { border-color: rgba(30,64,175,0.25); color: var(--gold-mid); }
+        body.light .imp-item { color: var(--text-secondary); }
+        body.light .imp-item:hover { background: var(--surface-hover); }
+    </style>
+</head>
+<body>
+
+    <script src="../../forum/standalone.js"></script>
+
+    <aside class="sidebar">
+        <div class="sidebar-brand">
+            <h1>沙漠之歌</h1>
+            <span>The Poetry of Desert</span>
+            <div class="sb-brand-v">沙漠之歌·导航栏</div>
+            <button class="sb-toggle" onclick="toggleSidebar()" title="折叠/展开侧边栏">❮</button>
+        </div>
+        <div class="sidebar-section">导航</div>
+        <ul class="sidebar-nav">
+            <li><a href="../开始页.html"><span class="nav-num">I</span>欢迎</a></li>
+            <li>
+                <a href="#" class="nav-toggle open" onclick="toggleNav(event, this)"><span class="nav-num">II</span>功能模块<span class="nav-arrow">▸</span></a>
+                <ul class="nav-sub open">
+                    <li><a href="酒馆.html"><span class="nav-dot"></span>酒馆</a></li>
+                    <li><a href="日历.html"><span class="nav-dot"></span>日历</a></li>
+                    <li><a href="书架.html"><span class="nav-dot"></span>书架</a></li>
+                    <li><a href="魔法解析器.html"><span class="nav-dot"></span>魔法解析器</a></li>
+                    <li><a href="角色能力图鉴.html" class="active"><span class="nav-dot"></span>角色能力图鉴</a></li>
+                </ul>
+            </li>
+            <li>
+                <a href="#" class="nav-toggle" onclick="toggleNav(event, this)"><span class="nav-num">III</span>设定资料<span class="nav-arrow">▸</span></a>
+                <ul class="nav-sub">
+                    <li><a href="../设定资料/势力与阵营.html"><span class="nav-dot"></span>势力与阵营</a></li>
+                    <li><a href="../设定资料/历史事件.html"><span class="nav-dot"></span>历史事件</a></li>
+                    <li><a href="../设定资料/地理总览.html"><span class="nav-dot"></span>地理总览</a></li>
+                    <li><a href="../设定资料/术语库.html"><span class="nav-dot"></span>术语库</a></li>
+                    <li><a href="../设定资料/角色档案库.html"><span class="nav-dot"></span>角色档案库</a></li>
+                </ul>
+            </li>
+        </ul>
+        <div class="sidebar-footer">v 0.2.0 · 角色能力图鉴</div>
+        <div class="theme-toggle" onclick="toggleTheme()" title="切换亮色 / 暗色主题"><span class="tt-icon">🌙</span><span class="tt-text">暗色</span></div>
+    </aside>
+
+    <main class="main">
+        <div class="topbar">
+            <div style="display:flex;align-items:center;gap:10px;min-width:0;">
+                <label for="mnavToggle" class="mnav-btn" title="导航">☰</label>
+                <div class="breadcrumb">
+                    <a href="../开始页.html">工作台</a> <span class="separator">❖</span> 功能模块 <span class="separator">❖</span> <span class="current">角色能力图鉴</span>
+                </div>
+            </div>
+            <div class="topbar-status">
+                <span class="status-dot"></span>
+                <span>系统正常</span>
+                <span style="color:var(--gold-dim);">|</span>
+                <span>星陨 2000 a.s.</span>
+                <span class="data-tools"></span>
+            </div>
+        </div>
+
+        <div class="page">
+            <div class="view active" id="viewHome">
+                <div class="header">
+                    <h1>角色能力图鉴</h1>
+                    <div class="sub">Character Ability Chart · 雷达图 · 立绘 · 对比</div>
+                </div>
+                <div class="toolbar">
+                    <button class="btn" onclick="openImportModal()">📥 导入角色（角色档案库）</button>
+                    <button class="btn" onclick="syncFromArchive()">🔄 自动同步</button>
+                    <button class="btn" onclick="addManualChar()">＋ 手动新增</button>
+                    <span style="font-size:10px;color:var(--text-faint);">点击卡片查看能力雷达 · 点击立绘可上传</span>
+                </div>
+                <div class="filter-bar">
+                    <input id="q" class="search-input" placeholder="搜索姓名 / 身份 / 元素 / 势力…">
+                    <button class="btn btn-sm" onclick="clearFilter()">清除</button>
+                </div>
+                <div class="chips" id="factionChips"></div>
+                <div class="chips" id="elemChips"></div>
+                <div class="char-grid" id="charGrid"></div>
+            </div>
+
+            <div class="view" id="viewDetail">
+                <div class="breadcrumb" style="margin-bottom:14px;">
+                    <a href="#" onclick="goHome()">角色能力图鉴</a>
+                    <span class="separator">›</span>
+                    <span class="current" id="crumbName">—</span>
+                </div>
+                <div class="detail-layout">
+                    <div class="detail-sidebar">
+                        <div class="ds-title">快速切换</div>
+                        <div id="dsList"></div>
+                    </div>
+                    <div class="detail-main">
+                        <div class="dm-split">
+                            <div class="dm-left">
+                                <div class="dm-controls">
+                                    <div class="dm-control-row">
+                                        <span class="dm-control-label">维度</span>
+                                        <div class="dm-chips" id="dimChips"></div>
+                                    </div>
+                                    <div class="dm-control-row">
+                                        <span class="dm-control-label">数值</span>
+                                        <div class="dm-chips" id="rangeChips"></div>
+                                    </div>
+                                    <div class="dim-manager" id="dimManager">
+                                        <div class="dm-section-label">维度管理（双击名称可重命名）</div>
+                                        <div class="dm-dim-list" id="dimList"></div>
+                                        <div class="dm-add-row">
+                                            <input id="newDimName" placeholder="新维度名称...">
+                                            <button class="btn btn-sm" onclick="addDimension()">＋ 添加维度</button>
+                                        </div>
+                                        <div class="dm-section-label" style="margin-top:8px;">轴管理（双击名称可重命名）</div>
+                                        <div class="dm-axis-list" id="axisList"></div>
+                                        <div class="dm-add-row">
+                                            <input id="newAxisName" placeholder="新轴名称...">
+                                            <button class="btn btn-sm" onclick="addAxis()">＋ 添加轴</button>
+                                        </div>
+                                    </div>
+                                    <div class="compare-row" id="compareRow" style="display:none;">
+                                        <span class="cr-label">对比</span>
+                                        <select id="compareSelect" onchange="renderRadar()"></select>
+                                        <button class="btn btn-sm" onclick="toggleCompare()">✕ 取消</button>
+                                    </div>
+                                </div>
+                                <div class="radar-svg-wrap" id="radarSvgWrap"></div>
+                                <div class="radar-legend" id="radarLegend"></div>
+                                <div class="edit-hint" id="editHint" style="display:none;font-size:9px;color:var(--text-faint);letter-spacing:0.05em;margin-top:6px;text-align:center;">⚙️ 编辑模式：拖动滑块或输入数字调整数值</div>
+                            </div>
+                            <div class="dm-right">
+                                <div class="dm-portrait" id="dmPortrait" onclick="openPortraitUpload()">
+                                    <div class="portrait-placeholder" id="portraitPlaceholder"><span style="font-size:32px;">🖼️</span><span>点击上传立绘</span></div>
+                                    <div class="portrait-hint">点击上传立绘</div>
+                                </div>
+                                <div class="dm-info">
+                                    <div class="dm-name" id="dmName">—</div>
+                                    <div class="dm-identity" id="dmIdentity">—</div>
+                                    <div class="dm-tags" id="dmTags"></div>
+                                    <div class="dm-actions">
+                                        <a class="btn btn-sm" id="dmArchiveLink" href="#" onclick="confirmGoArchive(event)">📋 档案</a>
+                                        <button class="btn btn-sm" onclick="toggleCompare()">⚔️ 对比</button>
+                                        <button class="btn btn-sm" id="editBtn" onclick="toggleEditMode()">✏️ 编辑</button>
+                                        <button class="btn btn-sm btn-danger" onclick="deleteChar()">🗑️</button>
+                                    </div>
+                                    <div class="dm-theme-row" id="themeRow" style="display:none;">
+                                        <span class="dm-theme-label">主题色</span>
+                                        <div class="dm-theme-colors" id="themeColors"></div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <input type="checkbox" id="mnavToggle" class="mnav-toggle" hidden>
+    <label for="mnavToggle" class="mnav-backdrop"></label>
+    <div class="mnav">
+        <label for="mnavToggle" class="mnav-close">✕</label>
+        <div class="mnav-brand">沙漠之歌</div>
+        <a href="../开始页.html"><span class="mnav-dot"></span>欢迎</a>
+        <div class="mnav-sec">功能模块</div>
+        <a href="酒馆.html"><span class="mnav-dot"></span>酒馆</a>
+        <a href="日历.html"><span class="mnav-dot"></span>日历</a>
+        <a href="书架.html"><span class="mnav-dot"></span>书架</a>
+        <a href="魔法解析器.html"><span class="mnav-dot"></span>魔法解析器</a>
+        <a href="角色能力图鉴.html" class="active"><span class="mnav-dot"></span>角色能力图鉴</a>
+        <div class="mnav-sec">设定资料</div>
+        <a href="../设定资料/势力与阵营.html"><span class="mnav-dot"></span>势力与阵营</a>
+        <a href="../设定资料/历史事件.html"><span class="mnav-dot"></span>历史事件</a>
+        <a href="../设定资料/地理总览.html"><span class="mnav-dot"></span>地理总览</a>
+        <a href="../设定资料/术语库.html"><span class="mnav-dot"></span>术语库</a>
+        <a href="../设定资料/角色档案库.html"><span class="mnav-dot"></span>角色档案库</a>
+    </div>
+
+    <!-- 导入角色弹窗 -->
+    <div class="modal-overlay" id="importModal" onclick="if(event.target===this)closeImportModal()">
+        <div class="modal">
+            <div class="modal-head">
+                <div class="modal-title">从角色档案库导入</div>
+                <button class="modal-close" onclick="closeImportModal()">✕</button>
+            </div>
+            <div style="font-size:11px;color:var(--text-faint);margin-bottom:10px;">勾选要导入的角色（档案库中已收录的角色自动标记），导入后可编辑维度数值。</div>
+            <div class="imp-list" id="impList"></div>
+            <div class="modal-btns">
+                <button class="btn btn-sm" onclick="selectAllImport(true)">全选</button>
+                <button class="btn btn-sm" onclick="selectAllImport(false)">全不选</button>
+                <button class="btn btn-primary btn-sm" onclick="doImport()">导入选中</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- 档案跳转确认弹窗 -->
+    <div class="modal-overlay" id="archiveConfirmModal" onclick="if(event.target===this)closeArchiveConfirm()">
+        <div class="modal" style="max-width:380px;">
+            <div class="modal-head">
+                <div class="modal-title">前往角色档案库</div>
+                <button class="modal-close" onclick="closeArchiveConfirm()">✕</button>
+            </div>
+            <div style="font-size:13px;color:var(--text-secondary);line-height:1.7;margin-bottom:16px;">是否前往角色档案库的详细界面？</div>
+            <div class="modal-btns">
+                <button class="btn btn-sm" onclick="closeArchiveConfirm()">取消</button>
+                <button class="btn btn-primary btn-sm" onclick="goArchiveNow()">前往</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- 立绘裁剪弹窗 -->
+    <div class="modal-overlay" id="cropModal" onclick="if(event.target===this)closeCrop()">
+        <div class="modal" style="max-width:520px;">
+            <div class="modal-head">
+                <div class="modal-title">裁剪立绘（9:16）</div>
+                <button class="modal-close" onclick="closeCrop()">✕</button>
+            </div>
+            <div class="crop-stage" id="cropStage">
+                <img id="cropImg" draggable="false">
+                <div class="crop-overlay"></div>
+                <div class="crop-box"><span class="cb-label">立绘区域</span></div>
+            </div>
+            <div class="crop-controls">
+                <span class="crop-label">缩放</span>
+                <button class="btn btn-sm" onclick="zoomCrop(-0.15)">−</button>
+                <input type="range" id="cropSlider" min="0.2" max="4" step="0.05" value="1" oninput="setCropScale(parseFloat(this.value))">
+                <button class="btn btn-sm" onclick="zoomCrop(0.15)">＋</button>
+                <button class="btn btn-sm" onclick="resetCrop()">重置</button>
+            </div>
+            <div class="crop-tip">拖动图片调整位置 · 滚轮/滑块缩放 · 框内为最终立绘</div>
+            <div class="modal-btns">
+                <button class="btn btn-sm" onclick="closeCrop()">取消</button>
+                <button class="btn btn-primary btn-sm" onclick="savePortraitCrop()">保存立绘</button>
+            </div>
+            <div id="cropTip" style="text-align:center;font-size:11px;color:var(--text-faint);margin-top:8px;"></div>
+        </div>
+    </div>
+
+    <input type="file" id="portraitInput" accept="image/*" style="display:none;">
+
+<script>
+function toggleNav(event, el) { if (event) event.preventDefault(); el.classList.toggle('open'); const sub = el.nextElementSibling; if (sub) sub.classList.toggle('open'); }
+function toggleSidebar() {
+    const sb = document.querySelector('.sidebar');
+    const collapsed = sb.classList.toggle('collapsed');
+    const btn = document.querySelector('.sb-toggle');
+    if (btn) btn.textContent = collapsed ? '❯' : '❮';
+    try { localStorage.setItem('smq_sidebar_collapsed', collapsed ? '1' : '0'); } catch (e) {}
+}
+(function initSidebar() {
+    const sb = document.querySelector('.sidebar'); const btn = document.querySelector('.sb-toggle');
+    if (!sb || !btn) return;
+    try { if (localStorage.getItem('smq_sidebar_collapsed') === '1') { sb.classList.add('collapsed'); btn.textContent = '❯'; } } catch (e) {}
+})();
+function applyTheme(light) {
+    document.body.classList.toggle('light', light);
+    document.querySelectorAll('.theme-toggle').forEach(b => {
+        const ic = b.querySelector('.tt-icon'), tx = b.querySelector('.tt-text');
+        if (ic) ic.textContent = light ? '☀' : '🌙';
+        if (tx) tx.textContent = light ? '亮色' : '暗色';
+    });
+}
+function toggleTheme() { const light = !document.body.classList.contains('light'); applyTheme(light); try { localStorage.setItem('smq_theme', light ? 'light' : 'dark'); } catch (e) {} }
+(function initTheme() {
+    function systemLight() { return !!(window.matchMedia && matchMedia('(prefers-color-scheme: light)').matches); }
+    let saved = null; try { saved = localStorage.getItem('smq_theme'); } catch (e) {}
+    applyTheme(saved === 'light' || (saved !== 'dark' && systemLight()));
+    if (window.matchMedia && matchMedia.addEventListener) {
+        matchMedia('(prefers-color-scheme: light)').addEventListener('change', (e) => { let s = null; try { s = localStorage.getItem('smq_theme'); } catch (err) {} if (s !== 'light' && s !== 'dark') applyTheme(e.matches); });
+    }
+})();
+
+// ========== 数据（forum/角色能力图鉴.data.json） ==========
+const DATA = "forum/角色能力图鉴.data.json";
+const ARCHIVE = "forum/角色档案库.data.json";
+const THEME_COLORS = [
+    { name: '红', color: '#c46b63' }, { name: '蓝', color: '#5a8aa8' },
+    { name: '黄', color: '#d4a050' }, { name: '绿', color: '#5a8f6a' },
+    { name: '白', color: '#e8d5a4' }, { name: '紫', color: '#8a6fa8' }
+];
+const ELEM_COLOR = { "土": "#8a6d3b", "火": "#c14b3a", "水": "#3f7c9c", "风": "#5f8f7c", "天": "#a8873a", "全": "#6b4a7a" };
+
+function defaultData() {
+    return {
+        dimensions: [
+            { id: 'combat', label: '战斗', axes: ['攻击力', '防御力', '速度', '魔法强度', '体能', '技巧'] },
+            { id: 'personality', label: '性格', axes: ['勇气', '智慧', '共情', '冷静', '决断', '魅力'] },
+            { id: 'element', label: '元素', axes: ['火', '水', '风', '土', '天'] }
+        ],
+        characters: []
+    };
+}
+let data = defaultData();
+let archiveData = null;
+
+function esc(s) { return String(s ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
+function getDim(dimId) { return data.dimensions.find(d => d.id === dimId); }
+function getChar(charId) { return data.characters.find(x => x.id === charId); }
+// 头像实时同步角色档案库（档案库 avatars 优先，其次角色数据内快照）
+function getAv(id) {
+    if (archiveData && archiveData.avatars && archiveData.avatars[id]) return archiveData.avatars[id];
+    const c = getChar(id);
+    return c ? c.avatar : null;
+}
+function groupName(gid) {
+    const map = { alliance: '三国联盟', church: '创世神教', guild: '魔法师协会', meher: '梅赫尔', forest: '森之城', gone: '「逝者」', academy: '无所属势力' };
+    return map[gid] || gid || '未知势力';
+}
+// 立绘/头像路径转页面 URL（页面位于 工作台/功能模块/）
+function assetUrl(v) {
+    if (!v) return null;
+    if (/^(data:|https?:|blob:)/.test(v)) return v;
+    if (v.startsWith('avatars/') || v.startsWith('立绘/') || v.startsWith('portraits/')) return '../../forum/' + v;
+    if (v.startsWith('forum/')) return '../../' + v;
+    return v;
+}
+
+// ========== 加载 / 保存 ==========
+async function load() {
+    try { const j = await fetch('../../forum/角色能力图鉴.data.json').then(r => r.json()); data = j || defaultData(); } catch { data = defaultData(); }
+    if (!data.dimensions) data.dimensions = defaultData().dimensions;
+    if (!data.characters) data.characters = [];
+    try { const lc = SMQ.getLocal(DATA, 'characters'); if (lc && lc.length) data.characters = lc; } catch (e) {}
+    try { const ld = SMQ.getLocal(DATA, 'dimensions'); if (ld && ld.length) data.dimensions = ld; } catch (e) {}
+    data.characters.forEach(c => { if (!c.themeColor) c.themeColor = c.avatarColor || '#c46b63'; if (!c.stats) c.stats = {}; });
+    await syncFromArchive(false);
+    currentCharId = data.characters.length ? data.characters[0].id : null;
+    renderChips(); renderHome();
+    if (data.characters.length) { openDetail(currentCharId); goHome(); }
+}
+async function saveData() {
+    try { const res = await SMQ.save(DATA, 'dimensions', data.dimensions); const res2 = await SMQ.save(DATA, 'characters', data.characters); return res; } catch (e) { return null; }
+}
+
+// ========== 从角色档案库同步（自动补缺失角色） ==========
+async function fetchArchive() {
+    try { archiveData = await fetch('../../forum/角色档案库.data.json').then(r => r.json()); } catch { archiveData = null; }
+    // 应用角色档案库的本地编辑（网页端编辑的头像等），保证头像实时同步
+    if (archiveData) {
+        try { const la = SMQ.getLocal(ARCHIVE, 'avatars'); if (la && typeof la === 'object') archiveData.avatars = la; } catch (e) {}
+        try { const lc = SMQ.getLocal(ARCHIVE, 'chars'); if (lc && lc.length) archiveData.chars = lc; } catch (e) {}
+    }
+    return archiveData;
+}
+function archiveChars() { return (archiveData && archiveData.chars) ? archiveData.chars : []; }
+function inChart(id) { return data.characters.some(c => c.id === id); }
+
+async function syncFromArchive(notify) {
+    await fetchArchive();
+    const ac = archiveChars();
+    let added = 0;
+    ac.forEach(ch => {
+        if (inChart(ch.id)) return;
+        data.characters.push(charFromArchive(ch));
+        added++;
+    });
+    if (added) await saveData();
+    if (notify) SMQ.toast(added ? '已自动同步 ' + added + ' 个新角色' : '角色档案库无新增角色');
+    renderChips(); renderHome();
+}
+function charFromArchive(ch) {
+    const color = ELEM_COLOR[(ch.element || '').split(/[、,，]/)[0]] || '#8d7f6e';
+    return {
+        id: ch.id, name: ch.name, identity: ch.identity || '', element: ch.element || '—',
+        faction: groupName(ch.group), avatarColor: color, themeColor: color,
+        avatar: (archiveData && archiveData.avatars && archiveData.avatars[ch.id]) ? archiveData.avatars[ch.id] : null,
+        portrait: null, stats: {}
+    };
+}
+
+// ========== 导入弹窗 ==========
+async function openImportModal() {
+    await fetchArchive();
+    const ac = archiveChars();
+    if (!ac.length) { SMQ.toast('角色档案库加载失败'); return; }
+    document.getElementById('impList').innerHTML = ac.map(ch => {
+        const exists = inChart(ch.id);
+        const color = ELEM_COLOR[(ch.element || '').split(/[、,，]/)[0]] || '#8d7f6e';
+        return `<label class="imp-item">
+            <input type="checkbox" value="${ch.id}" ${exists ? 'checked disabled' : ''}>
+            <span class="imp-dot" style="background:${color};">${esc(ch.name.charAt(0))}</span>
+            <span>${esc(ch.name)}</span>
+            <span style="flex:1;"></span>
+            ${exists ? '<span class="imp-exists">已导入</span>' : '<span class="imp-new">新</span>'}
+        </label>`;
+    }).join('');
+    document.getElementById('importModal').classList.add('open');
+}
+function closeImportModal() { document.getElementById('importModal').classList.remove('open'); }
+function selectAllImport(on) { document.querySelectorAll('#impList input:not(:disabled)').forEach(i => { i.checked = on; }); }
+async function doImport() {
+    const ids = [...document.querySelectorAll('#impList input:checked')].map(i => i.value);
+    let added = 0;
+    ids.forEach(id => { if (!inChart(id)) { const ch = archiveChars().find(x => x.id === id); if (ch) { data.characters.push(charFromArchive(ch)); added++; } } });
+    if (added) { await saveData(); renderChips(); renderHome(); SMQ.toast('已导入 ' + added + ' 个角色'); } else { SMQ.toast('未导入新角色'); }
+    closeImportModal();
+}
+
+// ========== 手动新增 / 删除 ==========
+function addManualChar() {
+    const name = prompt('角色名称：'); if (!name) return;
+    data.characters.push({ id: 'ch' + Date.now(), name, identity: '手动新增', element: '—', faction: '未知势力', avatarColor: '#8d7f6e', themeColor: '#8d7f6e', portrait: null, stats: {} });
+    saveData(); renderChips(); renderHome();
+}
+function deleteChar() {
+    if (!confirm('确定删除该角色？（仅从能力图鉴移除，不影响角色档案库）')) return;
+    data.characters = data.characters.filter(c => c.id !== currentCharId);
+    saveData(); goHome(); renderChips(); renderHome();
+}
+
+// ========== 主页（搜索 + 势力/元素分类，参考角色档案库） ==========
+let searchQ = "", factionFilter = "", elemFilter = "";
+const ELEM_CHIPS = ['火', '水', '风', '土', '天', '全'];
+
+function matchesElem(el, e) {
+    const s = el || '';
+    if (e === '全') return s.includes('全');
+    if (s.includes('全')) return true; // 全元素角色匹配任意元素分类
+    return s.includes(e);
+}
+function filteredChars() {
+    const q = searchQ.trim().toLowerCase();
+    return data.characters.filter(c => {
+        if (factionFilter && c.faction !== factionFilter) return false;
+        if (elemFilter && !matchesElem(c.element, elemFilter)) return false;
+        if (q && ![c.name, c.identity, c.element, c.faction].join(' ').toLowerCase().includes(q)) return false;
+        return true;
+    });
+}
+function renderChips() {
+    const factions = [...new Set(data.characters.map(c => c.faction).filter(Boolean))].sort();
+    document.getElementById('factionChips').innerHTML =
+        '<span class="chip' + (!factionFilter ? ' on' : '') + '" onclick="setFaction(\'\')">全部势力</span>' +
+        factions.map(f => `<span class="chip${factionFilter === f ? ' on' : ''}" onclick="setFaction('${esc(f)}')">${esc(f)}</span>`).join('');
+    document.getElementById('elemChips').innerHTML =
+        '<span class="chip' + (!elemFilter ? ' on' : '') + '" onclick="setElem(\'\')">全部元素</span>' +
+        ELEM_CHIPS.map(e => `<span class="chip${elemFilter === e ? ' on' : ''}" onclick="setElem('${e}')">${e}</span>`).join('');
+}
+function setFaction(f) { factionFilter = f; renderChips(); renderHome(); }
+function setElem(e) { elemFilter = e; renderChips(); renderHome(); }
+function clearFilter() { searchQ = ""; factionFilter = ""; elemFilter = ""; const qi = document.getElementById('q'); if (qi) qi.value = ''; renderChips(); renderHome(); }
+
+function renderHome() {
+    const list = filteredChars();
+    document.getElementById('charGrid').innerHTML = list.length
+        ? list.map(c => {
+            // 圆形头像实时同步角色档案库（档案库换头像后这里跟着变）
+            const url = assetUrl(getAv(c.id));
+            const style = url ? `background-image:url('${url}');background-size:cover;background-position:center;` : `background:${c.avatarColor};`;
+            const hasStats = data.dimensions.some(d => d.axes.some(a => (c.stats[d.id] || {})[a]));
+            return `<div class="char-card" onclick="openDetail('${c.id}')">
+                <div class="cc-avatar" style="${style}">${url ? '' : esc(c.name.charAt(0))}</div>
+                <div class="cc-name">${esc(c.name)}</div>
+                <div class="cc-identity">${esc(c.identity || '—')}</div>
+                <div class="cc-meta">
+                    <span class="cc-tag">${esc(c.element)}</span>
+                    <span class="cc-tag">${esc(c.faction)}</span>
+                </div>
+                ${hasStats ? '' : '<div class="cc-empty">维度未填写</div>'}
+            </div>`;
+        }).join('')
+        : (data.characters.length
+            ? '<div style="color:var(--text-faint);text-align:center;padding:40px;">没有符合条件的角色</div>'
+            : '<div style="color:var(--text-faint);text-align:center;padding:40px;">图鉴为空——点「📥 导入角色」从角色档案库导入，或「🔄 自动同步」一键带入全部角色</div>');
+}
+function openDetail(id) {
+    currentCharId = id; compareMode = false; compareId = null; editMode = false; editBuffer = null;
+    document.getElementById('viewHome').classList.remove('active');
+    document.getElementById('viewDetail').classList.add('active');
+    renderDetail();
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+function goHome() {
+    document.getElementById('viewDetail').classList.remove('active');
+    document.getElementById('viewHome').classList.add('active');
+    editMode = false; editBuffer = null;
+    document.getElementById('dimManager').classList.remove('open');
+    renderHome();
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+
+// ========== 详情渲染 ==========
+let currentCharId = null;
+let currentDimId = 'combat';
+let currentRange = 'numeric';
+let compareMode = false;
+let compareId = null;
+let editMode = false;
+let editBuffer = null;
+let svgFrameId = null;
+
+function renderDetail() {
+    const c = getChar(currentCharId); if (!c) return;
+    const dim = getDim(currentDimId); if (!dim) return;
+    document.getElementById('crumbName').textContent = c.name;
+    document.getElementById('dmName').textContent = c.name;
+    document.getElementById('dmIdentity').textContent = c.identity || '—';
+    document.getElementById('dmTags').innerHTML = `<span class="dm-tag">${esc(c.element)} 元素</span><span class="dm-tag">${esc(c.faction)}</span>`;
+    // 立绘（本地缓存优先，其次路径引用文件）
+    const pWrap = document.getElementById('dmPortrait');
+    const pCached = getPortraitCache(c.id);
+    const url = pCached || assetUrl(c.portrait);
+    if (url) { pWrap.style.backgroundImage = `url('${url}')`; document.getElementById('portraitPlaceholder').style.display = 'none'; }
+    else { pWrap.style.backgroundImage = ''; document.getElementById('portraitPlaceholder').style.display = 'flex'; }
+    document.getElementById('editBtn').textContent = editMode ? '💾 保存' : '✏️ 编辑';
+    document.getElementById('editBtn').classList.toggle('btn-on', editMode);
+    document.getElementById('editHint').style.display = editMode ? 'block' : 'none';
+    document.getElementById('dimManager').classList.toggle('open', editMode);
+    document.getElementById('themeRow').style.display = editMode ? 'flex' : 'none';
+    document.getElementById('dsList').innerHTML = data.characters.map(ch => {
+        const avUrl = assetUrl(getAv(ch.id));
+        return `<div class="ds-item ${ch.id === currentCharId ? 'active' : ''}" onclick="openDetail('${ch.id}')">
+            <div class="ds-avatar" style="background:${ch.avatarColor};${avUrl ? `background-image:url('${avUrl}');background-size:cover;background-position:center;` : ''}">${avUrl ? '' : esc(ch.name.charAt(0))}</div>
+            ${esc(ch.name)}
+        </div>`;
+    }).join('');
+    document.getElementById('dimChips').innerHTML = data.dimensions.map(d => `<button class="dm-chip ${d.id === currentDimId ? 'on' : ''}" onclick="switchDim('${d.id}')">${esc(d.label)}</button>`).join('');
+    document.getElementById('rangeChips').innerHTML = Object.entries({ numeric: '0-100', grade: 'S-E' }).map(([k, l]) => `<button class="dm-chip ${k === currentRange ? 'on' : ''}" onclick="switchRange('${k}')">${l}</button>`).join('');
+    document.getElementById('themeColors').innerHTML = THEME_COLORS.map(tc => `<span class="dtc ${tc.color === c.themeColor ? 'selected' : ''}" style="background:${tc.color};" title="${tc.name}" onclick="setThemeColor('${tc.color}')"></span>`).join('');
+    const cs = document.getElementById('compareSelect');
+    cs.innerHTML = '<option value="">— 选择角色 —</option>' + data.characters.filter(ch => ch.id !== currentCharId).map(ch => `<option value="${ch.id}" ${ch.id === compareId ? 'selected' : ''}>${esc(ch.name)}</option>`).join('');
+    cs.onchange = function () { compareId = this.value || null; renderRadar(); };
+    document.getElementById('compareRow').style.display = compareMode ? 'flex' : 'none';
+    renderDimManager();
+    renderRadar();
+}
+function switchDim(id) { currentDimId = id; renderDetail(); }
+function switchRange(key) { currentRange = key; renderDetail(); }
+function toggleCompare() {
+    compareMode = !compareMode;
+    if (compareMode) { const others = data.characters.filter(c => c.id !== currentCharId); compareId = others.length ? others[0].id : null; } else { compareId = null; }
+    renderDetail();
+}
+function setThemeColor(color) { const c = getChar(currentCharId); if (!c) return; c.themeColor = color; saveData(); renderDetail(); }
+
+// ========== 维度管理 ==========
+function renderDimManager() {
+    document.getElementById('dimList').innerHTML = data.dimensions.map(d => `
+        <div class="dm-dim-row">
+            <span class="ddr-name" data-dim-id="${d.id}" ondblclick="startInlineDimEdit('${d.id}', this)" title="双击重命名">${esc(d.label)}</span>
+            <span class="ddr-count">${d.axes.length} 项</span>
+            ${data.dimensions.length > 1 ? `<button class="ddr-del" onclick="deleteDimension('${d.id}')">删除</button>` : ''}
+        </div>`).join('');
+    const dim = getDim(currentDimId);
+    document.getElementById('axisList').innerHTML = dim ? dim.axes.map((a, i) => `
+        <span class="dm-axis-chip"><span class="dac-name" data-axis-index="${i}" ondblclick="startInlineAxisEdit(${i}, this)" title="双击重命名">${esc(a)}</span><button class="dac-del" onclick="deleteAxis(${i})">×</button></span>`).join('') : '';
+}
+function startInlineDimEdit(dimId, el) {
+    const dim = getDim(dimId); if (!dim) return;
+    const input = document.createElement('input'); input.type = 'text'; input.className = 'inline-edit-input'; input.value = dim.label;
+    el.innerHTML = ''; el.appendChild(input); input.focus(); input.select();
+    let done = false;
+    function finish(save) { if (done) return; done = true; if (save && input.value.trim() && input.value.trim() !== dim.label) { const t = input.value.trim(); if (data.dimensions.some(d => d.label === t && d.id !== dimId)) { alert('已存在同名维度'); renderDetail(); return; } dim.label = t; saveData(); } renderDetail(); }
+    input.addEventListener('keydown', e => { if (e.key === 'Enter') { e.preventDefault(); finish(true); } if (e.key === 'Escape') { e.preventDefault(); finish(false); } });
+    input.addEventListener('blur', () => finish(true));
+}
+function startInlineAxisEdit(index, el) {
+    const dim = getDim(currentDimId); if (!dim) return;
+    const oldName = dim.axes[index];
+    const input = document.createElement('input'); input.type = 'text'; input.className = 'inline-edit-input'; input.value = oldName;
+    el.innerHTML = ''; el.appendChild(input); input.focus(); input.select();
+    let done = false;
+    function finish(save) { if (done) return; done = true; if (save && input.value.trim() && input.value.trim() !== oldName) { const t = input.value.trim(); if (dim.axes.includes(t)) { alert('该轴已存在'); renderDetail(); return; } data.characters.forEach(c => { if (c.stats[currentDimId] && c.stats[currentDimId][oldName] !== undefined) { c.stats[currentDimId][t] = c.stats[currentDimId][oldName]; delete c.stats[currentDimId][oldName]; } }); dim.axes[index] = t; saveData(); } renderDetail(); }
+    input.addEventListener('keydown', e => { if (e.key === 'Enter') { e.preventDefault(); finish(true); } if (e.key === 'Escape') { e.preventDefault(); finish(false); } });
+    input.addEventListener('blur', () => finish(true));
+}
+function addDimension() {
+    const ni = document.getElementById('newDimName'); const name = ni.value.trim(); if (!name) return;
+    if (data.dimensions.some(d => d.label === name)) { alert('已存在同名维度'); return; }
+    const id = 'dim_' + Date.now(); data.dimensions.push({ id, label: name, axes: [] });
+    data.characters.forEach(c => { c.stats[id] = {}; });
+    currentDimId = id; ni.value = ''; saveData(); renderDetail();
+}
+function deleteDimension(dimId) {
+    if (data.dimensions.length <= 1) { alert('至少保留一个维度'); return; }
+    if (!confirm('删除该维度？所有角色的该维度数据将同步删除。')) return;
+    data.dimensions = data.dimensions.filter(d => d.id !== dimId);
+    data.characters.forEach(c => { delete c.stats[dimId]; });
+    if (currentDimId === dimId) currentDimId = data.dimensions[0].id;
+    saveData(); renderDetail();
+}
+function addAxis() {
+    const dim = getDim(currentDimId); if (!dim) return;
+    const ni = document.getElementById('newAxisName'); const name = ni.value.trim(); if (!name) return;
+    if (dim.axes.includes(name)) { alert('该轴已存在'); return; }
+    dim.axes.push(name);
+    data.characters.forEach(c => { if (!c.stats[currentDimId]) c.stats[currentDimId] = {}; c.stats[currentDimId][name] = 0; });
+    ni.value = ''; saveData(); renderDetail();
+}
+function deleteAxis(index) {
+    const dim = getDim(currentDimId); if (!dim) return;
+    if (dim.axes.length <= 2) { alert('每个维度至少保留2个轴'); return; }
+    const axisName = dim.axes[index];
+    if (!confirm(`删除轴「${axisName}」？所有角色的该数据将同步删除。`)) return;
+    dim.axes.splice(index, 1);
+    data.characters.forEach(c => { if (c.stats[currentDimId]) delete c.stats[currentDimId][axisName]; });
+    saveData(); renderDetail();
+}
+
+// ========== 编辑模式 ==========
+function toggleEditMode() {
+    editMode = !editMode;
+    if (editMode) { const c = getChar(currentCharId); if (c) editBuffer = JSON.parse(JSON.stringify(c.stats)); }
+    else { if (editBuffer) { const c = getChar(currentCharId); if (c) c.stats = JSON.parse(JSON.stringify(editBuffer)); } editBuffer = null; }
+    saveData(); renderDetail();
+}
+function updateEditValue(dimId, axisName, value) {
+    if (!editBuffer) return;
+    if (!editBuffer[dimId]) editBuffer[dimId] = {};
+    editBuffer[dimId][axisName] = Math.max(0, parseFloat(value) || 0);
+    document.querySelectorAll('.edit-slider-row').forEach(row => {
+        const nameEl = row.querySelector('.esr-name'); if (!nameEl || nameEl.textContent !== axisName) return;
+        const range = row.querySelector('input[type="range"]'); const num = row.querySelector('.esr-num');
+        const clamped = Math.min(100, editBuffer[dimId][axisName]);
+        if (range && document.activeElement !== range) range.value = clamped;
+        if (num && document.activeElement !== num) num.value = editBuffer[dimId][axisName];
+    });
+    if (svgFrameId) cancelAnimationFrame(svgFrameId);
+    svgFrameId = requestAnimationFrame(() => { renderRadarSvg(); svgFrameId = null; });
+}
+
+// ========== 雷达图 ==========
+const RANGE_MODES = { numeric: '0-100', grade: 'S-E' };
+const GRADE_MAP = [
+    { grade: 'S', min: 85, max: 100, value: 95 }, { grade: 'A', min: 75, max: 84, value: 80 },
+    { grade: 'B', min: 65, max: 74, value: 70 }, { grade: 'C', min: 55, max: 64, value: 60 },
+    { grade: 'D', min: 45, max: 54, value: 50 }, { grade: 'E', min: 0, max: 44, value: 35 }
+];
+function getDisplayValue(num) {
+    if (num > 100) return currentRange === 'numeric' ? '100+' : 'S+';
+    if (currentRange === 'numeric') return num;
+    const g = GRADE_MAP.find(x => num >= x.min && num <= x.max);
+    return g ? g.grade : 'E';
+}
+function getRadarValue(num) { return num; }
+function renderRadar() { renderRadarSvg(); renderRadarLegend(); }
+function renderRadarSvg() {
+    const c = getChar(currentCharId); if (!c) return;
+    const dim = getDim(currentDimId); if (!dim) return;
+    const axes = dim.axes; const n = axes.length;
+    if (n < 3) { document.getElementById('radarSvgWrap').innerHTML = '<div style="text-align:center;padding:30px;color:var(--text-faint);font-size:11px;">至少需要3个轴才能绘制雷达图</div>'; return; }
+    const cx = 170, cy = 170, radius = 115;
+    const angleStep = (Math.PI * 2) / n;
+    const statsSource = (editMode && editBuffer) ? editBuffer : c.stats;
+    const mainData = statsSource[currentDimId] || {};
+    const mainColor = c.themeColor || '#c46b63';
+    function pointAt(i, value) { const a = -Math.PI / 2 + i * angleStep; const r = Math.max(0, (value / 100) * radius); return { x: cx + Math.cos(a) * r, y: cy + Math.sin(a) * r }; }
+    function axisEndAt(i) { const a = -Math.PI / 2 + i * angleStep; return { x: cx + Math.cos(a) * radius, y: cy + Math.sin(a) * radius }; }
+    let gridHtml = '';
+    for (let level = 1; level <= 5; level++) { const pts = []; for (let i = 0; i < n; i++) { const p = pointAt(i, level * 20); pts.push(`${p.x},${p.y}`); } gridHtml += `<polygon points="${pts.join(' ')}" fill="none" stroke="var(--grid-line)" stroke-width="1"/>`; }
+    let axesHtml = '';
+    for (let i = 0; i < n; i++) {
+        const end = axisEndAt(i);
+        axesHtml += `<line x1="${cx}" y1="${cy}" x2="${end.x}" y2="${end.y}" stroke="var(--axis-line)" stroke-width="1"/>`;
+        const labelR = radius + 24; const a = -Math.PI / 2 + i * angleStep;
+        const lx = cx + Math.cos(a) * labelR, ly = cy + Math.sin(a) * labelR;
+        let anchor = 'middle'; if (Math.abs(Math.cos(a)) > 0.7) anchor = Math.cos(a) > 0 ? 'start' : 'end';
+        axesHtml += `<text x="${lx}" y="${ly}" fill="var(--text-secondary)" font-size="10" text-anchor="${anchor}" dominant-baseline="middle">${esc(axes[i])}</text>`;
+    }
+    const mainPoints = axes.map((a, i) => { const p = pointAt(i, getRadarValue(mainData[a] || 0)); return `${p.x},${p.y}`; }).join(' ');
+    let comparePolygon = '';
+    if (compareMode && compareId && !editMode) {
+        const cc = getChar(compareId);
+        if (cc) { const ccColor = cc.themeColor || '#5a8aa8'; const cd = cc.stats[currentDimId] || {}; const compPts = axes.map((a, i) => { const p = pointAt(i, getRadarValue(cd[a] || 0)); return `${p.x},${p.y}`; }).join(' '); comparePolygon = `<g class="radar-animate" style="animation-delay:0.1s;"><polygon points="${compPts}" fill="${ccColor}22" stroke="${ccColor}" stroke-width="1.4" stroke-linejoin="round" stroke-dasharray="5,4"/></g>`; }
+    }
+    let dotsHtml = '<g class="radar-dots-fade">';
+    axes.forEach((a, i) => {
+        const val = mainData[a] || 0; const p = pointAt(i, getRadarValue(val)); const display = getDisplayValue(val);
+        dotsHtml += `<circle cx="${p.x}" cy="${p.y}" r="2.8" fill="${mainColor}" stroke="#fff" stroke-width="0.8"/>`;
+        const angle = -Math.PI / 2 + i * angleStep; const lx = p.x + Math.cos(angle) * 10, ly = p.y + Math.sin(angle) * 10;
+        let anchor = 'middle'; if (Math.abs(Math.cos(angle)) > 0.5) anchor = Math.cos(angle) > 0 ? 'start' : 'end';
+        dotsHtml += `<text x="${lx}" y="${ly}" fill="${mainColor}" font-size="9" font-weight="600" text-anchor="${anchor}" dominant-baseline="middle">${display}</text>`;
+    });
+    if (compareMode && compareId && !editMode) { const cc = getChar(compareId); if (cc) { const ccColor = cc.themeColor || '#5a8aa8'; const cd = cc.stats[currentDimId] || {}; axes.forEach((a, i) => { const p = pointAt(i, getRadarValue(cd[a] || 0)); dotsHtml += `<circle cx="${p.x}" cy="${p.y}" r="2.2" fill="${ccColor}" stroke="#fff" stroke-width="0.6"/>`; }); } }
+    dotsHtml += '</g>';
+    document.getElementById('radarSvgWrap').innerHTML = `<svg viewBox="0 0 340 340">${gridHtml}${axesHtml}<g class="radar-animate"><polygon points="${mainPoints}" fill="${mainColor}33" stroke="${mainColor}" stroke-width="1.8" stroke-linejoin="round"/></g>${comparePolygon}${dotsHtml}</svg>`;
+}
+function renderRadarLegend() {
+    const c = getChar(currentCharId); if (!c) return;
+    const dim = getDim(currentDimId); if (!dim) return;
+    const axes = dim.axes;
+    const statsSource = (editMode && editBuffer) ? editBuffer : c.stats;
+    const mainData = statsSource[currentDimId] || {};
+    const mainColor = c.themeColor || '#c46b63';
+    const compareChar = (compareMode && compareId && !editMode) ? getChar(compareId) : null;
+    if (editMode && editBuffer) {
+        document.getElementById('radarLegend').innerHTML = axes.map(a => {
+            const val = (editBuffer[currentDimId] && editBuffer[currentDimId][a] !== undefined) ? editBuffer[currentDimId][a] : 0;
+            return `<div class="edit-slider-row"><span class="esr-name">${esc(a)}</span><input type="range" min="0" max="100" value="${Math.min(100, val)}" oninput="updateEditValue('${currentDimId}', '${a}', this.value)"><input type="number" class="esr-num" min="0" max="999" value="${val}" oninput="updateEditValue('${currentDimId}', '${a}', this.value)"></div>`;
+        }).join('');
+    } else {
+        document.getElementById('radarLegend').innerHTML = axes.map(a => {
+            const mainVal = mainData[a] || 0; const mainDisplay = getDisplayValue(mainVal);
+            const compareVal = compareChar ? ((compareChar.stats[currentDimId] || {})[a] || 0) : null;
+            const compareDisplay = compareVal !== null ? getDisplayValue(compareVal) : null;
+            const compareColor = compareChar ? (compareChar.themeColor || '#5a8aa8') : null;
+            return `<div class="radar-stat-item"><span class="rsi-name">${esc(a)}</span><div class="rsi-bar"><i class="rsi-fill" data-width="${Math.min(100, mainVal)}" style="background:${mainColor};"></i></div><span class="rsi-value" style="color:${mainColor};">${mainDisplay}</span>${compareDisplay !== null ? `<span class="rsi-value" style="color:${compareColor};width:24px;">${compareDisplay}</span>` : ''}</div>`;
+        }).join('');
+        requestAnimationFrame(() => { document.querySelectorAll('.rsi-fill').forEach(el => { const target = el.dataset.width; el.style.width = '0%'; void el.offsetWidth; el.style.width = target + '%'; }); });
+    }
+}
+
+// ========== 前往角色档案库（主题化确认弹窗） ==========
+function confirmGoArchive(e) {
+    if (e) e.preventDefault();
+    if (!getChar(currentCharId)) return;
+    document.getElementById('archiveConfirmModal').classList.add('open');
+}
+function closeArchiveConfirm() { document.getElementById('archiveConfirmModal').classList.remove('open'); }
+function goArchiveNow() {
+    const c = getChar(currentCharId); if (!c) return;
+    try { sessionStorage.setItem('smq_pending_char', c.id); } catch (err) {}
+    window.location.href = '../设定资料/角色档案库.html';
+}
+
+// ========== 立绘上传与裁剪 ==========
+let cropImg = null, cropScale = 1, cropX = 0, cropY = 0, dragging = false, dragStart = null;
+// 立绘裁剪框（9:16）与输出尺寸
+const CROP_W = 220, CROP_H = 391, OUT_W = 240, OUT_H = 427;
+
+function openPortraitUpload() {
+    const fi = document.getElementById('portraitInput');
+    fi.value = ''; fi.click();
+}
+document.getElementById('portraitInput').addEventListener('change', function (e) {
+    const f = e.target.files && e.target.files[0]; if (!f) return;
+    const reader = new FileReader();
+    reader.onload = (ev) => {
+        const img = document.getElementById('cropImg');
+        img.onload = () => {
+            cropImg = img; img.classList.add('ready');
+            cropScale = Math.max(CROP_W / img.naturalWidth, CROP_H / img.naturalHeight) * 1.15;
+            const stage = document.getElementById('cropStage');
+            cropX = stage.clientWidth / 2 - (img.naturalWidth * cropScale) / 2;
+            cropY = stage.clientHeight / 2 - (img.naturalHeight * cropScale) / 2;
+            applyCropTransform();
+            document.getElementById('cropTip').textContent = '';
+            document.getElementById('cropModal').classList.add('open');
+        };
+        img.src = ev.target.result;
+    };
+    reader.readAsDataURL(f);
+});
+function closeCrop() { document.getElementById('cropModal').classList.remove('open'); }
+function applyCropTransform() {
+    if (!cropImg) return;
+    cropImg.style.transform = `translate(${cropX}px, ${cropY}px) scale(${cropScale})`;
+    const sl = document.getElementById('cropSlider');
+    if (sl && Math.abs(sl.value - cropScale) > 0.001) sl.value = cropScale;
+}
+function clampCrop() {
+    if (!cropImg) return;
+    const stage = document.getElementById('cropStage');
+    const cw = stage.clientWidth, ch = stage.clientHeight;
+    const w = cropImg.naturalWidth * cropScale, h = cropImg.naturalHeight * cropScale;
+    cropX = Math.min(cw / 2 - CROP_W / 2, Math.max(cw / 2 + CROP_W / 2 - w, cropX));
+    cropY = Math.min(ch / 2 - CROP_H / 2, Math.max(ch / 2 + CROP_H / 2 - h, cropY));
+}
+function zoomCrop(delta) {
+    if (!cropImg) return;
+    const stage = document.getElementById('cropStage');
+    const cx = stage.clientWidth / 2, cy = stage.clientHeight / 2;
+    const old = cropScale;
+    cropScale = Math.min(4, Math.max(0.2, cropScale + delta));
+    const k = cropScale / old;
+    cropX = cx - (cx - cropX) * k;
+    cropY = cy - (cy - cropY) * k;
+    clampCrop(); applyCropTransform();
+}
+function setCropScale(v) {
+    if (!cropImg) return;
+    const stage = document.getElementById('cropStage');
+    const cx = stage.clientWidth / 2, cy = stage.clientHeight / 2;
+    const old = cropScale;
+    cropScale = Math.min(4, Math.max(0.2, v));
+    const k = cropScale / old;
+    cropX = cx - (cx - cropX) * k;
+    cropY = cy - (cy - cropY) * k;
+    clampCrop(); applyCropTransform();
+}
+function resetCrop() {
+    if (!cropImg) return;
+    const stage = document.getElementById('cropStage');
+    cropScale = Math.max(CROP_W / cropImg.naturalWidth, CROP_H / cropImg.naturalHeight) * 1.15;
+    cropX = stage.clientWidth / 2 - (cropImg.naturalWidth * cropScale) / 2;
+    cropY = stage.clientHeight / 2 - (cropImg.naturalHeight * cropScale) / 2;
+    applyCropTransform();
+}
+(function initCropDrag() {
+    const stage = document.getElementById('cropStage');
+    stage.addEventListener('mousedown', (e) => { if (!cropImg) return; dragging = true; dragStart = { x: e.clientX, y: e.clientY, ox: cropX, oy: cropY }; stage.classList.add('dragging'); e.preventDefault(); });
+    window.addEventListener('mousemove', (e) => { if (!dragging || !cropImg) return; cropX = dragStart.ox + (e.clientX - dragStart.x); cropY = dragStart.oy + (e.clientY - dragStart.y); clampCrop(); applyCropTransform(); });
+    window.addEventListener('mouseup', () => { dragging = false; stage.classList.remove('dragging'); });
+    stage.addEventListener('wheel', (e) => { if (!cropImg) return; e.preventDefault(); zoomCrop(e.deltaY < 0 ? 0.1 : -0.1); }, { passive: false });
+    stage.addEventListener('touchstart', (e) => { if (!cropImg) return; const t = e.touches[0]; dragging = true; dragStart = { x: t.clientX, y: t.clientY, ox: cropX, oy: cropY }; stage.classList.add('dragging'); e.preventDefault(); }, { passive: false });
+    stage.addEventListener('touchmove', (e) => { if (!dragging || !cropImg) return; const t = e.touches[0]; cropX = dragStart.ox + (t.clientX - dragStart.x); cropY = dragStart.oy + (t.clientY - dragStart.y); clampCrop(); applyCropTransform(); e.preventDefault(); }, { passive: false });
+    stage.addEventListener('touchend', () => { dragging = false; stage.classList.remove('dragging'); });
+})();
+
+function savePortraitCrop() {
+    const img = cropImg;
+    if (!img) { document.getElementById('cropTip').textContent = '请先选择图片'; return; }
+    document.getElementById('cropTip').textContent = '处理中…';
+    const stage = document.getElementById('cropStage');
+    const srcR = CROP_H / 2 / cropScale;
+    const sx = (stage.clientWidth / 2 - cropX) / cropScale - CROP_W / 2 / cropScale;
+    const sy = (stage.clientHeight / 2 - cropY) / cropScale - srcR;
+    const cv = document.createElement('canvas'); cv.width = OUT_W; cv.height = OUT_H;
+    const ctx = cv.getContext('2d');
+    ctx.drawImage(img, sx, sy, CROP_W / cropScale, CROP_H / cropScale, 0, 0, OUT_W, OUT_H);
+    const dataUrl = cv.toDataURL('image/png');
+    const c = getChar(currentCharId);
+    if (!c) { closeCrop(); return; }
+    const fileName = (c.id || 'char') + '.png';
+    const relPath = '立绘/' + fileName;
+    c.portrait = relPath;
+    // 设备本地缓存：立即显示且刷新保留（不进数据文件，不撑大 JSON）
+    try { localStorage.setItem('smq_portrait_' + c.id, dataUrl); } catch (e) {}
+    saveData().then(() => {
+        document.getElementById('cropTip').innerHTML = '立绘已保存 ✓<br>请把 <b>' + fileName + '</b> 放入项目 <b>forum/立绘/</b> 目录（Spherse 里可直接拖图片进文件树），即可跨设备显示。<br><button class="btn btn-sm" style="margin-top:6px;" onclick="downloadPortrait()">下载立绘 PNG</button>';
+        closeCrop();
+        renderDetail(); renderHome();
+        SMQ.toast('立绘已保存（本机已显示；放置文件后可跨设备）');
+    }).catch(() => { document.getElementById('cropTip').textContent = '保存失败，请重试'; });
+}
+function downloadPortrait() {
+    const c = getChar(currentCharId); if (!c) return;
+    const cached = getPortraitCache(c.id);
+    if (!cached) return;
+    const a = document.createElement('a');
+    a.href = cached; a.download = (c.id || 'char') + '.png';
+    document.body.appendChild(a); a.click(); a.remove();
+}
+// 立绘显示：设备本地缓存优先 > 路径引用文件
+function getPortraitCache(id) { try { return localStorage.getItem('smq_portrait_' + id); } catch (e) { return null; } }
+
+// ========== 初始化 ==========
+if (data.dimensions.length) currentDimId = data.dimensions[0].id;
+document.getElementById('q').addEventListener('input', () => { searchQ = document.getElementById('q').value; renderHome(); });
+load();
+SMQ.registerPageExport(DATA, '角色能力图鉴.data.json', () => data);
+</script>
+</body>
+</html>

@@ -1329,6 +1329,7 @@
                     <li><a href="功能模块/日历.html"><span class="nav-dot"></span>日历</a></li>
                     <li><a href="功能模块/书架.html"><span class="nav-dot"></span>书架</a></li>
                     <li><a href="功能模块/魔法解析器.html"><span class="nav-dot"></span>魔法解析器</a></li>
+                    <li><a href="功能模块/角色能力图鉴.html"><span class="nav-dot"></span>角色能力图鉴</a></li>
                 </ul>
             </li>
             <li>
@@ -1531,6 +1532,28 @@
             </div>
             </a>
 
+            <!-- 卡片 5：角色能力图鉴 -->
+            <a href="功能模块/角色能力图鉴.html" style="display:block;text-decoration:none;color:inherit;">
+            <div class="frame-card">
+                <div class="frame-overlay">
+                    <svg viewBox="0 0 300 200" preserveAspectRatio="none"><use href="#frameOrnament"/></svg>
+                </div>
+                <div class="card-number">MODULE V</div>
+                <div class="card-title">角色能力图鉴</div>
+                <div class="card-title-en">Ability Chart</div>
+                <div class="card-desc">能力雷达图与立绘。从角色档案库一键导入，按战斗/性格/元素维度可视化角色能力。</div>
+                <div class="card-meta">
+                    <span class="meta-chip active">已上线</span>
+                    <span class="meta-chip">雷达图</span>
+                    <span class="meta-chip">立绘</span>
+                </div>
+                <div class="card-footer">
+                    <span class="card-footer-text">自动同步角色档案库</span>
+                    <span class="card-arrow">→</span>
+                </div>
+            </div>
+            </a>
+
         </div>
 
         <!-- ========== 资料分区 ========== -->
@@ -1656,6 +1679,7 @@
         <a href="功能模块/日历.html"><span class="mnav-dot"></span>日历</a>
         <a href="功能模块/书架.html"><span class="mnav-dot"></span>书架</a>
         <a href="功能模块/魔法解析器.html"><span class="mnav-dot"></span>魔法解析器</a>
+        <a href="功能模块/角色能力图鉴.html"><span class="mnav-dot"></span>角色能力图鉴</a>
         <div class="mnav-sec">设定资料</div>
         <a href="设定资料/势力与阵营.html"><span class="mnav-dot"></span>势力与阵营</a>
         <a href="设定资料/历史事件.html"><span class="mnav-dot"></span>历史事件</a>
@@ -1784,7 +1808,8 @@
         // 注册全部数据文件：顶栏「导出数据」将打包所有页面的完整数据（forum 主数据 + 本地编辑）
         SMQ.registerDataFiles('../forum/', [
             '角色档案库.data.json', '势力与阵营.data.json', '历史事件.data.json',
-            '术语库.data.json', '日历.data.json', '酒馆.data.json', '地理总览.data.json'
+            '术语库.data.json', '日历.data.json', '酒馆.data.json', '地理总览.data.json',
+            '角色能力图鉴.data.json'
         ]);
 
         // ========== 小日历（今日日期 + 生日/节日备注） ==========
